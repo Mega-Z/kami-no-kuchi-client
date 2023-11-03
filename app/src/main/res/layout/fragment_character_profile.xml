@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    tools:context=".CharProfileFragment">
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginVertical="@dimen/dp_5"
+        android:layout_gravity="center">
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginVertical= "@dimen/dp_0"
+            android:layout_marginHorizontal="@dimen/dp_0"
+            android:paddingVertical="@dimen/dp_5"
+            android:layout_gravity="center"
+            android:gravity="center"
+            android:orientation="horizontal">
+            <ImageView
+                android:id="@+id/img_character_card"
+                android:src="@drawable/card"
+                android:layout_width="@dimen/dp_50"
+                android:layout_height="@dimen/dp_50"
+                android:scaleType="fitCenter"
+                android:layout_gravity="center_vertical">
+
+            </ImageView>
+            <!--
+            <com.megaz.kaminokuchi.CircleImageView
+                android:id="@+id/img_char_face"
+                android:layout_width="@dimen/dp_50"
+                android:layout_height="@dimen/dp_50"
+                android:background="@color/test_bg1"
+                android:layout_margin="@dimen/dp_10"
+                app:type="round"
+                app:round_Radius="@dimen/dp_5">
+            </com.megaz.kaminokuchi.CircleImageView>-->
+            <LinearLayout
+                android:layout_width="@dimen/dp_100"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_gravity="center_vertical">
+
+                <TextView
+                    android:id="@+id/text_character_name"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:textSize="@dimen/sp_16"
+                    android:text="@string/text_default_character_name"/>
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:orientation="horizontal">
+                    <TextView
+                        android:id="@+id/text_character_level"
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent"
+                        android:textSize="@dimen/sp_12"
+                        android:text="@string/text_default_character_level" />
+                    <TextView
+                        android:id="@+id/text_character_cons"
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent"
+                        android:textSize="@dimen/sp_12"
+                        android:layout_marginStart="@dimen/dp_16"
+                        android:paddingHorizontal="@dimen/dp_2"
+                        android:text="@string/text_default_character_cons" />
+                </LinearLayout>
+            </LinearLayout>
+        </LinearLayout>
+        <ImageView
+            android:id="@+id/img_is_new"
+            android:layout_width="@dimen/dp_40"
+            android:layout_height="@dimen/dp_20"
+            android:layout_marginRight="@dimen/dp_4"
+            android:src="@drawable/new_profile"
+            android:layout_gravity="top|right"/>
+    </FrameLayout>
+
+
+</FrameLayout>

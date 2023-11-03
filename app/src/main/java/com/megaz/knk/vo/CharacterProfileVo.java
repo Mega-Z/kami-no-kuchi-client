@@ -14,8 +14,10 @@ import java.util.Map;
 @Setter
 public class CharacterProfileVo implements Serializable {
     private String characterName;
+    private String uid;
     private String artIcon;
     private String cardIcon;
+    private String avatarIcon;
     private ElementEnum element;
     private Integer level;
     private Integer fetter;

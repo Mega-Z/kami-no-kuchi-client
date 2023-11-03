@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="@dimen/dp_30"
+    android:layout_height="@dimen/dp_30"
+    android:layout_marginTop="@dimen/dp_5"
+    tools:context=".fragment.ConstellationFragment">
+    <ImageView
+        android:id="@+id/img_cons_frame"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scaleX="1.2"
+        android:scaleY="1.2"
+        android:src="@drawable/talent_anemo"/>
+    <ImageView
+        android:id="@+id/img_cons_icon"
+        android:layout_width="@dimen/dp_15"
+        android:layout_height="@dimen/dp_15"
+        android:layout_gravity="center"/>
+
+</FrameLayout>

@@ -13,5 +13,6 @@ public class PlayerProfileVo implements Serializable {
     private String uid;
     private String sign;
     private String avatarIcon;
+    private Boolean characterAvailable;
     private List<CharacterProfileVo> characters;
 }
