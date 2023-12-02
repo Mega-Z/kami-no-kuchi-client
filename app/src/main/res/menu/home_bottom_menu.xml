@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/home_menu_character"
+        android:icon="@drawable/selector_page_character"
+        android:title="" />
+    <item
+        android:id="@+id/home_menu_wish"
+        android:icon="@drawable/selector_page_wish"
+        android:title="" />
+    <item
+        android:id="@+id/home_menu_config"
+        android:icon="@drawable/selector_page_config"
+        android:title="" />
+
+</menu>

@@ -80,7 +80,6 @@
 
                         </LinearLayout>
                         <!-- talents -->
-
                         <LinearLayout
                             android:id="@+id/layout_talent_A"
                             android:layout_width="@dimen/dp_50"
@@ -116,11 +115,28 @@
                             android:orientation="vertical"
                             android:layout_gravity="bottom|end"
                             android:layout_marginEnd="@dimen/dp_195"/>
-
-
+                        <!-- attributes -->
+                        <LinearLayout
+                            android:id="@+id/layout_attribute"
+                            android:layout_width="match_parent"
+                            android:layout_height="@dimen/dp_170"
+                            android:layout_gravity="bottom"
+                            android:orientation="vertical"/>
 
                     </FrameLayout>
 
+                    <LinearLayout
+                        android:id="@+id/layout_artifact_evaluation"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/dp_5"
+                        android:orientation="vertical"/>
+
+<!--                    <ImageView-->
+<!--                        android:layout_width="match_parent"-->
+<!--                        android:layout_height="wrap_content"-->
+<!--                        android:src="@drawable/keqing_long"-->
+<!--                        android:scaleType="fitStart"/>-->
                 </LinearLayout>
 
             </FrameLayout>

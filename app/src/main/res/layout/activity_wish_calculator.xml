@@ -1,0 +1,278 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context=".activity.WishCalculatorActivity">
+
+    <LinearLayout
+        android:id="@+id/layout_wish_switch"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingTop="@dimen/dp_5"
+        android:paddingHorizontal="@dimen/dp_30"
+        android:gravity="center"
+        android:orientation="horizontal">
+        <LinearLayout
+            android:id="@+id/layout_character_wish_selected"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:orientation="horizontal">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="@dimen/sp_20"
+                android:textColor="@color/gray_black"
+                android:textStyle="bold"
+                android:text="角色"
+                android:gravity="center_horizontal"/>
+        </LinearLayout>
+
+
+        <LinearLayout
+            android:id="@+id/layout_character_wish_normal"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:orientation="horizontal"
+            android:visibility="gone">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="@dimen/sp_18"
+                android:textColor="@color/gray_black"
+                android:text="角色"
+                android:gravity="center_horizontal"/>
+            <TextView
+                android:id="@+id/text_character_wish_num"
+                android:layout_width="@dimen/dp_20"
+                android:layout_height="@dimen/dp_20"
+                android:layout_marginLeft="@dimen/dp_5"
+                android:textSize="@dimen/sp_16"
+                android:textColor="@color/white"
+                android:background="@drawable/bg_btn_blue"
+                android:text="1"
+                android:gravity="center"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/layout_weapon_wish_selected"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:orientation="horizontal"
+            android:visibility="gone">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="@dimen/sp_20"
+                android:textColor="@color/gray_black"
+                android:textStyle="bold"
+                android:text="武器"
+                android:gravity="center_horizontal"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/layout_weapon_wish_normal"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:orientation="horizontal">
+            <TextView
+                android:id="@+id/text_weapon_wish"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="@dimen/sp_18"
+                android:textColor="@color/gray_black"
+                android:textStyle="normal"
+                android:text="武器"
+                android:gravity="center_horizontal"/>
+            <TextView
+                android:id="@+id/text_weapon_wish_num"
+                android:layout_width="@dimen/dp_20"
+                android:layout_height="@dimen/dp_20"
+                android:layout_marginLeft="@dimen/dp_5"
+                android:textSize="@dimen/sp_16"
+                android:textColor="@color/white"
+                android:background="@drawable/bg_btn_blue"
+                android:text="0"
+                android:gravity="center"
+                android:visibility="visible"/>
+        </LinearLayout>
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/layout_slide_line"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/dp_5"
+        android:orientation="horizontal">
+        <View
+            android:id="@+id/view_slide_line"
+            android:layout_width="@dimen/dp_100"
+            android:layout_height="match_parent"
+            android:background="@color/light_blue"/>
+    </LinearLayout>
+
+    <androidx.viewpager.widget.ViewPager
+        android:id="@+id/viewpager_wish_switch"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+
+
+
+    <Button
+        android:id="@+id/btn_compute_expectation"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginVertical="@dimen/dp_10"
+        android:background="@drawable/bg_btn_blue"
+        android:paddingHorizontal="@dimen/dp_10"
+        android:text="计算抽数期望"
+        android:textColor="@color/white"
+        android:textSize="@dimen/sp_14" />
+
+    <LinearLayout
+        android:id="@+id/layout_show_prop"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="2"
+        android:orientation="vertical">
+
+
+        <com.github.mikephil.charting.charts.LineChart
+            android:id="@+id/chart_wish_prop"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:layout_gravity="center" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingHorizontal="@dimen/dp_20">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="top|center_horizontal"
+                    android:text="出货抽数概率分布"
+                    android:textColor="@color/gray"
+                    android:textSize="@dimen/sp_12" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="bottom|left"
+                    android:layout_marginLeft="@dimen/dp_50"
+                    android:text="出货抽数期望："
+                    android:textColor="@color/gray_black"
+                    android:textSize="@dimen/sp_20" />
+
+                <TextView
+                    android:id="@+id/text_expectation"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="top|right"
+                    android:layout_marginTop="@dimen/dp_20"
+                    android:layout_marginRight="@dimen/dp_50"
+                    android:text="\???.??"
+                    android:textColor="@color/light_blue"
+                    android:textSize="@dimen/sp_24" />
+
+            </FrameLayout>
+
+
+
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/dp_10"
+                android:paddingHorizontal="@dimen/dp_20">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical|left"
+                    android:text="@string/text_wish_budget"
+                    android:textColor="@color/gray_black"
+                    android:textSize="@dimen/sp_16" />
+
+                <EditText
+                    android:id="@+id/edtx_budget"
+                    android:layout_width="@dimen/dp_60"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical|right"
+                    android:layout_marginRight="@dimen/dp_60"
+                    android:background="@color/gray_white"
+                    android:gravity="center"
+                    android:inputType="number"
+                    android:maxLength="4"
+                    android:singleLine="true"
+                    android:text="0"
+                    android:textColor="@color/gray_black"
+                    android:textSize="@dimen/sp_16" />
+
+                <Button
+                    android:id="@+id/btn_get_prop"
+                    android:layout_width="@dimen/dp_50"
+                    android:layout_height="@dimen/dp_30"
+                    android:layout_gravity="center_vertical|right"
+                    android:background="@drawable/bg_btn_blue"
+                    android:text="能出?"
+                    android:textColor="@color/white" />
+            </FrameLayout>
+
+            <FrameLayout
+                android:id="@+id/layout_prop"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/dp_10"
+                android:paddingHorizontal="@dimen/dp_20"
+                android:visibility="invisible">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="你的出货概率是："
+                    android:textColor="@color/gray_black"
+                    android:textSize="@dimen/sp_20" />
+
+                <TextView
+                    android:id="@+id/text_prop"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="bottom|right"
+                    android:layout_marginRight="@dimen/dp_20"
+                    android:text="\??.?%"
+                    android:textSize="@dimen/sp_36" />
+
+            </FrameLayout>
+        </LinearLayout>
+
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginVertical="@dimen/dp_20"
+            android:text="@string/text_wish_slogan"
+            android:textColor="@color/gray"
+            android:textSize="@dimen/sp_16" />
+
+    </LinearLayout>
+
+</LinearLayout>

@@ -13,7 +13,7 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import com.megaz.knk.R;
-import com.megaz.knk.manager.ImageResourceManager;
+import com.megaz.knk.utils.ImageResourceUtils;
 import com.megaz.knk.vo.CharacterProfileVo;
 
 import java.util.Objects;
@@ -72,7 +72,11 @@ public class CharacterProfileFragment extends Fragment {
         }else{
             imageIsNew.setVisibility(View.INVISIBLE);
         }
-        imageCharacterCard.setImageBitmap(ImageResourceManager.getIconBitmap(Objects.requireNonNull(getContext()), characterProfileVo.getCardIcon()));
+        imageCharacterCard.setImageBitmap(ImageResourceUtils.getIconBitmap(Objects.requireNonNull(getContext()), characterProfileVo.getCardIcon()));
 
+    }
+
+    public void clearNew() {
+        imageIsNew.setVisibility(View.INVISIBLE);
     }
 }

@@ -2,6 +2,8 @@ package com.megaz.knk.activity;
 
 import android.annotation.SuppressLint;
 import android.graphics.Bitmap;
+import android.view.ViewGroup;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -9,37 +11,116 @@ import android.widget.TextView;
 import androidx.fragment.app.FragmentTransaction;
 
 import com.megaz.knk.R;
+import com.megaz.knk.fragment.ArtifactEvaluationFragment;
+import com.megaz.knk.fragment.CharacterAttributeFragment;
 import com.megaz.knk.fragment.ConstellationFragment;
 import com.megaz.knk.fragment.TalentFragment;
 import com.megaz.knk.fragment.WeaponFragment;
-import com.megaz.knk.manager.ImageResourceManager;
+import com.megaz.knk.utils.ImageResourceUtils;
 import com.megaz.knk.vo.CharacterProfileVo;
 import com.megaz.knk.vo.ConstellationVo;
 import com.megaz.knk.vo.TalentVo;
 
-import java.security.PrivilegedAction;
-
-public class CharacterDetailActivity extends BaseActivity {
+public class CharacterDetailActivity extends ElasticScrollActivity {
 
     private int ART_OFFSET_X, ART_HEIGHT, TALENT_WIDTH;
+    private float SCROLL_STEP_PROGRESS; // 划动动画的中间进度，武器信息缩回开始移动
+    private float ART_SCALE_RATIO;
     
     private CharacterProfileVo characterProfileVo;
 
     private WeaponFragment weaponFragment;
+    private CharacterAttributeFragment characterAttributeFragment;
+    private ArtifactEvaluationFragment artifactEvaluationFragment;
 
-    private LinearLayout layoutTalentA, layoutTalentE, layoutTalentQ, layoutWeapon;
+    private FrameLayout layoutArt;
+    private LinearLayout layoutConstellation, layoutAttribute,
+            layoutTalentA, layoutTalentE, layoutTalentQ, layoutWeapon,
+            layoutArtifactEvaluation;
     private ImageView imageCharacterArt;
 
+    @Override
+    protected void setContent() {
+        super.setContent();
+        setContentView(R.layout.activity_character_detail);
+    }
 
     @Override
     protected void initView(){
-        setContentView(R.layout.activity_character_detail);
+        super.initView();
         characterProfileVo = (CharacterProfileVo) getIntent().getExtras().getSerializable("characterProfileVo");
         initConstants();
+        layoutArt = findViewById(R.id.layout_art);
         initCharacterBaseInfo();
         initWeaponInfo();
         initCharacterAttribute();
+        initArtifactEvaluation();
     }
+
+    @Override
+    protected void initScrollParameters() {
+        super.initScrollParameters();
+        SCROLL_MAX = getResources().getDimensionPixelOffset(R.dimen.dp_170);
+        SCROLL_ELASTIC_POSITION = SCROLL_MAX / 2;
+        SCROLL_THRESHOLD = 5;
+        SCROLL_STEP_PROGRESS = 2f/3;
+        ART_SCALE_RATIO = 0.05f;
+    }
+
+    @Override
+    protected void setConflictingScrollViews() {
+        super.setConflictingScrollViews();
+        lockedScrollViews.add(findViewById(R.id.view_character_detail));
+        lockingScrollViews.add(findViewById(R.id.view_character_detail));
+    }
+
+
+    @Override
+    protected void updateScrollStatus() {
+        // total layout
+        ViewGroup.LayoutParams layoutArtParams = layoutArt.getLayoutParams();
+        layoutArtParams.height = getResources().getDimensionPixelOffset(R.dimen.dp_300) + getScrollY();
+        layoutArt.setLayoutParams(layoutArtParams);
+        // art
+        imageCharacterArt.setScaleX(1+getScrollProgress()*ART_SCALE_RATIO);
+        imageCharacterArt.setScaleY(1+getScrollProgress()*ART_SCALE_RATIO);
+        imageCharacterArt.setTranslationX(ART_OFFSET_X*(1-getScrollProgress()));
+        // constellations
+        FrameLayout.LayoutParams layoutConstellationParams = (FrameLayout.LayoutParams) layoutConstellation.getLayoutParams();
+        layoutConstellationParams.bottomMargin = getScrollY();
+        layoutConstellation.setLayoutParams(layoutConstellationParams);
+        // weapon
+        FrameLayout.LayoutParams layoutWeaponParams = (FrameLayout.LayoutParams) layoutWeapon.getLayoutParams();
+        layoutWeaponParams.bottomMargin = getScrollY();
+        if(getScrollProgress() >= SCROLL_STEP_PROGRESS) {
+            layoutWeaponParams.rightMargin = getResources().getDimensionPixelOffset(R.dimen.dp_10) +
+                    Math.round(getResources().getDimensionPixelOffset(R.dimen.dp_185) * (1-getScrollProgress())/(1-SCROLL_STEP_PROGRESS));
+            weaponFragment.setInfoExtend(0);
+        }else {
+            layoutWeaponParams.rightMargin = getResources().getDimensionPixelOffset(R.dimen.dp_195);
+            weaponFragment.setInfoExtend(1-getScrollProgress()/SCROLL_STEP_PROGRESS);
+        }
+        layoutWeapon.setLayoutParams(layoutWeaponParams);
+        // talents
+        FrameLayout.LayoutParams layoutTalentAParams = (FrameLayout.LayoutParams) layoutTalentA.getLayoutParams();
+        layoutTalentAParams.bottomMargin = getResources().getDimensionPixelOffset(R.dimen.dp_155) + getScrollY()
+                + Math.round(getResources().getDimensionPixelOffset(R.dimen.dp_10) * getScrollProgress());
+        layoutTalentA.setLayoutParams(layoutTalentAParams);
+        layoutTalentA.setTranslationX(TALENT_WIDTH * 2 * (getScrollProgress()-1));
+
+        FrameLayout.LayoutParams layoutTalentEParams = (FrameLayout.LayoutParams) layoutTalentE.getLayoutParams();
+        layoutTalentEParams.bottomMargin = getResources().getDimensionPixelOffset(R.dimen.dp_155) + getScrollY()
+                - Math.round(getResources().getDimensionPixelOffset(R.dimen.dp_40) * getScrollProgress());
+        layoutTalentE.setLayoutParams(layoutTalentEParams);
+        layoutTalentE.setTranslationX(TALENT_WIDTH * (getScrollProgress()-1));
+
+        FrameLayout.LayoutParams layoutTalentQParams = (FrameLayout.LayoutParams) layoutTalentQ.getLayoutParams();
+        layoutTalentQParams.bottomMargin = getResources().getDimensionPixelOffset(R.dimen.dp_155) + getScrollY()
+                - Math.round(getResources().getDimensionPixelOffset(R.dimen.dp_90) * getScrollProgress());
+        layoutTalentQ.setLayoutParams(layoutTalentQParams);
+
+    }
+
 
     private void initConstants() {
         ART_OFFSET_X = Math.round(-1*getResources().getDimensionPixelOffset(R.dimen.dp_300)/5f);
@@ -47,27 +128,28 @@ public class CharacterDetailActivity extends BaseActivity {
         TALENT_WIDTH = getResources().getDimensionPixelOffset(R.dimen.dp_50);
     }
 
+
+
     @SuppressLint("SetTextI18n")
     private void initCharacterBaseInfo() {
         FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
         // name&level
         TextView textName = findViewById(R.id.text_character_name);
-        textName.setTypeface(typefaceCn);
+        textName.setTypeface(typefaceNZBZ);
         textName.setText(characterProfileVo.getCharacterName()+" ");
         TextView textLevel = findViewById(R.id.text_character_level);
         textLevel.setTypeface(typefaceNum);
         textLevel.setText(getString(R.string.text_level_prefix) + characterProfileVo.getLevel());
         // art
         imageCharacterArt = findViewById(R.id.img_character_art);
-        Bitmap bitmapArt = ImageResourceManager.getIconBitmap(getApplicationContext(), characterProfileVo.getArtIcon());
-        imageCharacterArt.setImageBitmap(bitmapArt);
-        float artScale = ART_HEIGHT/(float)bitmapArt.getHeight();
-        imageCharacterArt.setScaleX(artScale);
-        imageCharacterArt.setScaleY(artScale);
-        imageCharacterArt.setX((float)(ART_OFFSET_X));
+        Bitmap bitmapArt = ImageResourceUtils.getIconBitmap(getApplicationContext(), characterProfileVo.getArtIcon());
+        Bitmap bitmapArtScaled = Bitmap.createScaledBitmap(bitmapArt,
+                ART_HEIGHT*bitmapArt.getWidth()/bitmapArt.getHeight(), ART_HEIGHT, true);
+        imageCharacterArt.setImageBitmap(bitmapArtScaled);
+        imageCharacterArt.setTranslationX((ART_OFFSET_X));
         // bg
         ImageView imageBg = findViewById(R.id.img_element_bg);
-        imageBg.setImageBitmap(ImageResourceManager.getBackgroundByElement(getApplicationContext(), characterProfileVo.getElement()));
+        imageBg.setImageBitmap(ImageResourceUtils.getBackgroundByElement(getApplicationContext(), characterProfileVo.getElement()));
         // constellation
         for(int c=1;c<=6;c++) {
             ConstellationVo constellationVo = new ConstellationVo();
@@ -77,6 +159,7 @@ public class CharacterDetailActivity extends BaseActivity {
             ConstellationFragment constellationFragment = ConstellationFragment.newInstance(constellationVo);
             fragmentTransaction.add(R.id.layout_constellation, constellationFragment);
         }
+        layoutConstellation = findViewById(R.id.layout_constellation);
         // talents
         TalentVo talentVoA = new TalentVo();
         talentVoA.setElement(characterProfileVo.getElement());
@@ -105,13 +188,14 @@ public class CharacterDetailActivity extends BaseActivity {
         layoutTalentA = findViewById(R.id.layout_talent_A);
         layoutTalentE = findViewById(R.id.layout_talent_E);
         layoutTalentQ = findViewById(R.id.layout_talent_Q);
-        layoutTalentA.setX((float)TALENT_WIDTH*-2);
-        layoutTalentE.setX((float)TALENT_WIDTH*-1);
+        layoutTalentA.setTranslationX((float)TALENT_WIDTH*-2);
+        layoutTalentE.setTranslationX((float)TALENT_WIDTH*-1);
 
         fragmentTransaction.commit();
     }
 
     private void initWeaponInfo() {
+        layoutWeapon = findViewById(R.id.layout_weapon);
         FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
         weaponFragment = WeaponFragment.newInstance(characterProfileVo.getWeapon());
         fragmentTransaction.add(R.id.layout_weapon, weaponFragment);
@@ -119,5 +203,19 @@ public class CharacterDetailActivity extends BaseActivity {
     }
 
     private void initCharacterAttribute() {
+        layoutAttribute = findViewById(R.id.layout_attribute);
+        FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
+        characterAttributeFragment = CharacterAttributeFragment.newInstance(characterProfileVo);
+        fragmentTransaction.add(R.id.layout_attribute, characterAttributeFragment);
+        fragmentTransaction.commit();
+    }
+
+    private void initArtifactEvaluation() {
+        layoutArtifactEvaluation = findViewById(R.id.layout_artifact_evaluation);
+        FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
+        artifactEvaluationFragment = ArtifactEvaluationFragment.newInstance(characterProfileVo);
+        fragmentTransaction.add(R.id.layout_artifact_evaluation, artifactEvaluationFragment);
+        fragmentTransaction.commit();
+
     }
 }

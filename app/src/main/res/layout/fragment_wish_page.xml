@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".fragment.WishPageFragment">
+
+    <Button
+        android:id="@+id/btn_wish_calculator"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:paddingHorizontal="@dimen/dp_10"
+        android:textSize="@dimen/sp_16"
+        android:text="祈愿概率计算器"
+        android:textColor="@color/white"
+        android:background="@drawable/bg_btn_blue"/>
+
+</FrameLayout>

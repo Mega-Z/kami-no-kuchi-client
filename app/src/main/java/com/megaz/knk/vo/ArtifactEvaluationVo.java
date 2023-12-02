@@ -11,7 +11,7 @@ import java.util.Map;
 @Getter
 @Setter
 public class ArtifactEvaluationVo implements Serializable {
-    private String CriterionName;
+    private String criterionName;
     private Integer hpWeight;
     private Integer atkWeight;
     private Integer defWeight;

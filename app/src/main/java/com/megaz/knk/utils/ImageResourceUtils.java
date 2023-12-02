@@ -1,19 +1,15 @@
-package com.megaz.knk.manager;
+package com.megaz.knk.utils;
 
 import android.content.Context;
-import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.os.Build;
 import android.util.Log;
-
-import androidx.annotation.RequiresApi;
 
 import com.megaz.knk.R;
 import com.megaz.knk.client.RequestHelper;
+import com.megaz.knk.constant.ArtifactPositionEnum;
 import com.megaz.knk.constant.ElementEnum;
 
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -22,7 +18,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 
-public class ImageResourceManager {
+public class ImageResourceUtils {
 
     public static List<String> getIconResourceList(Context context){
         String url = context.getString(R.string.server) + context.getString(R.string.api_get_icon_list);
@@ -78,6 +74,20 @@ public class ImageResourceManager {
 
     public static Bitmap getFrameByElement(Context context, ElementEnum element) {
         String id = "frame_" + element.getVal();
+        InputStream inputStream;
+        inputStream = context.getResources().openRawResource(context.getResources().getIdentifier(id, "drawable", context.getPackageName()));
+        return BitmapFactory.decodeStream(inputStream);
+    }
+
+    public static Bitmap getElementIcon(Context context, ElementEnum element) {
+        String id = "ic_" + element.getVal();
+        InputStream inputStream;
+        inputStream = context.getResources().openRawResource(context.getResources().getIdentifier(id, "drawable", context.getPackageName()));
+        return BitmapFactory.decodeStream(inputStream);
+    }
+
+    public static Bitmap getArtifactPositionIcon(Context context, ArtifactPositionEnum position) {
+        String id = "ic_" + position.getVal();
         InputStream inputStream;
         inputStream = context.getResources().openRawResource(context.getResources().getIdentifier(id, "drawable", context.getPackageName()));
         return BitmapFactory.decodeStream(inputStream);

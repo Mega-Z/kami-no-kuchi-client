@@ -1,33 +1,39 @@
-package com.megaz.knk.activity;
+package com.megaz.knk.fragment;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.ObjectAnimator;
-import android.annotation.SuppressLint;
-import android.content.Intent;
 import android.os.Bundle;
+
+import androidx.annotation.NonNull;
+import androidx.fragment.app.Fragment;
+
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 
-import androidx.annotation.NonNull;
-
 import com.megaz.knk.R;
 import com.megaz.knk.Utils;
+import com.megaz.knk.activity.BaseActivity;
 import com.megaz.knk.exception.RequestErrorException;
-import com.megaz.knk.fragment.PaimonWaitingFragment;
-import com.megaz.knk.fragment.PlayerProfileFragment;
 import com.megaz.knk.utils.ProfileRequestUtils;
-import com.megaz.knk.vo.CharacterProfileVo;
 import com.megaz.knk.vo.PlayerProfileVo;
 
-@Deprecated
-public class ProfileQueryActivity extends BaseActivity {
+import java.util.Objects;
+
+/**
+ * A simple {@link Fragment} subclass.
+ * Use the {@link CharacterPageFragment#newInstance} factory method to
+ * create an instance of this fragment.
+ */
+public class CharacterPageFragment extends BaseFragment {
 
     private boolean flagQuerying = false;
     private boolean flagError = false;
@@ -44,29 +50,40 @@ public class ProfileQueryActivity extends BaseActivity {
     private Handler queryProfileHandler, updateProfileHandler;
 
 
-    @Override
-    protected void setContent() {
-        super.setContent();
-        setContentView(R.layout.activity_profile_query);
+    public CharacterPageFragment() {
+        // Required empty public constructor
     }
 
-    @SuppressLint("WrongViewCast")
+    public static CharacterPageFragment newInstance() {
+        return new CharacterPageFragment();
+    }
+
     @Override
-    protected void initView(){
-        super.initView();
-        layoutMain = findViewById(R.id.layout_main);
-        layoutUid = findViewById(R.id.layout_uid);
-        buttonQueryProfile = findViewById(R.id.btn_query_profile);
-        editTextUid = findViewById(R.id.edtx_uid);
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+        // Inflate the layout for this fragment
+        return inflater.inflate(R.layout.fragment_character_page, container, false);
+    }
+
+
+
+    @Override
+    protected void initView(@NonNull View view){
+        super.initView(view);
+        layoutMain = view.findViewById(R.id.layout_main);
+        layoutUid = view.findViewById(R.id.layout_uid);
+        buttonQueryProfile = view.findViewById(R.id.btn_query_profile);
+        editTextUid = view.findViewById(R.id.edtx_uid);
         editTextUid.setText(sharedPreferences.getString("uid", ""));
-        layoutPaimon = findViewById(R.id.layout_paimon);
+        layoutPaimon = view.findViewById(R.id.layout_paimon);
         paimonWaiting = PaimonWaitingFragment.newInstance();
-        getSupportFragmentManager().beginTransaction().add(R.id.layout_paimon, paimonWaiting).commit();
-        layoutProfile = findViewById(R.id.layout_profile);
+        Objects.requireNonNull(getActivity()).getSupportFragmentManager().beginTransaction().add(R.id.layout_paimon, paimonWaiting).commit();
+        layoutProfile = view.findViewById(R.id.layout_profile);
     }
 
     @Override
-    protected void setCallback() {
+    protected void setCallback(@NonNull View view) {
+        editTextUid.setOnTouchListener(new BaseActivity.EditTextOnTouchListener((BaseActivity) getActivity()));
         buttonQueryProfile.setOnClickListener(new QueryOnClickListener());
         queryProfileHandler = new Handler(Looper.myLooper()){
             @Override
@@ -133,7 +150,7 @@ public class ProfileQueryActivity extends BaseActivity {
                 return;
             }
             lastClick = System.currentTimeMillis();
-            hideInputMethod();
+            ((BaseActivity) Objects.requireNonNull(getActivity())).hideInputMethod();
             if(!isValidUidInput()) {
                 toast.setText("uid格式错误");
                 toast.show();
@@ -144,31 +161,18 @@ public class ProfileQueryActivity extends BaseActivity {
             doAnimationQueryStart();
             flagQuerying = true;
             flagError = false;
-            new Thread(ProfileQueryActivity.this::queryProfile).start();
+            new Thread(CharacterPageFragment.this::queryProfile).start();
         }
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        refreshProfileView(null);
     }
 
     public void toUpdateProfile() {
         new Thread(this::updateProfile).start();
     }
 
-    public void showCharacterDetail(CharacterProfileVo characterProfileVo) {
-        Intent intent = new Intent(getApplicationContext(), CharacterDetailActivity.class);
-        Bundle bundle = new Bundle();
-        bundle.putSerializable("characterProfileVo", characterProfileVo);
-        intent.putExtras(bundle);
-        startActivity(intent);
-    }
-
     private void updateProfile() {
         try {
-            PlayerProfileVo playerProfileVo = ProfileRequestUtils.updateProfile(getApplicationContext(), editTextUid.getText().toString());
+            PlayerProfileVo playerProfileVo = ProfileRequestUtils.updateProfile(
+                    Objects.requireNonNull(getActivity()).getApplicationContext(), editTextUid.getText().toString());
             Message msg = new Message();
             msg.what = 0;
             msg.obj = playerProfileVo;
@@ -184,7 +188,8 @@ public class ProfileQueryActivity extends BaseActivity {
     private void queryProfile() {
         try {
             Thread.sleep(500);
-            PlayerProfileVo playerProfileVo = ProfileRequestUtils.queryProfile(getApplicationContext(), editTextUid.getText().toString());
+            PlayerProfileVo playerProfileVo = ProfileRequestUtils.queryProfile(
+                    Objects.requireNonNull(getActivity()).getApplicationContext(), editTextUid.getText().toString());
             Message msg = new Message();
             msg.what = 0;
             msg.obj = playerProfileVo;
@@ -265,7 +270,7 @@ public class ProfileQueryActivity extends BaseActivity {
     private void refreshProfileView(PlayerProfileVo playerProfileVo) {
         if(playerProfileFragment == null) {
             playerProfileFragment = PlayerProfileFragment.newInstance(playerProfileVo);
-            getSupportFragmentManager().beginTransaction().add(R.id.layout_profile, playerProfileFragment).commit();
+            Objects.requireNonNull(getActivity()).getSupportFragmentManager().beginTransaction().add(R.id.layout_profile, playerProfileFragment).commit();
         } else {
             playerProfileFragment.toUpdateProfileView(playerProfileVo);
         }
@@ -275,4 +280,6 @@ public class ProfileQueryActivity extends BaseActivity {
         String uidInput = editTextUid.getText().toString();
         return uidInput.length() == 9 && Utils.isNumeric(uidInput);
     }
+
+
 }

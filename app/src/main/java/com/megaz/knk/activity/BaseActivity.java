@@ -1,39 +1,58 @@
 package com.megaz.knk.activity;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentPagerAdapter;
 
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Typeface;
 import android.os.Bundle;
+import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
+import android.widget.RelativeLayout;
+import android.widget.SeekBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
-import java.util.ArrayList;
+import com.megaz.knk.utils.ViewUtils;
+
 import java.util.List;
 
 public class BaseActivity extends AppCompatActivity {
     protected Toast toast;
     private InputMethodManager inputMethodManager;
+    protected DisplayMetrics displayMetrics;
     protected SharedPreferences sharedPreferences;
     protected SharedPreferences.Editor editor;
-    protected Typeface typefaceCn, typefaceNum;
+    protected Typeface typefaceNZBZ, typefaceFZFYKS, typefaceNum;
     private EditText focusedEditText;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setContent();
         toast = Toast.makeText(getApplicationContext(), "", Toast.LENGTH_SHORT);
+        displayMetrics = new DisplayMetrics();
+        getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
         sharedPreferences = getSharedPreferences("KNK", MODE_PRIVATE);
         editor = sharedPreferences.edit();
-        typefaceCn = Typeface.createFromAsset(getAssets(), "fonts/nzbz.ttf");
+        typefaceNZBZ = Typeface.createFromAsset(getAssets(), "fonts/nzbz.ttf");
+        typefaceFZFYKS = Typeface.createFromAsset(getAssets(), "fonts/fzfyks.ttf");
         typefaceNum = Typeface.createFromAsset(getAssets(), "fonts/tttgbnumber.ttf");
         inputMethodManager = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
         initView();
         setCallback();
+    }
+
+    protected void setContent() {
+
     }
 
     protected void initView() {
@@ -44,37 +63,64 @@ public class BaseActivity extends AppCompatActivity {
 
     }
 
-    protected void setFocusedEditText(EditText editText) {
+    private void setFocusedEditText(EditText editText) {
         this.focusedEditText = editText;
     }
 
-    protected void hideInputMethod() {
+    public void hideInputMethod() {
         inputMethodManager.hideSoftInputFromWindow(getWindow().getDecorView().getWindowToken(), 0);
     }
 
     @Override
     public boolean dispatchTouchEvent(MotionEvent ev) {
         if (ev.getAction() == MotionEvent.ACTION_DOWN){
-            if(isTouchView(focusedEditText, ev)){
+            if(ViewUtils.isTouchView(focusedEditText, ev)){
                 focusedEditText.requestFocus();
+                focusedEditText.setCursorVisible(true);
                 return super.dispatchTouchEvent(ev);
+            }
+            if(focusedEditText != null) {
+                ((EditText)focusedEditText).setCursorVisible(false);
             }
             inputMethodManager.hideSoftInputFromWindow(getWindow().getDecorView().getWindowToken(), 0);
         }
         return super.dispatchTouchEvent(ev);
     }
 
-    public static boolean isTouchView(View view, MotionEvent event){
-        if (view == null || event == null){
+    public static class EditTextOnTouchListener implements View.OnTouchListener {
+
+        private BaseActivity activity;
+
+        public EditTextOnTouchListener(BaseActivity activity) {
+            this.activity = activity;
+        }
+
+        @Override
+        public boolean onTouch(View v, MotionEvent event) {
+            activity.setFocusedEditText((EditText) v);
             return false;
         }
-        int[] leftTop = {0, 0};
-        view.getLocationInWindow(leftTop);
-        int left = leftTop[0];
-        int top = leftTop[1];
-        int bottom = top + view.getHeight();
-        int right = left + view.getWidth();
-        return event.getRawX() > left && event.getRawX() < right
-                && event.getRawY() > top && event.getRawY() < bottom;
     }
+
+    protected class KnkFragmentPagerAdapter extends FragmentPagerAdapter {
+        private final List<Fragment> fragmentList;
+
+        public KnkFragmentPagerAdapter(@NonNull FragmentManager fm, List<Fragment> fragmentList) {
+            super(fm, FragmentPagerAdapter.BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT);
+            this.fragmentList = fragmentList;
+        }
+
+        @NonNull
+        @Override
+        public Fragment getItem(int position) {
+            return this.fragmentList.get(position);
+        }
+
+        @Override
+        public int getCount() {
+            return this.fragmentList==null?0:this.fragmentList.size();
+        }
+    }
+
+
 }

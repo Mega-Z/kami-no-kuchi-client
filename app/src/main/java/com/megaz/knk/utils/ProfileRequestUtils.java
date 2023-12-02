@@ -1,4 +1,4 @@
-package com.megaz.knk.manager;
+package com.megaz.knk.utils;
 
 import android.content.Context;
 import android.util.Log;
@@ -9,7 +9,7 @@ import com.megaz.knk.client.ResponseEntity;
 import com.megaz.knk.exception.RequestErrorException;
 import com.megaz.knk.vo.PlayerProfileVo;
 
-public class ProfileRequestManager {
+public class ProfileRequestUtils {
 
     public static PlayerProfileVo queryProfile(Context context, String uid) {
         Log.i("【查询面板】","开始获取uid:"+uid+"的面板数据");

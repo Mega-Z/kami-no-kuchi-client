@@ -3,6 +3,7 @@ package com.megaz.knk.fragment;
 import android.animation.ObjectAnimator;
 import android.animation.ValueAnimator;
 import android.annotation.SuppressLint;
+import android.content.Intent;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -20,8 +21,10 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.megaz.knk.R;
+import com.megaz.knk.activity.CharacterDetailActivity;
+import com.megaz.knk.activity.HomeActivity;
 import com.megaz.knk.activity.ProfileQueryActivity;
-import com.megaz.knk.manager.ImageResourceManager;
+import com.megaz.knk.utils.ImageResourceUtils;
 import com.megaz.knk.vo.CharacterProfileVo;
 import com.megaz.knk.vo.PlayerProfileVo;
 
@@ -40,6 +43,7 @@ public class PlayerProfileFragment extends Fragment {
 
     private PlayerProfileVo playerProfileVo;
     private Map<Integer, CharacterProfileVo> viewIdCharacterProfileVoMap;
+    private Map<Integer, CharacterProfileFragment> viewIdCharacterProfileFragmentMap;
 
     private boolean flagUpdating;
 
@@ -64,7 +68,6 @@ public class PlayerProfileFragment extends Fragment {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
             playerProfileVo = (PlayerProfileVo) getArguments().getSerializable(ARG_PLAYER_PROFILE_VO);
-            viewIdCharacterProfileVoMap = new HashMap<>();
         }
     }
 
@@ -104,7 +107,7 @@ public class PlayerProfileFragment extends Fragment {
             lastClick = System.currentTimeMillis();
             flagUpdating = true;
             doAnimationStartUpdating();
-            ((ProfileQueryActivity) Objects.requireNonNull(getActivity())).toUpdateProfile();
+            ((HomeActivity) Objects.requireNonNull(getActivity())).toUpdateProfile();
         }
     }
 
@@ -127,10 +130,12 @@ public class PlayerProfileFragment extends Fragment {
         textPlayerName.setText(playerProfileVo.getNickname());
         textSignature.setText(playerProfileVo.getSign());
         if(playerProfileVo.getAvatarIcon() != null) {
-            imagePlayerAvatar.setImageBitmap(ImageResourceManager.getIconBitmap(Objects.requireNonNull(getContext()), playerProfileVo.getAvatarIcon()));
+            imagePlayerAvatar.setImageBitmap(ImageResourceUtils.getIconBitmap(Objects.requireNonNull(getContext()), playerProfileVo.getAvatarIcon()));
         }
         // update character list
         layoutCharacterList.removeAllViews();
+        viewIdCharacterProfileVoMap = new HashMap<>();
+        viewIdCharacterProfileFragmentMap = new HashMap<>();
         int idx = 0;
         for(;idx<playerProfileVo.getCharacters().size();idx++){
             CharacterProfileVo characterProfileVo = playerProfileVo.getCharacters().get(idx);
@@ -142,6 +147,7 @@ public class PlayerProfileFragment extends Fragment {
             linearLayout.setId(newViewId);
             viewIdCharacterProfileVoMap.put(newViewId, characterProfileVo);
             CharacterProfileFragment characterProfileFragment = CharacterProfileFragment.newInstance(characterProfileVo);
+            viewIdCharacterProfileFragmentMap.put(newViewId, characterProfileFragment);
             Objects.requireNonNull(getActivity()).getSupportFragmentManager().beginTransaction()
                     .add(newViewId, characterProfileFragment).commitAllowingStateLoss();
             //使用Spec定义子控件的位置和比重
@@ -178,8 +184,19 @@ public class PlayerProfileFragment extends Fragment {
             CharacterProfileVo characterProfileVo = viewIdCharacterProfileVoMap.get(v.getId());
             assert characterProfileVo != null;
             characterProfileVo.setNewData(false);
-            ((ProfileQueryActivity) Objects.requireNonNull(getActivity())).showCharacterDetail(characterProfileVo);
+            Objects.requireNonNull(viewIdCharacterProfileFragmentMap.get(v.getId())).clearNew();
+            showCharacterDetail(characterProfileVo);
         }
+    }
+
+
+
+    private void showCharacterDetail(CharacterProfileVo characterProfileVo) {
+        Intent intent = new Intent(Objects.requireNonNull(getActivity()).getApplicationContext(), CharacterDetailActivity.class);
+        Bundle bundle = new Bundle();
+        bundle.putSerializable("characterProfileVo", characterProfileVo);
+        intent.putExtras(bundle);
+        startActivity(intent);
     }
 
     private static class CharacterProfileOnTouchListener implements View.OnTouchListener {

@@ -11,7 +11,7 @@ public enum ElementEnum {
     HYDRO("hydro", "水"),
     PYRO("pyro", "火"),
     CRYO("cryo", "冰"),
-    NULL("null", "无"),
+    NULL("phy", "物理"),
     ;
 
     private final String val;

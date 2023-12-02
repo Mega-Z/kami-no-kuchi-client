@@ -15,7 +15,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.megaz.knk.R;
-import com.megaz.knk.manager.ImageResourceManager;
+import com.megaz.knk.utils.ImageResourceUtils;
 import com.megaz.knk.vo.TalentVo;
 
 import java.util.Objects;
@@ -25,7 +25,7 @@ import java.util.Objects;
  * Use the {@link TalentFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class TalentFragment extends Fragment {
+public class TalentFragment extends BaseFragment {
 
     private TalentVo talentVo;
 
@@ -62,13 +62,14 @@ public class TalentFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         ImageView imageTalentIcon = view.findViewById(R.id.img_talent_icon);
-        imageTalentIcon.setImageBitmap(ImageResourceManager.getIconBitmap(Objects.requireNonNull(getContext()), talentVo.getIcon()));
+        imageTalentIcon.setImageBitmap(ImageResourceUtils.getIconBitmap(Objects.requireNonNull(getContext()), talentVo.getIcon()));
         ImageView imageTalentFrame = view.findViewById(R.id.img_talent_frame);
-        Bitmap bitmapFrame = ImageResourceManager.getFrameByElement(Objects.requireNonNull(getContext()), talentVo.getElement());
+        Bitmap bitmapFrame = ImageResourceUtils.getFrameByElement(Objects.requireNonNull(getContext()), talentVo.getElement());
         imageTalentFrame.setImageBitmap(bitmapFrame);
         TextView textTalentLevel = view.findViewById(R.id.text_talent_level);
         int level = talentVo.getBaseLevel() + talentVo.getPlusLevel();
         textTalentLevel.setText(getString(R.string.text_level_prefix)+level);
+        textTalentLevel.setTypeface(typefaceNum);
         if(talentVo.getPlusLevel() != 0) {
             textTalentLevel.setTextColor(getResources().getColor(R.color.talent_blue, getContext().getTheme()));
         }

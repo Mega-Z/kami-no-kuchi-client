@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".fragment.ElementProgressbarFragment">
+
+
+    <ImageView
+        android:layout_width="@dimen/dp_180"
+        android:layout_height="@dimen/dp_30"
+        android:layout_gravity="center"
+        android:src="@drawable/element_progressbar_empty"/>
+
+    <LinearLayout
+        android:id="@+id/layout_progressbar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:orientation="vertical">
+        <ImageView
+            android:id="@+id/img_progressbar"
+            android:layout_width="@dimen/dp_180"
+            android:layout_height="@dimen/dp_30"
+            android:src="@drawable/element_progressbar_filled">
+
+        </ImageView>
+    </LinearLayout>
+
+</FrameLayout>

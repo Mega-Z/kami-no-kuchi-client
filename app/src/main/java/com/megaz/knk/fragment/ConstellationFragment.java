@@ -13,7 +13,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 
 import com.megaz.knk.R;
-import com.megaz.knk.manager.ImageResourceManager;
+import com.megaz.knk.utils.ImageResourceUtils;
 import com.megaz.knk.vo.ConstellationVo;
 
 import java.util.Objects;
@@ -58,9 +58,9 @@ public class ConstellationFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         ImageView imageConsIcon = view.findViewById(R.id.img_cons_icon);
-        imageConsIcon.setImageBitmap(ImageResourceManager.getIconBitmap(Objects.requireNonNull(getContext()), constellationVo.getIcon()));
+        imageConsIcon.setImageBitmap(ImageResourceUtils.getIconBitmap(Objects.requireNonNull(getContext()), constellationVo.getIcon()));
         ImageView imageConsFrame = view.findViewById(R.id.img_cons_frame);
-        Bitmap bitmapFrame = ImageResourceManager.getFrameByElement(Objects.requireNonNull(getContext()), constellationVo.getElement());
+        Bitmap bitmapFrame = ImageResourceUtils.getFrameByElement(Objects.requireNonNull(getContext()), constellationVo.getElement());
         imageConsFrame.setImageBitmap(bitmapFrame);
         if(constellationVo.getActive()) {
             imageConsIcon.setAlpha(1f);

@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:gravity="center"
+    tools:context=".fragment.CharacterWishParamFragment">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="@dimen/dp_20"
+        android:textColor="@color/gray_black"
+        android:textSize="@dimen/sp_16"
+        android:text="@string/text_target_up_num"
+        android:layout_gravity="center_vertical|left"/>
+
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="@dimen/dp_30"
+        android:paddingVertical="@dimen/dp_5">
+
+        <TextView
+            android:id="@+id/text_seekbar_target"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/dp_3"
+            android:singleLine="true"
+            android:text="0"
+            android:textColor="@color/gray_black"
+            android:textSize="@dimen/sp_12" />
+
+        <SeekBar
+            android:id="@+id/seekbar_target"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/text_seekbar_target"
+            android:max="7"
+            android:maxHeight="@dimen/dp_4"
+            android:paddingStart="@dimen/dp_7"
+            android:paddingEnd="@dimen/dp_7"
+            android:progress="0"
+            android:progressDrawable="@drawable/bar"
+            android:thumb="@drawable/thumb" />
+    </RelativeLayout>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="@dimen/dp_20"
+        android:textColor="@color/gray_black"
+        android:textSize="@dimen/sp_16"
+        android:text="@string/text_consumed"
+        android:layout_gravity="center_vertical|left"/>
+
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="@dimen/dp_30"
+        android:paddingVertical="@dimen/dp_5">
+
+        <TextView
+            android:id="@+id/text_seekbar_consumed"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/dp_3"
+            android:singleLine="true"
+            android:text="0"
+            android:textColor="@color/gray_black"
+            android:textSize="@dimen/sp_12" />
+
+        <SeekBar
+            android:id="@+id/seekbar_consumed"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/text_seekbar_consumed"
+            android:max="89"
+            android:maxHeight="@dimen/dp_4"
+            android:paddingStart="@dimen/dp_7"
+            android:paddingEnd="@dimen/dp_7"
+            android:progress="0"
+            android:progressDrawable="@drawable/bar"
+            android:thumb="@drawable/thumb" />
+    </RelativeLayout>
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingHorizontal="@dimen/dp_20"
+        android:paddingVertical="@dimen/dp_5">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/gray_black"
+            android:textSize="@dimen/sp_16"
+            android:text="@string/text_big_guarantee"
+            android:layout_gravity="center_vertical|left"/>
+        <TextView
+            android:id="@+id/text_big_guarantee"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/gray_black"
+            android:textSize="@dimen/sp_16"
+            android:text="@string/text_nope"
+            android:layout_marginRight="@dimen/dp_65"
+            android:layout_gravity="center_vertical|right"/>
+        <com.megaz.knk.view.CheckBoxView
+            android:id="@+id/checkbox_big_guarantee"
+            android:layout_width="@dimen/dp_60"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical|right"/>
+    </FrameLayout>
+
+</LinearLayout>
