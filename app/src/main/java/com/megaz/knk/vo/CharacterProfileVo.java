@@ -42,7 +42,8 @@ public class CharacterProfileVo implements Serializable {
     private Double dmgGeo;
     private Double dmgCryo;
     private Double dmgPhy;
-    private Double heal;
+    private Map<ElementEnum, Double> dmgUp;
+    private Double healUp;
     // talents
     private String talentAIcon;
     private String talentEIcon;

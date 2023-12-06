@@ -13,6 +13,7 @@ public class ArtifactProfileVo implements Serializable {
     private String artifactName;
     private String icon;
     private Integer level;
+    private Integer star;
     private AttributeEnum mainAttribute;
     private Double mainAttributeVal;
     private List<AttributeEnum> subAttributes;

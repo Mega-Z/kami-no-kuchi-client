@@ -5,6 +5,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentPagerAdapter;
+import androidx.room.Room;
+import androidx.room.RoomDatabase;
 
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -21,12 +23,14 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.megaz.knk.KnkDatabase;
 import com.megaz.knk.utils.ViewUtils;
 
 import java.util.List;
 
 public class BaseActivity extends AppCompatActivity {
     protected Toast toast;
+    protected KnkDatabase knkDatabase;
     private InputMethodManager inputMethodManager;
     protected DisplayMetrics displayMetrics;
     protected SharedPreferences sharedPreferences;
@@ -39,6 +43,7 @@ public class BaseActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContent();
         toast = Toast.makeText(getApplicationContext(), "", Toast.LENGTH_SHORT);
+        knkDatabase = KnkDatabase.getKnkDatabase(getApplicationContext());
         displayMetrics = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
         sharedPreferences = getSharedPreferences("KNK", MODE_PRIVATE);

@@ -23,7 +23,6 @@ public class HomeActivity extends BaseActivity {
     private boolean flagQuitWaiting;
 
     private ViewPager viewPager;
-    private BottomNavigationView navigationView;
     private ImageView imagePageCharacter, imagePageWish, imagePageConfig;
 
     private CharacterPageFragment characterPageFragment;

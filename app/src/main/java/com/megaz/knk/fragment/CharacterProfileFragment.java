@@ -1,8 +1,10 @@
 package com.megaz.knk.fragment;
 
 import android.annotation.SuppressLint;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -13,6 +15,9 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import com.megaz.knk.R;
+import com.megaz.knk.activity.CharacterDetailActivity;
+import com.megaz.knk.dto.CharacterProfileDto;
+import com.megaz.knk.entity.CharacterDex;
 import com.megaz.knk.utils.ImageResourceUtils;
 import com.megaz.knk.vo.CharacterProfileVo;
 
@@ -20,6 +25,7 @@ import java.util.Objects;
 
 public class CharacterProfileFragment extends Fragment {
 
+    private CharacterProfileDto characterProfileDto;
     private CharacterProfileVo characterProfileVo;
 
     private TextView textCharacterName, textCharacterLevel, textCharacterCons;
@@ -29,9 +35,10 @@ public class CharacterProfileFragment extends Fragment {
         // Required empty public constructor
     }
 
-    public static CharacterProfileFragment newInstance(CharacterProfileVo characterProfileVo) {
+    public static CharacterProfileFragment newInstance(CharacterProfileDto characterProfileDto, CharacterProfileVo characterProfileVo) {
         CharacterProfileFragment fragment = new CharacterProfileFragment();
         Bundle args = new Bundle();
+        args.putSerializable("characterProfileDto", characterProfileDto);
         args.putSerializable("characterProfileVo", characterProfileVo);
         fragment.setArguments(args);
         return fragment;
@@ -42,6 +49,7 @@ public class CharacterProfileFragment extends Fragment {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
             characterProfileVo = (CharacterProfileVo) getArguments().getSerializable("characterProfileVo");
+            characterProfileDto = (CharacterProfileDto) getArguments().getSerializable("characterProfileDto");
         }
     }
 
@@ -73,10 +81,41 @@ public class CharacterProfileFragment extends Fragment {
             imageIsNew.setVisibility(View.INVISIBLE);
         }
         imageCharacterCard.setImageBitmap(ImageResourceUtils.getIconBitmap(Objects.requireNonNull(getContext()), characterProfileVo.getCardIcon()));
-
+        view.setOnTouchListener(new CharacterProfileOnTouchListener());
+        view.setOnClickListener(new CharacterProfileOnClickListener());
     }
 
-    public void clearNew() {
-        imageIsNew.setVisibility(View.INVISIBLE);
+    private class CharacterProfileOnClickListener implements View.OnClickListener {
+
+        @Override
+        public void onClick(View v) {
+            imageIsNew.setVisibility(View.INVISIBLE);
+            characterProfileVo.setNewData(false);
+            characterProfileDto.setNewData(false);
+            showCharacterDetail();
+        }
+    }
+
+    private class CharacterProfileOnTouchListener implements View.OnTouchListener {
+        @SuppressLint("ClickableViewAccessibility")
+        @Override
+        public boolean onTouch(View v, MotionEvent event) {
+            // v.performClick();
+            if(event.getAction()==MotionEvent.ACTION_DOWN || event.getAction()==MotionEvent.ACTION_MOVE){
+                v.setBackgroundResource(R.drawable.bg_char_profile_press);
+            }else{
+                v.setBackgroundResource(R.drawable.bg_char_profile);
+            }
+            return false;
+        }
+    }
+
+    private void showCharacterDetail() {
+        Intent intent = new Intent(Objects.requireNonNull(getActivity()).getApplicationContext(), CharacterDetailActivity.class);
+        Bundle bundle = new Bundle();
+        bundle.putSerializable("characterProfileVo", characterProfileVo);
+        bundle.putSerializable("characterProfileDto", characterProfileDto);
+        intent.putExtras(bundle);
+        startActivity(intent);
     }
 }

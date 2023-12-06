@@ -16,6 +16,7 @@ import com.megaz.knk.fragment.CharacterAttributeFragment;
 import com.megaz.knk.fragment.ConstellationFragment;
 import com.megaz.knk.fragment.TalentFragment;
 import com.megaz.knk.fragment.WeaponFragment;
+import com.megaz.knk.utils.DynamicStyleUtils;
 import com.megaz.knk.utils.ImageResourceUtils;
 import com.megaz.knk.vo.CharacterProfileVo;
 import com.megaz.knk.vo.ConstellationVo;
@@ -137,9 +138,11 @@ public class CharacterDetailActivity extends ElasticScrollActivity {
         TextView textName = findViewById(R.id.text_character_name);
         textName.setTypeface(typefaceNZBZ);
         textName.setText(characterProfileVo.getCharacterName()+" ");
+        textName.setTextColor(getColor(DynamicStyleUtils.getElementTextColor(characterProfileVo.getElement())));
         TextView textLevel = findViewById(R.id.text_character_level);
         textLevel.setTypeface(typefaceNum);
         textLevel.setText(getString(R.string.text_level_prefix) + characterProfileVo.getLevel());
+        textLevel.setBackgroundColor(getColor(DynamicStyleUtils.getElementTextColor(characterProfileVo.getElement())));
         // art
         imageCharacterArt = findViewById(R.id.img_character_art);
         Bitmap bitmapArt = ImageResourceUtils.getIconBitmap(getApplicationContext(), characterProfileVo.getArtIcon());
@@ -149,7 +152,8 @@ public class CharacterDetailActivity extends ElasticScrollActivity {
         imageCharacterArt.setTranslationX((ART_OFFSET_X));
         // bg
         ImageView imageBg = findViewById(R.id.img_element_bg);
-        imageBg.setImageBitmap(ImageResourceUtils.getBackgroundByElement(getApplicationContext(), characterProfileVo.getElement()));
+        imageBg.setBackgroundColor(getColor(DynamicStyleUtils.getElementBackgroundColor(characterProfileVo.getElement())));
+//        imageBg.setImageBitmap(ImageResourceUtils.getBackgroundByElement(getApplicationContext(), characterProfileVo.getElement()));
         // constellation
         for(int c=1;c<=6;c++) {
             ConstellationVo constellationVo = new ConstellationVo();

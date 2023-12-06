@@ -19,8 +19,9 @@ import android.widget.TextView;
 
 import com.megaz.knk.R;
 import com.megaz.knk.constant.ArtifactPositionEnum;
+import com.megaz.knk.constant.AttributeLabelEnum;
 import com.megaz.knk.constant.GenshinConstantMeta;
-import com.megaz.knk.utils.ArtifactUtils;
+import com.megaz.knk.utils.DynamicStyleUtils;
 import com.megaz.knk.utils.ImageResourceUtils;
 import com.megaz.knk.vo.ArtifactEvaluationVo;
 import com.megaz.knk.vo.CharacterProfileVo;
@@ -41,10 +42,8 @@ public class ArtifactEvaluationFragment extends BaseFragment {
     private ArtifactEvaluationVo currentEvaluation;
     private Map<Integer, ArtifactEvaluationVo> evaluationMap;
 
-    private TextView textArtifactsScore, textArtifactsRank, textCriterionName,
-            textWeightHp, textWeightAtk, textWeightDef,
-            textWeightMastery, textWeightRecharge, textWeightCritRate, textWeightCritDmg, 
-            textWeightPhy, textWeightDmg, textWeightHeal;
+    private TextView textArtifactsScore, textArtifactsRank, textCriterionName;
+    private Map<AttributeLabelEnum, TextView> textAttributeWeights;
     private LinearLayout layoutCriterionSelect, layoutArtifactOverview;
     private Map<ArtifactPositionEnum, ArtifactFragment> artifactFragmentMap;
     private int CRITERION_SELECTION_HEIGHT;
@@ -91,29 +90,22 @@ public class ArtifactEvaluationFragment extends BaseFragment {
         textArtifactsScore = view.findViewById(R.id.text_artifacts_score);
         textArtifactsRank = view.findViewById(R.id.text_artifacts_rank);
         textCriterionName = view.findViewById(R.id.text_criterion_name);
-        textWeightHp = view.findViewById(R.id.text_weight_hp);
-        textWeightAtk = view.findViewById(R.id.text_weight_atk);
-        textWeightDef = view.findViewById(R.id.text_weight_def);
-        textWeightMastery = view.findViewById(R.id.text_weight_mastery);
-        textWeightRecharge = view.findViewById(R.id.text_weight_recharge);
-        textWeightCritRate = view.findViewById(R.id.text_weight_crit_rate);
-        textWeightCritDmg = view.findViewById(R.id.text_weight_crit_dmg);
-        textWeightPhy = view.findViewById(R.id.text_weight_phy);
-        textWeightDmg = view.findViewById(R.id.text_weight_dmg);
-        textWeightHeal = view.findViewById(R.id.text_weight_heal);
-        
+        textAttributeWeights = new HashMap<>();
+        textAttributeWeights.put(AttributeLabelEnum.HP, view.findViewById(R.id.text_weight_hp));
+        textAttributeWeights.put(AttributeLabelEnum.ATK, view.findViewById(R.id.text_weight_atk));
+        textAttributeWeights.put(AttributeLabelEnum.DEF, view.findViewById(R.id.text_weight_def));
+        textAttributeWeights.put(AttributeLabelEnum.MASTERY, view.findViewById(R.id.text_weight_mastery));
+        textAttributeWeights.put(AttributeLabelEnum.RECHARGE, view.findViewById(R.id.text_weight_recharge));
+        textAttributeWeights.put(AttributeLabelEnum.CR, view.findViewById(R.id.text_weight_crit_rate));
+        textAttributeWeights.put(AttributeLabelEnum.CD, view.findViewById(R.id.text_weight_crit_dmg));
+        textAttributeWeights.put(AttributeLabelEnum.PHY, view.findViewById(R.id.text_weight_phy));
+        textAttributeWeights.put(AttributeLabelEnum.DMG, view.findViewById(R.id.text_weight_dmg));
+        textAttributeWeights.put(AttributeLabelEnum.HEAL, view.findViewById(R.id.text_weight_heal));
+        for(TextView textAttributeWeight: textAttributeWeights.values()) {
+            textAttributeWeight.setTypeface(typefaceNum);
+        }
         textArtifactsScore.setTypeface(typefaceNum);
         textArtifactsRank.setTypeface(typefaceNum);
-        textWeightHp.setTypeface(typefaceNum);
-        textWeightAtk.setTypeface(typefaceNum);
-        textWeightDef.setTypeface(typefaceNum);
-        textWeightMastery.setTypeface(typefaceNum);
-        textWeightRecharge.setTypeface(typefaceNum);
-        textWeightCritRate.setTypeface(typefaceNum);
-        textWeightCritDmg.setTypeface(typefaceNum);
-        textWeightPhy.setTypeface(typefaceNum);
-        textWeightDmg.setTypeface(typefaceNum);
-        textWeightHeal.setTypeface(typefaceNum);
 
         layoutCriterionSelect = view.findViewById(R.id.layout_criterion_select);
         layoutArtifactOverview = view.findViewById(R.id.layout_artifact_overview);
@@ -259,55 +251,20 @@ public class ArtifactEvaluationFragment extends BaseFragment {
             currentEvaluation = newArtifactEvaluationVo;
         }
         Double score = currentEvaluation.getTotalScore();
-        String rank = ArtifactUtils.getRank(score/5);
+        String rank = DynamicStyleUtils.getRank(score/5);
         textArtifactsScore.setText(String.format("%.1f", score));
         textArtifactsRank.setText(rank);
         textArtifactsRank.setTextColor(
-                getResources().getColor(ArtifactUtils.getRankColor(rank), Objects.requireNonNull(getContext()).getTheme()));
+                getResources().getColor(DynamicStyleUtils.getRankColor(rank), Objects.requireNonNull(getContext()).getTheme()));
         textCriterionName.setText(
                 getString(R.string.text_criterion_name_prefix) + currentEvaluation.getCriterionName());
-
-        textWeightHp.setText(
-                String.format("%d", currentEvaluation.getHpWeight()));
-        textWeightHp.setTextColor(
-                getResources().getColor(ArtifactUtils.getWeightColor(currentEvaluation.getHpWeight()), getContext().getTheme()));
-        textWeightAtk.setText(
-                String.format("%d", currentEvaluation.getAtkWeight()));
-        textWeightAtk.setTextColor(
-                getResources().getColor(ArtifactUtils.getWeightColor(currentEvaluation.getAtkWeight()), getContext().getTheme()));
-        textWeightDef.setText(
-                String.format("%d", currentEvaluation.getDefWeight()));
-        textWeightDef.setTextColor(
-                getResources().getColor(ArtifactUtils.getWeightColor(currentEvaluation.getDefWeight()), getContext().getTheme()));
-        textWeightMastery.setText(
-                String.format("%d", currentEvaluation.getMasteryWeight()));
-        textWeightMastery.setTextColor(
-                getResources().getColor(ArtifactUtils.getWeightColor(currentEvaluation.getMasteryWeight()), getContext().getTheme()));
-        textWeightRecharge.setText(
-                String.format("%d", currentEvaluation.getRechargeWeight()));
-        textWeightRecharge.setTextColor(
-                getResources().getColor(ArtifactUtils.getWeightColor(currentEvaluation.getRechargeWeight()), getContext().getTheme()));
-        textWeightCritRate.setText(
-                String.format("%d", currentEvaluation.getCrWeight()));
-        textWeightCritRate.setTextColor(
-                getResources().getColor(ArtifactUtils.getWeightColor(currentEvaluation.getCrWeight()), getContext().getTheme()));
-        textWeightCritDmg.setText(
-                String.format("%d", currentEvaluation.getCdWeight()));
-        textWeightCritDmg.setTextColor(
-                getResources().getColor(ArtifactUtils.getWeightColor(currentEvaluation.getCdWeight()), getContext().getTheme()));
-        textWeightPhy.setText(
-                String.format("%d", currentEvaluation.getPhyWeight()));
-        textWeightPhy.setTextColor(
-                getResources().getColor(ArtifactUtils.getWeightColor(currentEvaluation.getPhyWeight()), getContext().getTheme()));
-        textWeightDmg.setText(
-                String.format("%d", currentEvaluation.getDmgWeight()));
-        textWeightDmg.setTextColor(
-                getResources().getColor(ArtifactUtils.getWeightColor(currentEvaluation.getDmgWeight()), getContext().getTheme()));
-        textWeightHeal.setText(
-                String.format("%d", currentEvaluation.getHealWeight()));
-        textWeightHeal.setTextColor(
-                getResources().getColor(ArtifactUtils.getWeightColor(currentEvaluation.getHealWeight()), getContext().getTheme()));
-
+        for(Map.Entry<AttributeLabelEnum, TextView> entry:textAttributeWeights.entrySet()) {
+            Integer weight = currentEvaluation.getAttributeWeight().get(entry.getKey());
+            assert weight != null;
+            entry.getValue().setText(String.format("%d", weight));
+            entry.getValue().setTextColor(
+                    getResources().getColor(DynamicStyleUtils.getWeightColor(weight), getContext().getTheme()));
+        }
         if(newArtifactEvaluationVo != null) { // update artifact fragments
             for(ArtifactPositionEnum position : GenshinConstantMeta.ARTIFACT_POSITION_LIST) {
                 ArtifactFragment artifactFragment = artifactFragmentMap.get(position);

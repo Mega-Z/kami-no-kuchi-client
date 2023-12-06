@@ -14,8 +14,9 @@
             android:id="@+id/img_element_bg"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:scaleType="centerCrop"
-            android:src="@drawable/bg_anemo" />
+            android:background="@color/element_bg_anemo"/>
+<!--            android:scaleType="centerCrop"-->
+<!--            android:src="@drawable/bg_anemo" />-->
 
         <ScrollView
             android:id="@+id/view_character_detail"
@@ -45,30 +46,41 @@
                             android:scaleType="center"
                             android:src="@drawable/art"/>
                         <!-- name&lv -->
-                        <LinearLayout
+                        <FrameLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:gravity="right|top"
                             android:orientation="vertical">
+                            <View
+                                android:layout_width="match_parent"
+                                android:layout_height="@dimen/dp_32"
+                                android:layout_marginTop="@dimen/dp_18"
+                                android:background="@color/text_bg_white"/>
                             <TextView
                                 android:id="@+id/text_character_name"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:layout_marginTop="@dimen/dp_10"
+                                android:layout_gravity="right"
+                                android:layout_marginBottom="@dimen/dp_5"
+                                android:gravity="right"
                                 android:textSize="@dimen/sp_40"
-                                android:textColor="@color/white"
+                                android:textColor="@color/element_text_anemo"
                                 android:textStyle="bold"
                                 android:text="@string/text_default_character_name"/>
                             <TextView
                                 android:id="@+id/text_character_level"
                                 android:layout_gravity="right"
-                                android:layout_marginEnd="@dimen/dp_20"
+                                android:layout_marginTop="@dimen/dp_58"
+                                android:layout_marginEnd="@dimen/dp_0"
+                                android:paddingStart="@dimen/dp_5"
+                                android:paddingEnd="@dimen/dp_20"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:textSize="@dimen/sp_12"
                                 android:textColor="@color/white"
+                                android:background="@color/element_text_anemo"
                                 android:text="@string/text_default_character_level"/>
-                        </LinearLayout>
+                        </FrameLayout>
                         <!-- constellations -->
                         <LinearLayout
                             android:id="@+id/layout_constellation"
@@ -127,6 +139,12 @@
 
                     <LinearLayout
                         android:id="@+id/layout_artifact_evaluation"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/dp_5"
+                        android:orientation="vertical"/>
+                    <LinearLayout
+                        android:id="@+id/layout_effect_computation"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="@dimen/dp_5"

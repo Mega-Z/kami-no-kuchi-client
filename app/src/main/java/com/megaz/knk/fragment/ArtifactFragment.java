@@ -16,7 +16,7 @@ import android.widget.TextView;
 import com.megaz.knk.R;
 import com.megaz.knk.constant.ArtifactPositionEnum;
 import com.megaz.knk.constant.AttributeEnum;
-import com.megaz.knk.utils.ArtifactUtils;
+import com.megaz.knk.utils.DynamicStyleUtils;
 import com.megaz.knk.utils.ImageResourceUtils;
 import com.megaz.knk.vo.ArtifactEvaluationVo;
 import com.megaz.knk.vo.ArtifactProfileVo;
@@ -128,13 +128,13 @@ public class ArtifactFragment extends BaseFragment {
         textArtifactLevel.setText(getString(R.string.text_artifact_level_prefix)+artifactProfileVo.getLevel());
         textArtifactScore.setVisibility(View.VISIBLE);
         Double score = artifactEvaluationVo.getArtifactsScore().get(position);
-        String rank = ArtifactUtils.getRank(Objects.requireNonNull(score));
+        String rank = DynamicStyleUtils.getRank(Objects.requireNonNull(score));
         textArtifactScore.setText(String.format("%.1f-%s", score, rank));
-        textArtifactScore.setTextColor(getResources().getColor(ArtifactUtils.getRankColor(rank), getContext().getTheme()));
+        textArtifactScore.setTextColor(getResources().getColor(DynamicStyleUtils.getRankColor(rank), getContext().getTheme()));
 
         AttributeEnum mainAttribute = artifactProfileVo.getMainAttribute();
         int mainAttributeColor = getResources().getColor(
-                ArtifactUtils.getAttributeColor(mainAttribute, artifactEvaluationVo), getContext().getTheme());
+                DynamicStyleUtils.getAttributeColor(mainAttribute, artifactEvaluationVo), getContext().getTheme());
         textMainAttribute.setText(mainAttribute.getDesc());
         textMainAttribute.setTextColor(mainAttributeColor);
         String mainAttributeValueString = mainAttribute.isPercent() ?
@@ -151,10 +151,10 @@ public class ArtifactFragment extends BaseFragment {
             if(i<subAttributes.size()) {
                 AttributeEnum subAttribute = subAttributes.get(i);
                 int subAttributeColor =getResources().getColor(
-                        ArtifactUtils.getAttributeColor(subAttribute, artifactEvaluationVo), getContext().getTheme());
+                        DynamicStyleUtils.getAttributeColor(subAttribute, artifactEvaluationVo), getContext().getTheme());
 
                 String subAttributeString = subAttribute.getDesc();
-                textSubAttributes.get(i).setText(subAttributeString+ArtifactUtils.getCircledNum(subAttributesCnt.get(i)));
+                textSubAttributes.get(i).setText(subAttributeString+ DynamicStyleUtils.getCircledNum(subAttributesCnt.get(i)));
                 textSubAttributes.get(i).setTextColor(subAttributeColor);
                 String subAttributeValueString = subAttribute.isPercent() ?
                         String.format("+%.1f", subAttributesVal.get(i))+"%" :

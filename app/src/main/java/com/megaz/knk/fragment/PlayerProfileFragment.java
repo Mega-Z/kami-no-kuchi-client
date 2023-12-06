@@ -7,9 +7,11 @@ import android.content.Intent;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
+import android.os.Handler;
+import android.os.Looper;
+import android.os.Message;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -23,11 +25,14 @@ import android.widget.TextView;
 import com.megaz.knk.R;
 import com.megaz.knk.activity.CharacterDetailActivity;
 import com.megaz.knk.activity.HomeActivity;
-import com.megaz.knk.activity.ProfileQueryActivity;
+import com.megaz.knk.dto.CharacterProfileDto;
+import com.megaz.knk.dto.PlayerProfileDto;
+import com.megaz.knk.manager.ProfileQueryManager;
 import com.megaz.knk.utils.ImageResourceUtils;
 import com.megaz.knk.vo.CharacterProfileVo;
 import com.megaz.knk.vo.PlayerProfileVo;
 
+import java.security.MessageDigest;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -37,13 +42,10 @@ import java.util.Objects;
  * Use the {@link PlayerProfileFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class PlayerProfileFragment extends Fragment {
-
-    private static final String ARG_PLAYER_PROFILE_VO = "playerProfileVo";
+public class PlayerProfileFragment extends BaseFragment {
 
     private PlayerProfileVo playerProfileVo;
-    private Map<Integer, CharacterProfileVo> viewIdCharacterProfileVoMap;
-    private Map<Integer, CharacterProfileFragment> viewIdCharacterProfileFragmentMap;
+    private PlayerProfileDto playerProfileDto;
 
     private boolean flagUpdating;
 
@@ -52,13 +54,16 @@ public class PlayerProfileFragment extends Fragment {
     private ImageView buttonUpdateProfile, imagePlayerAvatar;
     private GridLayout layoutCharacterList;
 
+    private Handler profileConvertHandler;
+    private ProfileQueryManager profileQueryManager;
+
     public PlayerProfileFragment() {
     }
 
-    public static PlayerProfileFragment newInstance(PlayerProfileVo playerProfileVo) {
+    public static PlayerProfileFragment newInstance(PlayerProfileDto playerProfileDto) {
         PlayerProfileFragment fragment = new PlayerProfileFragment();
         Bundle args = new Bundle();
-        args.putSerializable(ARG_PLAYER_PROFILE_VO, playerProfileVo);
+        args.putSerializable("playerProfileDto", playerProfileDto);
         fragment.setArguments(args);
         return fragment;
     }
@@ -67,7 +72,7 @@ public class PlayerProfileFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
-            playerProfileVo = (PlayerProfileVo) getArguments().getSerializable(ARG_PLAYER_PROFILE_VO);
+            playerProfileDto = (PlayerProfileDto) getArguments().getSerializable("playerProfileDto");
         }
     }
 
@@ -76,11 +81,12 @@ public class PlayerProfileFragment extends Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_player_profile, container, false);
+
     }
 
     @Override
-    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
+    protected void initView(@NonNull View view) {
+        super.initView(view);
         textPlayerName = view.findViewById(R.id.text_player_name);
         textUid = view.findViewById(R.id.text_uid);
         textSignature = view.findViewById(R.id.text_sign);
@@ -91,7 +97,47 @@ public class PlayerProfileFragment extends Fragment {
         animatorUpdate = ObjectAnimator.ofFloat(buttonUpdateProfile, "rotation", 360f);
         animatorUpdate.setDuration(1000);
         animatorUpdate.setRepeatCount(ValueAnimator.INFINITE);
-        updateProfileView();
+        profileQueryManager = new ProfileQueryManager(getContext());
+        new Thread(this::convertProfile).start();
+    }
+
+    @Override
+    protected void setCallback(@NonNull View view) {
+        super.setCallback(view);
+        profileConvertHandler = new Handler(Looper.myLooper()) {
+            @Override
+            public void handleMessage(@NonNull Message msg) {
+                handleProfileConvert(msg);
+            }
+        };
+    }
+
+    private void convertProfile() {
+        try{
+            PlayerProfileVo playerProfileVo = profileQueryManager.convertPlayerProfileToVo(playerProfileDto);
+            Message msg = new Message();
+            msg.what = 0;
+            msg.obj = playerProfileVo;
+            profileConvertHandler.sendMessage(msg);
+        } catch (RuntimeException e) {
+            Message msg = new Message();
+            msg.what = 1;
+            msg.obj = e.getMessage();
+            profileConvertHandler.sendMessage(msg);
+        }
+    }
+
+    private void handleProfileConvert(Message msg) {
+        switch (msg.what) {
+            case 0:
+                playerProfileVo = (PlayerProfileVo) msg.obj;
+                updateProfileView();
+                break;
+            case 1:
+                toast.setText((String) msg.obj);
+                toast.show();
+                break;
+        }
     }
 
     private class UpdateOnClickListener implements View.OnClickListener {
@@ -111,14 +157,13 @@ public class PlayerProfileFragment extends Fragment {
         }
     }
 
-    public void toUpdateProfileView(PlayerProfileVo playerProfileVo) {
+    public void toUpdateProfileView(PlayerProfileDto playerProfileDto) {
         flagUpdating = false;
         doAnimationEndUpdating();
-        if(playerProfileVo != null) {
-            this.playerProfileVo = playerProfileVo;
+        if(playerProfileDto != null) {
+            this.playerProfileDto = playerProfileDto;
         }
-        viewIdCharacterProfileVoMap = new HashMap<>();
-        updateProfileView();
+        new Thread(this::convertProfile).start();
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -134,20 +179,15 @@ public class PlayerProfileFragment extends Fragment {
         }
         // update character list
         layoutCharacterList.removeAllViews();
-        viewIdCharacterProfileVoMap = new HashMap<>();
-        viewIdCharacterProfileFragmentMap = new HashMap<>();
         int idx = 0;
         for(;idx<playerProfileVo.getCharacters().size();idx++){
+            CharacterProfileDto characterProfileDto = playerProfileDto.getCharacters().get(idx);
             CharacterProfileVo characterProfileVo = playerProfileVo.getCharacters().get(idx);
             LinearLayout linearLayout = new LinearLayout(getContext());
             linearLayout.setBackgroundResource(R.drawable.bg_char_profile);
-            linearLayout.setOnClickListener(new CharacterProfileOnClickListener());
-            linearLayout.setOnTouchListener(new CharacterProfileOnTouchListener());
             int newViewId = View.generateViewId();
             linearLayout.setId(newViewId);
-            viewIdCharacterProfileVoMap.put(newViewId, characterProfileVo);
-            CharacterProfileFragment characterProfileFragment = CharacterProfileFragment.newInstance(characterProfileVo);
-            viewIdCharacterProfileFragmentMap.put(newViewId, characterProfileFragment);
+            CharacterProfileFragment characterProfileFragment = CharacterProfileFragment.newInstance(characterProfileDto, characterProfileVo);
             Objects.requireNonNull(getActivity()).getSupportFragmentManager().beginTransaction()
                     .add(newViewId, characterProfileFragment).commitAllowingStateLoss();
             //使用Spec定义子控件的位置和比重
@@ -176,43 +216,6 @@ public class PlayerProfileFragment extends Fragment {
             layoutCharacterList.addView(linearLayout, layoutParams);
         }
     }
-
-    private class CharacterProfileOnClickListener implements View.OnClickListener {
-
-        @Override
-        public void onClick(View v) {
-            CharacterProfileVo characterProfileVo = viewIdCharacterProfileVoMap.get(v.getId());
-            assert characterProfileVo != null;
-            characterProfileVo.setNewData(false);
-            Objects.requireNonNull(viewIdCharacterProfileFragmentMap.get(v.getId())).clearNew();
-            showCharacterDetail(characterProfileVo);
-        }
-    }
-
-
-
-    private void showCharacterDetail(CharacterProfileVo characterProfileVo) {
-        Intent intent = new Intent(Objects.requireNonNull(getActivity()).getApplicationContext(), CharacterDetailActivity.class);
-        Bundle bundle = new Bundle();
-        bundle.putSerializable("characterProfileVo", characterProfileVo);
-        intent.putExtras(bundle);
-        startActivity(intent);
-    }
-
-    private static class CharacterProfileOnTouchListener implements View.OnTouchListener {
-        @SuppressLint("ClickableViewAccessibility")
-        @Override
-        public boolean onTouch(View v, MotionEvent event) {
-            // v.performClick();
-            if(event.getAction()==MotionEvent.ACTION_DOWN || event.getAction()==MotionEvent.ACTION_MOVE){
-                v.setBackgroundResource(R.drawable.bg_char_profile_press);
-            }else{
-                v.setBackgroundResource(R.drawable.bg_char_profile);
-            }
-            return false;
-        }
-    }
-
 
     private void doAnimationStartUpdating() {
         buttonUpdateProfile.setImageResource(R.drawable.updating);

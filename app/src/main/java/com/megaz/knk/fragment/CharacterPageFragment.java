@@ -22,9 +22,9 @@ import android.widget.RelativeLayout;
 import com.megaz.knk.R;
 import com.megaz.knk.Utils;
 import com.megaz.knk.activity.BaseActivity;
+import com.megaz.knk.dto.PlayerProfileDto;
 import com.megaz.knk.exception.RequestErrorException;
-import com.megaz.knk.utils.ProfileRequestUtils;
-import com.megaz.knk.vo.PlayerProfileVo;
+import com.megaz.knk.manager.ProfileQueryManager;
 
 import java.util.Objects;
 
@@ -48,6 +48,8 @@ public class CharacterPageFragment extends BaseFragment {
     private PlayerProfileFragment playerProfileFragment;
 
     private Handler queryProfileHandler, updateProfileHandler;
+
+    private ProfileQueryManager profileQueryManager;
 
 
     public CharacterPageFragment() {
@@ -79,6 +81,7 @@ public class CharacterPageFragment extends BaseFragment {
         paimonWaiting = PaimonWaitingFragment.newInstance();
         Objects.requireNonNull(getActivity()).getSupportFragmentManager().beginTransaction().add(R.id.layout_paimon, paimonWaiting).commit();
         layoutProfile = view.findViewById(R.id.layout_profile);
+        profileQueryManager = new ProfileQueryManager(getContext());
     }
 
     @Override
@@ -102,13 +105,13 @@ public class CharacterPageFragment extends BaseFragment {
     private void handleQueryProfileMessage(Message msg) {
         switch (msg.what) {
             case 0: // success
-                PlayerProfileVo playerProfileVo = (PlayerProfileVo) msg.obj;
-                if(playerProfileVo.getCharacterAvailable() != null && !playerProfileVo.getCharacterAvailable()){
+                PlayerProfileDto playerProfileDto = (PlayerProfileDto) msg.obj;
+                if(playerProfileDto.getCharacterAvailable() != null && !playerProfileDto.getCharacterAvailable()){
                     toast.setText("角色面板更新失败，请检查角色详情已开启");
                     toast.show();
                 }
                 doAnimationQuerySuccess();
-                refreshProfileView(playerProfileVo);
+                refreshProfileView(playerProfileDto);
                 flagQuerying = false;
                 break;
             case 1:
@@ -124,14 +127,14 @@ public class CharacterPageFragment extends BaseFragment {
     private void handleUpdateProfileMessage(Message msg) {
         switch (msg.what) {
             case 0: // success
-                PlayerProfileVo playerProfileVo = (PlayerProfileVo) msg.obj;
-                if(playerProfileVo.getCharacterAvailable() != null && !playerProfileVo.getCharacterAvailable()){
+                PlayerProfileDto playerProfileDto = (PlayerProfileDto) msg.obj;
+                if(playerProfileDto.getCharacterAvailable() != null && !playerProfileDto.getCharacterAvailable()){
                     toast.setText("角色面板更新失败，请检查角色详情已开启");
                 }else{
                     toast.setText("角色面板更新完成");
                 }
                 toast.show();
-                playerProfileFragment.toUpdateProfileView(playerProfileVo);
+                playerProfileFragment.toUpdateProfileView(playerProfileDto);
                 break;
             case 1:
                 toast.setText((String) msg.obj);
@@ -171,34 +174,32 @@ public class CharacterPageFragment extends BaseFragment {
 
     private void updateProfile() {
         try {
-            PlayerProfileVo playerProfileVo = ProfileRequestUtils.updateProfile(
-                    Objects.requireNonNull(getActivity()).getApplicationContext(), editTextUid.getText().toString());
-            Message msg = new Message();
-            msg.what = 0;
-            msg.obj = playerProfileVo;
-            updateProfileHandler.sendMessage(msg);
+            PlayerProfileDto playerProfileDto = profileQueryManager.updatePlayerProfileDto(editTextUid.getText().toString());
+            Message message = new Message();
+            message.what = 0;
+            message.obj = playerProfileDto;
+            updateProfileHandler.sendMessage(message);
         } catch (RequestErrorException e) {
-            Message msg = new Message();
-            msg.what = 1;
-            msg.obj = e.getMessage();
-            updateProfileHandler.sendMessage(msg);
+            Message message = new Message();
+            message.what = 1;
+            message.obj = e.getMessage();
+            updateProfileHandler.sendMessage(message);
         }
     }
 
     private void queryProfile() {
         try {
             Thread.sleep(500);
-            PlayerProfileVo playerProfileVo = ProfileRequestUtils.queryProfile(
-                    Objects.requireNonNull(getActivity()).getApplicationContext(), editTextUid.getText().toString());
-            Message msg = new Message();
-            msg.what = 0;
-            msg.obj = playerProfileVo;
-            queryProfileHandler.sendMessage(msg);
-        } catch (RequestErrorException e) {
-            Message msg = new Message();
-            msg.what = 1;
-            msg.obj = e.getMessage();
-            queryProfileHandler.sendMessage(msg);
+            PlayerProfileDto playerProfileDto = profileQueryManager.queryPlayerProfileDto(editTextUid.getText().toString());
+            Message message = new Message();
+            message.what = 0;
+            message.obj = playerProfileDto;
+            queryProfileHandler.sendMessage(message);
+        } catch (RuntimeException e ) {
+            Message message = new Message();
+            message.what = 1;
+            message.obj = e.getMessage();
+            queryProfileHandler.sendMessage(message);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -267,12 +268,12 @@ public class CharacterPageFragment extends BaseFragment {
         });
     }
 
-    private void refreshProfileView(PlayerProfileVo playerProfileVo) {
+    private void refreshProfileView(PlayerProfileDto playerProfileDto) {
         if(playerProfileFragment == null) {
-            playerProfileFragment = PlayerProfileFragment.newInstance(playerProfileVo);
+            playerProfileFragment = PlayerProfileFragment.newInstance(playerProfileDto);
             Objects.requireNonNull(getActivity()).getSupportFragmentManager().beginTransaction().add(R.id.layout_profile, playerProfileFragment).commit();
         } else {
-            playerProfileFragment.toUpdateProfileView(playerProfileVo);
+            playerProfileFragment.toUpdateProfileView(playerProfileDto);
         }
     }
 

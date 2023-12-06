@@ -20,6 +20,7 @@ import com.megaz.knk.vo.CharacterProfileVo;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -95,11 +96,12 @@ public class CharacterAttributeFragment extends BaseFragment {
                 ElementEnum.CRYO,
                 ElementEnum.NULL
         );
-        for(int i=0;i<8;i++) {
-            if(dmgList.get(i) > maxElementDmgValue ||
-                    (characterProfileVo.getElement()==elementList.get(i) && dmgList.get(i).equals(maxElementDmgValue))) {
-                maxDmgElement = elementList.get(i);
-                maxElementDmgValue = dmgList.get(i);
+        Map<ElementEnum, Double> dmgUpMap = characterProfileVo.getDmgUp();
+        for(ElementEnum element:elementList) {
+            if(Objects.requireNonNull(dmgUpMap.get(element)) > maxElementDmgValue ||
+                    (Objects.requireNonNull(dmgUpMap.get(element)) > maxElementDmgValue && characterProfileVo.getElement() == element)) {
+                maxDmgElement = element;
+                maxElementDmgValue = dmgUpMap.get(element);
             }
         }
     }
@@ -169,6 +171,6 @@ public class CharacterAttributeFragment extends BaseFragment {
         textCritRate.setText(String.format("%.1f", characterProfileVo.getCritRate()) + "%");
         textCritDmg.setText(String.format("%.1f", characterProfileVo.getCritDmg()) + "%");
         textDmg.setText(String.format("%.1f", maxElementDmgValue) + "%");
-        textHeal.setText(String.format("%.1f", characterProfileVo.getHeal()) + "%");
+        textHeal.setText(String.format("%.1f", characterProfileVo.getHealUp()) + "%");
     }
 }
