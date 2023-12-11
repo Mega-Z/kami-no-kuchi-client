@@ -19,4 +19,7 @@ public interface ArtifactDexDao extends MetaDataDao<ArtifactDex>{
 
     @Query("SELECT * FROM artifact_dex WHERE set_id=:setId AND position=:position")
     List<ArtifactDex> selectBySetIdAndPosition(String setId, ArtifactPositionEnum position);
+
+    @Query("SELECT * FROM artifact_dex WHERE set_id=:setId ORDER BY position")
+    List<ArtifactDex> selectBySetId(String setId);
 }

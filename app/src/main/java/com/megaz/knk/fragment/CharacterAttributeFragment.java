@@ -15,6 +15,7 @@ import android.widget.TextView;
 
 import com.megaz.knk.R;
 import com.megaz.knk.constant.ElementEnum;
+import com.megaz.knk.constant.GenshinConstantMeta;
 import com.megaz.knk.utils.ImageResourceUtils;
 import com.megaz.knk.vo.CharacterProfileVo;
 
@@ -76,29 +77,9 @@ public class CharacterAttributeFragment extends BaseFragment {
     private void selectMaxDmgElement() {
         maxDmgElement = characterProfileVo.getElement();
         maxElementDmgValue = 0.;
-        List<Double> dmgList = Arrays.asList(
-                characterProfileVo.getDmgAnemo(),
-                characterProfileVo.getDmgGeo(),
-                characterProfileVo.getDmgElectro(),
-                characterProfileVo.getDmgDendro(),
-                characterProfileVo.getDmgHydro(),
-                characterProfileVo.getDmgPyro(),
-                characterProfileVo.getDmgCryo(),
-                characterProfileVo.getDmgPhy()
-        );
-        List<ElementEnum> elementList = Arrays.asList(
-                ElementEnum.ANEMO,
-                ElementEnum.GEO,
-                ElementEnum.ELECTRO,
-                ElementEnum.DENDRO,
-                ElementEnum.HYDRO,
-                ElementEnum.PYRO,
-                ElementEnum.CRYO,
-                ElementEnum.NULL
-        );
         Map<ElementEnum, Double> dmgUpMap = characterProfileVo.getDmgUp();
-        for(ElementEnum element:elementList) {
-            if(Objects.requireNonNull(dmgUpMap.get(element)) > maxElementDmgValue ||
+        for (ElementEnum element : GenshinConstantMeta.ELEMENT_LIST) {
+            if (Objects.requireNonNull(dmgUpMap.get(element)) > maxElementDmgValue ||
                     (Objects.requireNonNull(dmgUpMap.get(element)) > maxElementDmgValue && characterProfileVo.getElement() == element)) {
                 maxDmgElement = element;
                 maxElementDmgValue = dmgUpMap.get(element);
@@ -108,7 +89,7 @@ public class CharacterAttributeFragment extends BaseFragment {
 
 
     private void initAttributeKeys(@NonNull View view) {
-        if(maxDmgElement == null) {
+        if (maxDmgElement == null) {
             selectMaxDmgElement();
         }
         ((ImageView) view.findViewById(R.id.img_dmg_elem)).setImageBitmap(
@@ -117,7 +98,7 @@ public class CharacterAttributeFragment extends BaseFragment {
 
     @SuppressLint({"SetTextI18n", "DefaultLocale"})
     private void initAttributeValues(@NonNull View view) {
-        if(maxDmgElement == null) {
+        if (maxDmgElement == null) {
             selectMaxDmgElement();
         }
         // view
@@ -160,17 +141,17 @@ public class CharacterAttributeFragment extends BaseFragment {
         textHeal.setTypeface(typefaceNum);
         textHealPlus.setTypeface(typefaceNum);
         // value
-        textHp.setText(""+Math.round(characterProfileVo.getBaseHp()));
-        textHpPlus.setText("+"+Math.round(characterProfileVo.getPlusHp()));
-        textAtk.setText(""+Math.round(characterProfileVo.getBaseAtk()));
-        textAtkPlus.setText("+"+Math.round(characterProfileVo.getPlusAtk()));
-        textDef.setText(""+Math.round(characterProfileVo.getBaseDef()));
-        textDefPlus.setText("+"+Math.round(characterProfileVo.getPlusDef()));
-        textMastery.setText(""+Math.round(characterProfileVo.getMastery()));
-        textRecharge.setText(String.format("%.1f", characterProfileVo.getRecharge()) + "%");
-        textCritRate.setText(String.format("%.1f", characterProfileVo.getCritRate()) + "%");
-        textCritDmg.setText(String.format("%.1f", characterProfileVo.getCritDmg()) + "%");
-        textDmg.setText(String.format("%.1f", maxElementDmgValue) + "%");
-        textHeal.setText(String.format("%.1f", characterProfileVo.getHealUp()) + "%");
+        textHp.setText("" + Math.round(characterProfileVo.getBaseHp()));
+        textHpPlus.setText("+" + Math.round(characterProfileVo.getPlusHp()));
+        textAtk.setText("" + Math.round(characterProfileVo.getBaseAtk()));
+        textAtkPlus.setText("+" + Math.round(characterProfileVo.getPlusAtk()));
+        textDef.setText("" + Math.round(characterProfileVo.getBaseDef()));
+        textDefPlus.setText("+" + Math.round(characterProfileVo.getPlusDef()));
+        textMastery.setText("" + Math.round(characterProfileVo.getMastery()));
+        textRecharge.setText(String.format("%.1f", characterProfileVo.getRecharge()*100) + "%");
+        textCritRate.setText(String.format("%.1f", characterProfileVo.getCritRate()*100) + "%");
+        textCritDmg.setText(String.format("%.1f", characterProfileVo.getCritDmg()*100) + "%");
+        textDmg.setText(String.format("%.1f", maxElementDmgValue*100) + "%");
+        textHeal.setText(String.format("%.1f", characterProfileVo.getHealUp()*100) + "%");
     }
 }

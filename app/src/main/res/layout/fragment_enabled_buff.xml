@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    tools:context=".fragment.CriterionFragment"
+    android:background="@drawable/bg_rd_rect_10"
+    android:layout_marginVertical="@dimen/dp_2"
+    android:paddingStart="@dimen/dp_10"
+    android:paddingVertical="@dimen/dp_4"
+    android:orientation="horizontal">
+    <com.google.android.material.imageview.ShapeableImageView
+        android:id="@+id/img_source_icon"
+        android:layout_width="@dimen/dp_60"
+        android:layout_height="@dimen/dp_60"
+        app:shapeAppearanceOverlay="@style/circleImageStyle"
+        android:src="@drawable/icon_buff_default"
+        app:strokeColor="@color/white"
+        android:background="@color/bg_transparent_white"
+        android:padding="@dimen/dp_2"
+        app:strokeWidth="@dimen/dp_2"/>
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginLeft="@dimen/dp_10"
+        android:layout_marginRight="@dimen/dp_60">
+        <TextView
+            android:id="@+id/text_buff_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="刻晴-玉衡之贵"
+            android:singleLine="true"
+            android:textStyle="bold"
+            android:textSize="@dimen/sp_14"
+            android:textColor="@color/white"/>
+
+        <TextView
+            android:id="@+id/text_buff_effect"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="left|bottom"
+            android:layout_marginLeft="@dimen/dp_20"
+            android:layout_marginBottom="@dimen/dp_5"
+            android:paddingHorizontal="@dimen/dp_5"
+            android:text="暴击率"
+            android:textStyle="bold"
+            android:textSize="@dimen/sp_16"
+            android:textColor="@color/white"
+            android:background="@color/field_crit"/>
+
+        <TextView
+            android:id="@+id/text_buff_number"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="right|bottom"
+            android:layout_marginBottom="@dimen/dp_2"
+            android:paddingHorizontal="@dimen/dp_5"
+            android:text="15.0%"
+            android:textColor="@color/field_crit"
+            android:textSize="@dimen/sp_28"/>
+
+    </FrameLayout>
+
+</LinearLayout>

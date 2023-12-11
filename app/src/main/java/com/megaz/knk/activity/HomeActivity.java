@@ -34,7 +34,6 @@ public class HomeActivity extends BaseActivity {
 
     @Override
     protected void setContent() {
-        super.setContent();
         setContentView(R.layout.activity_home);
     }
 

@@ -11,9 +11,11 @@ import android.widget.TextView;
 import androidx.fragment.app.FragmentTransaction;
 
 import com.megaz.knk.R;
+import com.megaz.knk.computation.CharacterAttribute;
 import com.megaz.knk.fragment.ArtifactEvaluationFragment;
 import com.megaz.knk.fragment.CharacterAttributeFragment;
 import com.megaz.knk.fragment.ConstellationFragment;
+import com.megaz.knk.fragment.EffectComputationFragment;
 import com.megaz.knk.fragment.TalentFragment;
 import com.megaz.knk.fragment.WeaponFragment;
 import com.megaz.knk.utils.DynamicStyleUtils;
@@ -27,17 +29,21 @@ public class CharacterDetailActivity extends ElasticScrollActivity {
     private int ART_OFFSET_X, ART_HEIGHT, TALENT_WIDTH;
     private float SCROLL_STEP_PROGRESS; // 划动动画的中间进度，武器信息缩回开始移动
     private float ART_SCALE_RATIO;
-    
+
+    private CharacterAttribute characterAttribute;
     private CharacterProfileVo characterProfileVo;
 
     private WeaponFragment weaponFragment;
     private CharacterAttributeFragment characterAttributeFragment;
     private ArtifactEvaluationFragment artifactEvaluationFragment;
+    private EffectComputationFragment effectComputationFragment;
 
     private FrameLayout layoutArt;
-    private LinearLayout layoutConstellation, layoutAttribute,
-            layoutTalentA, layoutTalentE, layoutTalentQ, layoutWeapon,
-            layoutArtifactEvaluation;
+    private LinearLayout layoutConstellation;
+    private LinearLayout layoutTalentA;
+    private LinearLayout layoutTalentE;
+    private LinearLayout layoutTalentQ;
+    private LinearLayout layoutWeapon;
     private ImageView imageCharacterArt;
 
     @Override
@@ -49,6 +55,7 @@ public class CharacterDetailActivity extends ElasticScrollActivity {
     @Override
     protected void initView(){
         super.initView();
+        characterAttribute = (CharacterAttribute) getIntent().getExtras().getSerializable("characterAttribute");
         characterProfileVo = (CharacterProfileVo) getIntent().getExtras().getSerializable("characterProfileVo");
         initConstants();
         layoutArt = findViewById(R.id.layout_art);
@@ -56,6 +63,7 @@ public class CharacterDetailActivity extends ElasticScrollActivity {
         initWeaponInfo();
         initCharacterAttribute();
         initArtifactEvaluation();
+        initEffectComputation();
     }
 
     @Override
@@ -207,7 +215,6 @@ public class CharacterDetailActivity extends ElasticScrollActivity {
     }
 
     private void initCharacterAttribute() {
-        layoutAttribute = findViewById(R.id.layout_attribute);
         FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
         characterAttributeFragment = CharacterAttributeFragment.newInstance(characterProfileVo);
         fragmentTransaction.add(R.id.layout_attribute, characterAttributeFragment);
@@ -215,11 +222,16 @@ public class CharacterDetailActivity extends ElasticScrollActivity {
     }
 
     private void initArtifactEvaluation() {
-        layoutArtifactEvaluation = findViewById(R.id.layout_artifact_evaluation);
         FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
         artifactEvaluationFragment = ArtifactEvaluationFragment.newInstance(characterProfileVo);
         fragmentTransaction.add(R.id.layout_artifact_evaluation, artifactEvaluationFragment);
         fragmentTransaction.commit();
+    }
 
+    private void initEffectComputation() {
+        FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
+        effectComputationFragment = EffectComputationFragment.newInstance(characterAttribute);
+        fragmentTransaction.add(R.id.layout_effect_computation, effectComputationFragment);
+        fragmentTransaction.commit();
     }
 }

@@ -16,6 +16,9 @@
         android:usesCleartextTraffic="true"
         android:windowSoftInputMode="adjustResize">
         <activity
+            android:name=".activity.FightEffectDetailActivity"
+            android:exported="false" />
+        <activity
             android:name=".activity.WishCalculatorActivity"
             android:exported="false" />
         <activity

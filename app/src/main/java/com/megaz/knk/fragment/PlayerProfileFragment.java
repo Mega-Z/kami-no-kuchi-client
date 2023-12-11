@@ -25,6 +25,7 @@ import android.widget.TextView;
 import com.megaz.knk.R;
 import com.megaz.knk.activity.CharacterDetailActivity;
 import com.megaz.knk.activity.HomeActivity;
+import com.megaz.knk.computation.CharacterAttribute;
 import com.megaz.knk.dto.CharacterProfileDto;
 import com.megaz.knk.dto.PlayerProfileDto;
 import com.megaz.knk.manager.ProfileQueryManager;
@@ -153,7 +154,7 @@ public class PlayerProfileFragment extends BaseFragment {
             lastClick = System.currentTimeMillis();
             flagUpdating = true;
             doAnimationStartUpdating();
-            ((HomeActivity) Objects.requireNonNull(getActivity())).toUpdateProfile();
+            ((HomeActivity) requireActivity()).toUpdateProfile();
         }
     }
 
@@ -175,7 +176,7 @@ public class PlayerProfileFragment extends BaseFragment {
         textPlayerName.setText(playerProfileVo.getNickname());
         textSignature.setText(playerProfileVo.getSign());
         if(playerProfileVo.getAvatarIcon() != null) {
-            imagePlayerAvatar.setImageBitmap(ImageResourceUtils.getIconBitmap(Objects.requireNonNull(getContext()), playerProfileVo.getAvatarIcon()));
+            imagePlayerAvatar.setImageBitmap(ImageResourceUtils.getIconBitmap(requireContext(), playerProfileVo.getAvatarIcon()));
         }
         // update character list
         layoutCharacterList.removeAllViews();
@@ -187,8 +188,9 @@ public class PlayerProfileFragment extends BaseFragment {
             linearLayout.setBackgroundResource(R.drawable.bg_char_profile);
             int newViewId = View.generateViewId();
             linearLayout.setId(newViewId);
-            CharacterProfileFragment characterProfileFragment = CharacterProfileFragment.newInstance(characterProfileDto, characterProfileVo);
-            Objects.requireNonNull(getActivity()).getSupportFragmentManager().beginTransaction()
+            CharacterProfileFragment characterProfileFragment = CharacterProfileFragment.newInstance(
+                    new CharacterAttribute(characterProfileDto), characterProfileVo);
+            requireActivity().getSupportFragmentManager().beginTransaction()
                     .add(newViewId, characterProfileFragment).commitAllowingStateLoss();
             //使用Spec定义子控件的位置和比重
             GridLayout.Spec rowSpec = GridLayout.spec(idx / 2);

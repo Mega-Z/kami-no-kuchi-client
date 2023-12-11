@@ -52,8 +52,17 @@
     <string name="text_default_zero">0</string>
     <string name="text_no_effect_data">该角色暂无实战评估数据</string>
     <string name="text_effect_desc_default">奥义·梦想真说梦想一心满愿力重击伤害</string>
-    <string name="text_crit_or_not">（平均伤害/暴击伤害）</string>
-    <string name="text_effect_number_default">65536/131072</string>
+    <string name="text_crit_or_not">（暴击伤害/平均伤害）</string>
+    <string name="text_effect_number_default">131072/65536</string>
     <string name="text_right_arrow"><![CDATA[->]]></string>
     <string name="text_average">（平均伤害）</string>
+    <string name="title_activity_fight_effect_detail">FightEffectDetailActivity</string>
+    <!-- Strings used for fragments for navigation -->
+    <string name="first_fragment_label">First Fragment</string>
+    <string name="second_fragment_label">Second Fragment</string>
+    <string name="next">Next</string>
+    <string name="previous">Previous</string>
+
+    <string name="hello_first_fragment">Hello first fragment</string>
+    <string name="hello_second_fragment">Hello second fragment. Arg: %1$s</string>
 </resources>

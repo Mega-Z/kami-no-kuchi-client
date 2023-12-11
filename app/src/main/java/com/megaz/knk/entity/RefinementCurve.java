@@ -21,6 +21,17 @@ public class RefinementCurve extends MetaDataEntity {
     @ColumnInfo(name = "value_refinement_5")
     private Double valueRefinement5;
 
+    public Double getValue(int level) {
+        switch (level) {
+            case 1: return valueRefinement1;
+            case 2: return valueRefinement2;
+            case 3: return valueRefinement3;
+            case 4: return valueRefinement4;
+            case 5: return valueRefinement5;
+            default: return 0.;
+        }
+    }
+
     public Integer getId() {
         return id;
     }

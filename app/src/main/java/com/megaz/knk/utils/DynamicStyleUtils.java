@@ -1,8 +1,14 @@
 package com.megaz.knk.utils;
 
 import com.megaz.knk.R;
+import com.megaz.knk.computation.DamageEffect;
+import com.megaz.knk.computation.FightEffect;
+import com.megaz.knk.computation.HealEffect;
 import com.megaz.knk.constant.AttributeEnum;
+import com.megaz.knk.constant.EffectFieldEnum;
 import com.megaz.knk.constant.ElementEnum;
+import com.megaz.knk.constant.ElementReactionEnum;
+import com.megaz.knk.entity.RefinementCurve;
 import com.megaz.knk.vo.ArtifactEvaluationVo;
 
 public class DynamicStyleUtils {
@@ -93,5 +99,63 @@ public class DynamicStyleUtils {
                 return "⑥";
         }
         return "";
+    }
+
+    public static int getFightEffectColor(FightEffect fightEffect, int defaultColor) {
+        if(fightEffect instanceof HealEffect) {
+            return R.color.number_heal;
+        } else if (fightEffect instanceof DamageEffect) {
+            if(((DamageEffect) fightEffect).getReaction() == ElementReactionEnum.OVERLOADED) {
+                return R.color.number_overload;
+            } else {
+                switch (((DamageEffect) fightEffect).getElement()) {
+                    case PYRO: return R.color.number_dmg_pyro;
+                    case HYDRO: return R.color.number_dmg_hydro;
+                    case CRYO: return R.color.number_dmg_cryo;
+                    case ELECTRO: return R.color.number_dmg_electro;
+                    case DENDRO: return R.color.number_dmg_dendro;
+                    case ANEMO: return R.color.number_dmg_anemo;
+                    case GEO: return R.color.number_dmg_geo;
+                }
+            }
+        }
+        return defaultColor;
+    }
+
+    public static int getFightEffectBackgroundColor(FightEffect fightEffect) {
+        if (fightEffect instanceof DamageEffect) {
+            switch (((DamageEffect) fightEffect).getElement()) {
+                case PYRO: return R.color.element_bg_pyro;
+                case HYDRO: return R.color.element_bg_hydro;
+                case CRYO: return R.color.element_bg_cryo;
+                case ELECTRO: return R.color.element_bg_electro;
+                case DENDRO: return R.color.element_bg_dendro;
+                case ANEMO: return R.color.element_bg_anemo;
+                case GEO: return R.color.element_bg_geo;
+            }
+        }
+        return R.color.element_bg_null;
+    }
+
+    public static int getBuffFieldColor(EffectFieldEnum field) {
+        switch (field) {
+            case BASE:
+            case BASE_ADD:
+            case BASE_MULTIPLE:
+                return R.color.field_base;
+            case UP:
+            case DAMAGE_UP:
+                return R.color.field_up;
+            case RESIST: return R.color.field_resist;
+            case DEFENCE: return R.color.field_defence;
+            case CRIT_RATE:
+            case CRIT_DMG:
+                return R.color.field_crit;
+            case MASTERY:
+                return R.color.field_mastery;
+            case REACTION:
+                return R.color.field_reaction;
+        }
+        return R.color.gray_black;
     }
 }

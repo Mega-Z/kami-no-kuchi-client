@@ -53,6 +53,8 @@ public class Buff extends MetaDataEntity {
     private String specialInput;
     @ColumnInfo(name = "multiplier_constant")
     private Double multiplierConstant;
+    @ColumnInfo(name = "addend_constant")
+    private Double addendConstant;
     @ColumnInfo(name = "source_talent")
     private SourceTalentEnum sourceTalent;
     @ColumnInfo(name = "multiplier_talent_curve")
@@ -218,6 +220,14 @@ public class Buff extends MetaDataEntity {
 
     public void setMultiplierConstant(Double multiplierConstant) {
         this.multiplierConstant = multiplierConstant;
+    }
+
+    public Double getAddendConstant() {
+        return addendConstant;
+    }
+
+    public void setAddendConstant(Double addendConstant) {
+        this.addendConstant = addendConstant;
     }
 
     public SourceTalentEnum getSourceTalent() {

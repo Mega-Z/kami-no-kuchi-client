@@ -7,7 +7,8 @@
     <color name="teal_700">#FF018786</color>
     <color name="black">#FF000000</color>`
     <color name="white">#FFFFFFFF</color>
-    <color name="text_bg_white">#77FFFFFF</color>
+    <color name="bg_transparent_white">#77FFFFFF</color>
+    <color name="bg_transparent_black">#77000000</color>
     <color name="gray">#B3B3B3</color>
     <color name="gray_black">#2C2C2C</color>
     <color name="gray_white">#dddddd</color>
@@ -39,6 +40,7 @@
     <color name="attribute_bg_0">#CC111111</color>
     <color name="attribute_bg_1">#CC000000</color>
     <color name="criterion_press">#77777777</color>
+    <color name="fight_effect_press">#77777777</color>
     <color name="prop_low">#F44336</color>
     <color name="prop_mid_low">#FFC107</color>
     <color name="prop_mid_high">#CDDC39</color>
@@ -51,6 +53,7 @@
     <color name="light_blue_A200">#FF40C4FF</color>
     <color name="light_blue_A400">#FF00B0FF</color>
     <color name="black_overlay">#66000000</color>
+    <color name="element_text_null">#291719</color>
     <color name="element_text_pyro">#bc2628</color>
     <color name="element_text_hydro">#238fbd</color>
     <color name="element_text_electro">#6B50B7</color>
@@ -65,6 +68,7 @@
     <color name="element_bg_anemo">#D2FFFB</color>
     <color name="element_bg_geo">#FFEFD7</color>
     <color name="element_bg_dendro">#F0FFD6</color>
+    <color name="element_bg_null">#f3ebe8</color>
     <color name="number_dmg_pyro">#ff9b00</color>
     <color name="number_dmg_hydro">#33ccff</color>
     <color name="number_dmg_cryo">#99ffff</color>
@@ -74,4 +78,11 @@
     <color name="number_dmg_dendro">#00ea52</color>
     <color name="number_overload">#ff809b</color>
     <color name="number_heal">#bcff37</color>
+    <color name="field_base">#00B8D4</color>
+    <color name="field_up">#304FFE</color>
+    <color name="field_resist">#AA00FF</color>
+    <color name="field_defence">#FFAB00</color>
+    <color name="field_crit">#D50000</color>
+    <color name="field_mastery">#00C853</color>
+    <color name="field_reaction">#FF6D00</color>
 </resources>

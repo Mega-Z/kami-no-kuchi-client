@@ -43,6 +43,27 @@ public class TalentCurve extends MetaDataEntity {
     @ColumnInfo(name = "value_level_15")
     private Double valueLevel15;
 
+    public Double getValue(int level){
+        switch (level){
+            case 1: return valueLevel1;
+            case 2: return valueLevel2;
+            case 3: return valueLevel3;
+            case 4: return valueLevel4;
+            case 5: return valueLevel5;
+            case 6: return valueLevel6;
+            case 7: return valueLevel7;
+            case 8: return valueLevel8;
+            case 9: return valueLevel9;
+            case 10: return valueLevel10;
+            case 11: return valueLevel11;
+            case 12: return valueLevel12;
+            case 13: return valueLevel13;
+            case 14: return valueLevel14;
+            case 15: return valueLevel15;
+            default: return 0.;
+        }
+    }
+
     public Integer getId() {
         return id;
     }

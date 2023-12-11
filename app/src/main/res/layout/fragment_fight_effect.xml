@@ -3,7 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="@dimen/dp_40"
-    tools:context=".fragment.EffectFragment"
+    tools:context=".fragment.FightEffectFragment"
     android:orientation="horizontal"
     android:paddingHorizontal="@dimen/dp_5">
     <LinearLayout

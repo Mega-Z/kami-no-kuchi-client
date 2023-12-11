@@ -210,7 +210,7 @@ public class ArtifactEvaluationFragment extends BaseFragment {
         for(int i=0;i<characterProfileVo.getEvaluations().size();i++) {
             if(i>0) {
                 View viewDividingLine = new View(getContext());
-                viewDividingLine.setBackgroundResource(R.drawable.bg_crt_div_gr_black);
+                viewDividingLine.setBackgroundResource(R.drawable.bg_div_gr_black);
                 LinearLayout.LayoutParams lineParams = new LinearLayout.LayoutParams(
                         ViewGroup.LayoutParams.MATCH_PARENT, getResources().getDimensionPixelOffset(R.dimen.dp_1));
                 viewDividingLine.setLayoutParams(lineParams);

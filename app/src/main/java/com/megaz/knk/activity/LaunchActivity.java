@@ -52,7 +52,6 @@ public class LaunchActivity extends BaseActivity {
 
     @Override
     protected void setContent() {
-        super.setContent();
         setContentView(R.layout.activity_launch);
     }
 
@@ -151,6 +150,7 @@ public class LaunchActivity extends BaseActivity {
     private void checkAndUpdateMetaData() {
         MetaDatabaseInfoDto metaDatabaseInfo = RequestUtils.getMetaDatabaseInfo(getApplicationContext());
         if(true) {
+            //TODO: check data version
             Message msg = new Message();
             msg.what = 0;
             metaUpdateHandler.handleMessage(msg);

@@ -16,8 +16,8 @@ import androidx.fragment.app.Fragment;
 
 import com.megaz.knk.R;
 import com.megaz.knk.activity.CharacterDetailActivity;
+import com.megaz.knk.computation.CharacterAttribute;
 import com.megaz.knk.dto.CharacterProfileDto;
-import com.megaz.knk.entity.CharacterDex;
 import com.megaz.knk.utils.ImageResourceUtils;
 import com.megaz.knk.vo.CharacterProfileVo;
 
@@ -25,7 +25,7 @@ import java.util.Objects;
 
 public class CharacterProfileFragment extends Fragment {
 
-    private CharacterProfileDto characterProfileDto;
+    private CharacterAttribute characterAttribute;
     private CharacterProfileVo characterProfileVo;
 
     private TextView textCharacterName, textCharacterLevel, textCharacterCons;
@@ -35,10 +35,10 @@ public class CharacterProfileFragment extends Fragment {
         // Required empty public constructor
     }
 
-    public static CharacterProfileFragment newInstance(CharacterProfileDto characterProfileDto, CharacterProfileVo characterProfileVo) {
+    public static CharacterProfileFragment newInstance(CharacterAttribute characterAttribute, CharacterProfileVo characterProfileVo) {
         CharacterProfileFragment fragment = new CharacterProfileFragment();
         Bundle args = new Bundle();
-        args.putSerializable("characterProfileDto", characterProfileDto);
+        args.putSerializable("characterAttribute", characterAttribute);
         args.putSerializable("characterProfileVo", characterProfileVo);
         fragment.setArguments(args);
         return fragment;
@@ -49,7 +49,7 @@ public class CharacterProfileFragment extends Fragment {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
             characterProfileVo = (CharacterProfileVo) getArguments().getSerializable("characterProfileVo");
-            characterProfileDto = (CharacterProfileDto) getArguments().getSerializable("characterProfileDto");
+            characterAttribute = (CharacterAttribute) getArguments().getSerializable("characterAttribute");
         }
     }
 
@@ -91,7 +91,6 @@ public class CharacterProfileFragment extends Fragment {
         public void onClick(View v) {
             imageIsNew.setVisibility(View.INVISIBLE);
             characterProfileVo.setNewData(false);
-            characterProfileDto.setNewData(false);
             showCharacterDetail();
         }
     }
@@ -111,10 +110,10 @@ public class CharacterProfileFragment extends Fragment {
     }
 
     private void showCharacterDetail() {
-        Intent intent = new Intent(Objects.requireNonNull(getActivity()).getApplicationContext(), CharacterDetailActivity.class);
+        Intent intent = new Intent(requireActivity().getApplicationContext(), CharacterDetailActivity.class);
         Bundle bundle = new Bundle();
         bundle.putSerializable("characterProfileVo", characterProfileVo);
-        bundle.putSerializable("characterProfileDto", characterProfileDto);
+        bundle.putSerializable("characterAttribute", characterAttribute);
         intent.putExtras(bundle);
         startActivity(intent);
     }

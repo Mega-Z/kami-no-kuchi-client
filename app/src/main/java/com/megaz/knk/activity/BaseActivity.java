@@ -28,7 +28,7 @@ import com.megaz.knk.utils.ViewUtils;
 
 import java.util.List;
 
-public class BaseActivity extends AppCompatActivity {
+public abstract class BaseActivity extends AppCompatActivity {
     protected Toast toast;
     protected KnkDatabase knkDatabase;
     private InputMethodManager inputMethodManager;
@@ -56,9 +56,7 @@ public class BaseActivity extends AppCompatActivity {
         setCallback();
     }
 
-    protected void setContent() {
-
-    }
+    protected abstract void setContent();
 
     protected void initView() {
 

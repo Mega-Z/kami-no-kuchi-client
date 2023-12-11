@@ -16,26 +16,36 @@
         android:gravity="center_vertical"
         android:elevation="@dimen/dp_2"
         android:translationZ="@dimen/dp_2">
-        <LinearLayout
+        <com.google.android.material.imageview.ShapeableImageView
+            android:id="@+id/img_player_avatar"
             android:layout_width="@dimen/dp_75"
             android:layout_height="@dimen/dp_75"
-            android:padding="@dimen/dp_1"
+            app:shapeAppearanceOverlay="@style/circleImageStyle"
             android:background="@drawable/bg_player_face"
-            android:layout_gravity="top"
-            android:layout_marginTop="@dimen/dp_10"
-            android:gravity="center">
+            app:strokeColor="@color/face_bg"
+            android:padding="@dimen/dp_2"
+            app:strokeWidth="@dimen/dp_2"/>
 
-            <com.megaz.knk.CircleImageView
-                android:layout_height="match_parent"
-                android:layout_width="match_parent"
-                android:id="@+id/img_player_avatar"
-                android:background="@drawable/bg_player_face"
-                android:gravity="center"
-                android:textSize="@dimen/sp_24"
-                app:type="circle"
-                app:border_color="@color/face_frame"
-                app:border_width="@dimen/dp_3"/>
-        </LinearLayout>
+<!--        <LinearLayout-->
+<!--            android:layout_width="@dimen/dp_75"-->
+<!--            android:layout_height="@dimen/dp_75"-->
+<!--            android:padding="@dimen/dp_1"-->
+<!--            android:background="@drawable/bg_player_face"-->
+<!--            android:layout_gravity="top"-->
+<!--            android:layout_marginTop="@dimen/dp_10"-->
+<!--            android:gravity="center">-->
+
+<!--            <com.megaz.knk.CircleImageView-->
+<!--                android:layout_height="match_parent"-->
+<!--                android:layout_width="match_parent"-->
+<!--                android:id="@+id/img_player_avatar"-->
+<!--                android:background="@drawable/bg_player_face"-->
+<!--                android:gravity="center"-->
+<!--                android:textSize="@dimen/sp_24"-->
+<!--                app:type="circle"-->
+<!--                app:border_color="@color/face_frame"-->
+<!--                app:border_width="@dimen/dp_3"/>-->
+<!--        </LinearLayout>-->
         <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent">

@@ -23,6 +23,11 @@ public abstract class ElasticScrollActivity extends BaseActivity{
     private ValueAnimator elasticScrollAnimator;
 
     @Override
+    protected void setContent() {
+
+    }
+
+    @Override
     protected void initView() {
         super.initView();
         initScrollParameters();

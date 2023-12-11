@@ -55,7 +55,6 @@ public class WishCalculatorActivity extends BaseActivity {
 
     @Override
     protected void setContent() {
-        super.setContent();
         setContentView(R.layout.activity_wish_calculator);
     }
 
