@@ -149,7 +149,7 @@ public class LaunchActivity extends BaseActivity {
     @SuppressWarnings({"unchecked", "rawuse"})
     private void checkAndUpdateMetaData() {
         MetaDatabaseInfoDto metaDatabaseInfo = RequestUtils.getMetaDatabaseInfo(getApplicationContext());
-        if(true) {
+        if(false) {
             //TODO: check data version
             Message msg = new Message();
             msg.what = 0;

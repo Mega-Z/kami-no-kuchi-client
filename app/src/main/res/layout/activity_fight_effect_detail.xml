@@ -43,267 +43,287 @@
         android:textSize="@dimen/sp_40"
         android:gravity="center"
         android:paddingVertical="@dimen/dp_6"
-        android:textColor="@color/element_text_electro"/>
+        android:shadowColor="@color/gray_black"
+        android:shadowRadius="4"
+        android:textColor="@color/number_dmg_electro"/>
     <LinearLayout
-        android:id="@+id/layout_field_base"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center_vertical"
-        android:paddingStart="@dimen/dp_5">
-        <TextView
-            android:layout_width="@dimen/dp_80"
-            android:layout_height="wrap_content"
-            android:gravity="center"
-            android:text="基础倍率"
-            android:textStyle="bold"
-            android:textSize="@dimen/sp_16"
-            android:textColor="@color/white"
-            android:background="@color/field_base"/>
+        android:orientation="vertical">
 
-        <TextView
-            android:id="@+id/text_field_base"
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:id="@+id/layout_field_base"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="@dimen/dp_3"
-            android:layout_marginTop="@dimen/dp_2"
-            android:gravity="left"
-            android:text="10000"
-            android:textStyle="bold"
-            android:textSize="@dimen/sp_18"
-            android:textColor="@color/field_base"/>
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingStart="@dimen/dp_5">
+            <TextView
+                android:layout_width="@dimen/dp_80"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:text="基础倍率"
+                android:textStyle="bold"
+                android:textSize="@dimen/sp_16"
+                android:textColor="@color/white"
+                android:background="@color/field_base"/>
 
-    </LinearLayout>
-    <LinearLayout
-        android:id="@+id/layout_field_up"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center_vertical"
-        android:paddingStart="@dimen/dp_5">
-        <TextView
-            android:layout_width="@dimen/dp_80"
+            <TextView
+                android:id="@+id/text_field_base"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="@dimen/dp_3"
+                android:layout_marginTop="@dimen/dp_2"
+                android:gravity="left"
+                android:text="10000"
+                android:textStyle="bold"
+                android:textSize="@dimen/sp_18"
+                android:textColor="@color/field_base"/>
+
+        </LinearLayout>
+        <LinearLayout
+            android:id="@+id/layout_field_up"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:gravity="center"
-            android:text="加成区"
-            android:textStyle="bold"
-            android:textSize="@dimen/sp_16"
-            android:textColor="@color/white"
-            android:background="@color/field_up"/>
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingStart="@dimen/dp_5">
+            <TextView
+                android:layout_width="@dimen/dp_80"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:text="加成区"
+                android:textStyle="bold"
+                android:textSize="@dimen/sp_16"
+                android:textColor="@color/white"
+                android:background="@color/field_up"/>
 
-        <TextView
-            android:id="@+id/text_field_up"
-            android:layout_width="wrap_content"
+            <TextView
+                android:id="@+id/text_field_up"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="@dimen/dp_3"
+                android:layout_marginTop="@dimen/dp_2"
+                android:gravity="left"
+                android:text="10.0%"
+                android:textStyle="bold"
+                android:textSize="@dimen/sp_18"
+                android:textColor="@color/field_up"/>
+
+        </LinearLayout>
+        <LinearLayout
+            android:id="@+id/layout_field_damage_up"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="@dimen/dp_3"
-            android:layout_marginTop="@dimen/dp_2"
-            android:gravity="left"
-            android:text="10.0%"
-            android:textStyle="bold"
-            android:textSize="@dimen/sp_18"
-            android:textColor="@color/field_up"/>
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingStart="@dimen/dp_5">
+            <TextView
+                android:layout_width="@dimen/dp_80"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:text="增伤区"
+                android:textStyle="bold"
+                android:textSize="@dimen/sp_16"
+                android:textColor="@color/white"
+                android:background="@color/field_up"/>
 
-    </LinearLayout>
-    <LinearLayout
-        android:id="@+id/layout_field_damage_up"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center_vertical"
-        android:paddingStart="@dimen/dp_5">
-        <TextView
-            android:layout_width="@dimen/dp_80"
+            <TextView
+                android:id="@+id/text_field_damage_up"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="@dimen/dp_3"
+                android:layout_marginTop="@dimen/dp_2"
+                android:gravity="left"
+                android:text="10.0%"
+                android:textStyle="bold"
+                android:textSize="@dimen/sp_18"
+                android:textColor="@color/field_up"/>
+
+        </LinearLayout>
+        <LinearLayout
+            android:id="@+id/layout_field_resist"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:gravity="center"
-            android:text="增伤区"
-            android:textStyle="bold"
-            android:textSize="@dimen/sp_16"
-            android:textColor="@color/white"
-            android:background="@color/field_up"/>
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingStart="@dimen/dp_5">
+            <TextView
+                android:layout_width="@dimen/dp_80"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:text="抗性区"
+                android:textStyle="bold"
+                android:textSize="@dimen/sp_16"
+                android:textColor="@color/white"
+                android:background="@color/field_resist"/>
 
-        <TextView
-            android:id="@+id/text_field_damage_up"
-            android:layout_width="wrap_content"
+            <TextView
+                android:id="@+id/text_field_resist"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="@dimen/dp_3"
+                android:layout_marginTop="@dimen/dp_2"
+                android:gravity="left"
+                android:text="10.0%"
+                android:textStyle="bold"
+                android:textSize="@dimen/sp_18"
+                android:textColor="@color/field_resist"/>
+
+        </LinearLayout>
+        <LinearLayout
+            android:id="@+id/layout_field_defence"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="@dimen/dp_3"
-            android:layout_marginTop="@dimen/dp_2"
-            android:gravity="left"
-            android:text="10.0%"
-            android:textStyle="bold"
-            android:textSize="@dimen/sp_18"
-            android:textColor="@color/field_up"/>
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingStart="@dimen/dp_5">
+            <TextView
+                android:layout_width="@dimen/dp_80"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:text="防御区"
+                android:textStyle="bold"
+                android:textSize="@dimen/sp_16"
+                android:textColor="@color/white"
+                android:background="@color/field_defence"/>
 
-    </LinearLayout>
-    <LinearLayout
-        android:id="@+id/layout_field_resist"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center_vertical"
-        android:paddingStart="@dimen/dp_5">
-        <TextView
-            android:layout_width="@dimen/dp_80"
+            <TextView
+                android:id="@+id/text_field_defence"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="@dimen/dp_3"
+                android:layout_marginTop="@dimen/dp_2"
+                android:gravity="left"
+                android:text="10.0%"
+                android:textStyle="bold"
+                android:textSize="@dimen/sp_18"
+                android:textColor="@color/field_defence"/>
+
+        </LinearLayout>
+        <LinearLayout
+            android:id="@+id/layout_field_crit"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:gravity="center"
-            android:text="抗性区"
-            android:textStyle="bold"
-            android:textSize="@dimen/sp_16"
-            android:textColor="@color/white"
-            android:background="@color/field_resist"/>
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingStart="@dimen/dp_5">
+            <TextView
+                android:layout_width="@dimen/dp_80"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:text="暴击区"
+                android:textStyle="bold"
+                android:textSize="@dimen/sp_16"
+                android:textColor="@color/white"
+                android:background="@color/field_crit"/>
 
-        <TextView
-            android:id="@+id/text_field_resist"
-            android:layout_width="wrap_content"
+            <TextView
+                android:id="@+id/text_field_crit"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="@dimen/dp_3"
+                android:layout_marginTop="@dimen/dp_2"
+                android:gravity="left"
+                android:text="10.0%/100.0%"
+                android:textStyle="bold"
+                android:textSize="@dimen/sp_18"
+                android:textColor="@color/field_crit"/>
+
+        </LinearLayout>
+        <LinearLayout
+            android:id="@+id/layout_field_mastery"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="@dimen/dp_3"
-            android:layout_marginTop="@dimen/dp_2"
-            android:gravity="left"
-            android:text="10.0%"
-            android:textStyle="bold"
-            android:textSize="@dimen/sp_18"
-            android:textColor="@color/field_resist"/>
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingStart="@dimen/dp_5">
+            <TextView
+                android:layout_width="@dimen/dp_80"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:text="精通加成"
+                android:textStyle="bold"
+                android:textSize="@dimen/sp_16"
+                android:textColor="@color/white"
+                android:background="@color/field_mastery"/>
 
-    </LinearLayout>
-    <LinearLayout
-        android:id="@+id/layout_field_defence"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center_vertical"
-        android:paddingStart="@dimen/dp_5">
-        <TextView
-            android:layout_width="@dimen/dp_80"
+            <TextView
+                android:id="@+id/text_field_mastery"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="@dimen/dp_3"
+                android:layout_marginTop="@dimen/dp_2"
+                android:gravity="left"
+                android:text="10.0%"
+                android:textStyle="bold"
+                android:textSize="@dimen/sp_18"
+                android:textColor="@color/field_mastery"/>
+
+        </LinearLayout>
+        <LinearLayout
+            android:id="@+id/layout_field_reaction"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:gravity="center"
-            android:text="防御区"
-            android:textStyle="bold"
-            android:textSize="@dimen/sp_16"
-            android:textColor="@color/white"
-            android:background="@color/field_defence"/>
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingStart="@dimen/dp_5">
+            <TextView
+                android:layout_width="@dimen/dp_80"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:text="反应加成"
+                android:textStyle="bold"
+                android:textSize="@dimen/sp_16"
+                android:textColor="@color/white"
+                android:background="@color/field_reaction"/>
 
-        <TextView
-            android:id="@+id/text_field_defence"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="@dimen/dp_3"
-            android:layout_marginTop="@dimen/dp_2"
-            android:gravity="left"
-            android:text="10.0%"
-            android:textStyle="bold"
-            android:textSize="@dimen/sp_18"
-            android:textColor="@color/field_defence"/>
+            <TextView
+                android:id="@+id/text_field_reaction"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="@dimen/dp_3"
+                android:layout_marginTop="@dimen/dp_2"
+                android:gravity="left"
+                android:text="10.0%"
+                android:textStyle="bold"
+                android:textSize="@dimen/sp_18"
+                android:textColor="@color/field_reaction"/>
 
-    </LinearLayout>
-    <LinearLayout
-        android:id="@+id/layout_field_crit"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center_vertical"
-        android:paddingStart="@dimen/dp_5">
-        <TextView
-            android:layout_width="@dimen/dp_80"
-            android:layout_height="wrap_content"
-            android:gravity="center"
-            android:text="暴击区"
-            android:textStyle="bold"
-            android:textSize="@dimen/sp_16"
-            android:textColor="@color/white"
-            android:background="@color/field_crit"/>
-
-        <TextView
-            android:id="@+id/text_field_crit"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="@dimen/dp_3"
-            android:layout_marginTop="@dimen/dp_2"
-            android:gravity="left"
-            android:text="10.0%/100.0%"
-            android:textStyle="bold"
-            android:textSize="@dimen/sp_18"
-            android:textColor="@color/field_crit"/>
-
-    </LinearLayout>
-    <LinearLayout
-        android:id="@+id/layout_field_mastery"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center_vertical"
-        android:paddingStart="@dimen/dp_5">
-        <TextView
-            android:layout_width="@dimen/dp_80"
-            android:layout_height="wrap_content"
-            android:gravity="center"
-            android:text="精通加成"
-            android:textStyle="bold"
-            android:textSize="@dimen/sp_16"
-            android:textColor="@color/white"
-            android:background="@color/field_mastery"/>
-
-        <TextView
-            android:id="@+id/text_field_mastery"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="@dimen/dp_3"
-            android:layout_marginTop="@dimen/dp_2"
-            android:gravity="left"
-            android:text="10.0%"
-            android:textStyle="bold"
-            android:textSize="@dimen/sp_18"
-            android:textColor="@color/field_mastery"/>
-
-    </LinearLayout>
-    <LinearLayout
-        android:id="@+id/layout_field_reaction"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center_vertical"
-        android:paddingStart="@dimen/dp_5">
-        <TextView
-            android:layout_width="@dimen/dp_80"
-            android:layout_height="wrap_content"
-            android:gravity="center"
-            android:text="反应加成"
-            android:textStyle="bold"
-            android:textSize="@dimen/sp_16"
-            android:textColor="@color/white"
-            android:background="@color/field_reaction"/>
-
-        <TextView
-            android:id="@+id/text_field_reaction"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="@dimen/dp_3"
-            android:layout_marginTop="@dimen/dp_2"
-            android:gravity="left"
-            android:text="10.0%"
-            android:textStyle="bold"
-            android:textSize="@dimen/sp_18"
-            android:textColor="@color/field_reaction"/>
-
+        </LinearLayout>
     </LinearLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical">
-
-        <TextView
+        <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:background="@color/bg_transparent_black"
-            android:layout_marginRight="@dimen/dp_5"
             android:layout_gravity="right"
-            android:paddingVertical="@dimen/dp_2"
-            android:paddingHorizontal="@dimen/dp_5"
-            android:textSize="@dimen/sp_18"
-            android:textColor="@color/white"
-            android:textStyle="bold"
-            android:text="启用BUFF"/>
+            android:layout_marginRight="@dimen/dp_5"
+            android:background="@color/bg_transparent_black"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:paddingHorizontal="@dimen/dp_5"
+                android:textSize="@dimen/sp_18"
+                android:textColor="@color/white"
+                android:textStyle="bold"
+                android:text="启用BUFF"/>
+            <ImageView
+                android:id="@+id/btn_buff_add"
+                android:layout_width="@dimen/dp_30"
+                android:layout_height="@dimen/dp_30"
+                android:background="@color/gray_black"
+                android:src="@drawable/ic_add"/>
+        </LinearLayout>
 
         <ScrollView
+            android:id="@+id/view_enabled_buffs"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_marginHorizontal="@dimen/dp_5"

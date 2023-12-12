@@ -32,6 +32,8 @@ import java.util.Objects;
 public class EffectComputationFragment extends BaseFragment {
 
     private CharacterAttribute characterAttribute;
+    private List<FightEffect> fightEffectList;
+
     private Handler effectUpdateHandler;
     private EffectComputationManager effectComputationManager;
 
@@ -104,19 +106,29 @@ public class EffectComputationFragment extends BaseFragment {
     private void handleEffectUpdate(Message msg) {
         switch (msg.what) {
             case 0:
-                List<FightEffect> fightEffects = (List<FightEffect>) msg.obj;
-                updateEffectViews(fightEffects);
+                fightEffectList = (List<FightEffect>) msg.obj;
+                updateEffectViews();
                 break;
         }
     }
 
-    private void updateEffectViews(List<FightEffect> fightEffects) {
-        if(fightEffects.isEmpty()) {
+    public void updateFightEffect(FightEffect fightEffect) {
+        for(int i=0;i<fightEffectList.size();i++) {
+            if(fightEffectList.get(i).getEffectId().equals(fightEffect.getEffectId())) {
+                fightEffectList.set(i, fightEffect);
+            }
+        }
+        updateEffectViews();
+    }
+
+    private void updateEffectViews() {
+        if(fightEffectList.isEmpty()) {
             return;
         }
         textNoEffect.setVisibility(View.GONE);
+        layoutEffects.removeAllViews();
         FragmentTransaction fragmentTransaction = requireActivity().getSupportFragmentManager().beginTransaction();
-        for(int i=0;i< fightEffects.size();i++) {
+        for(int i=0;i< fightEffectList.size();i++) {
             if(i>0) {
                 View viewDividingLine = new View(getContext());
                 viewDividingLine.setBackgroundResource(R.drawable.bg_div_gr_black);
@@ -128,7 +140,7 @@ public class EffectComputationFragment extends BaseFragment {
             LinearLayout layoutContainer = new LinearLayout(getContext());
             int id = View.generateViewId();
             layoutContainer.setId(id);
-            FightEffectFragment fightEffectFragment = FightEffectFragment.newInstance(fightEffects.get(i), characterAttribute);
+            FightEffectFragment fightEffectFragment = FightEffectFragment.newInstance(fightEffectList.get(i));
             fragmentTransaction.add(id, fightEffectFragment);
             layoutEffects.addView(layoutContainer);
         }

@@ -29,12 +29,12 @@ public class BaseFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        toast = Toast.makeText(Objects.requireNonNull(getActivity()).getApplicationContext(), "", Toast.LENGTH_SHORT);
-        sharedPreferences = Objects.requireNonNull(getActivity()).getSharedPreferences("KNK", MODE_PRIVATE);
+        toast = Toast.makeText(requireActivity().getApplicationContext(), "", Toast.LENGTH_SHORT);
+        sharedPreferences = requireActivity().getSharedPreferences("KNK", MODE_PRIVATE);
         editor = sharedPreferences.edit();
-        typefaceNZBZ = Typeface.createFromAsset(Objects.requireNonNull(getActivity()).getAssets(), "fonts/nzbz.ttf");
-        typefaceFZFYKS = Typeface.createFromAsset(Objects.requireNonNull(getActivity()).getAssets(), "fonts/fzfyks.ttf");
-        typefaceNum = Typeface.createFromAsset(Objects.requireNonNull(getActivity()).getAssets(), "fonts/tttgbnumber.ttf");
+        typefaceNZBZ = Typeface.createFromAsset(requireActivity().getAssets(), "fonts/nzbz.ttf");
+        typefaceFZFYKS = Typeface.createFromAsset(requireActivity().getAssets(), "fonts/fzfyks.ttf");
+        typefaceNum = Typeface.createFromAsset(requireActivity().getAssets(), "fonts/tttgbnumber.ttf");
     }
 
     @Override

@@ -37,6 +37,18 @@ public class DynamicStyleUtils {
             default: return R.color.white;
         }
     }
+    public static int getElementBackgroundFrame(ElementEnum element) {
+        switch (element){
+            case PYRO: return R.drawable.frame_element_pyro;
+            case HYDRO: return R.drawable.frame_element_hydro;
+            case CRYO: return R.drawable.frame_element_cryo;
+            case ELECTRO: return R.drawable.frame_element_electro;
+            case ANEMO: return R.drawable.frame_element_anemo;
+            case GEO: return R.drawable.frame_element_geo;
+            case DENDRO: return R.drawable.frame_element_dendro;
+            default: return R.drawable.frame_element_null;
+        }
+    }
 
     public static int getRankColor(String rank){
         if(rank.contains("ACE"))

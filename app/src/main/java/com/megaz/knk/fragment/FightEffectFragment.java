@@ -31,7 +31,6 @@ import java.util.Objects;
  * create an instance of this fragment.
  */
 public class FightEffectFragment extends BaseFragment {
-    private CharacterAttribute characterAttribute;
     private FightEffect fightEffect;
 
     private EffectComputationManager effectComputationManager;
@@ -43,11 +42,10 @@ public class FightEffectFragment extends BaseFragment {
         // Required empty public constructor
     }
 
-    public static FightEffectFragment newInstance(FightEffect fightEffect, CharacterAttribute characterAttribute) {
+    public static FightEffectFragment newInstance(FightEffect fightEffect) {
         FightEffectFragment fragment = new FightEffectFragment();
         Bundle args = new Bundle();
         args.putSerializable("fightEffect", fightEffect);
-        args.putSerializable("characterAttribute", characterAttribute);
         fragment.setArguments(args);
         return fragment;
     }
@@ -56,7 +54,6 @@ public class FightEffectFragment extends BaseFragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if(getArguments()!=null){
-            characterAttribute = (CharacterAttribute) getArguments().getSerializable("characterAttribute");
             fightEffect = (FightEffect) getArguments().getSerializable("fightEffect");
         }
     }
@@ -123,12 +120,7 @@ public class FightEffectFragment extends BaseFragment {
 
         @Override
         public void onClick(View v) {
-            Intent intent = new Intent(requireActivity().getApplicationContext(), FightEffectDetailActivity.class);
-            Bundle bundle = new Bundle();
-            bundle.putSerializable("fightEffect", fightEffect);
-            bundle.putSerializable("characterAttribute", characterAttribute);
-            intent.putExtras(bundle);
-            startActivity(intent);
+            ((CharacterDetailActivity)requireActivity()).toShowFightEffectDetail(fightEffect);
         }
     }
 }

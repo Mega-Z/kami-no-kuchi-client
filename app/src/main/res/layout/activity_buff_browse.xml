@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".activity.BuffBrowseActivity"
+    android:orientation="vertical"
+    android:paddingTop="@dimen/dp_10"
+    android:background="@color/element_bg_null">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical"
+        android:layout_marginLeft="@dimen/dp_5"
+        android:background="@color/bg_transparent_black"
+        android:paddingHorizontal="@dimen/dp_10"
+        android:textSize="@dimen/sp_20"
+        android:textColor="@color/white"
+        android:textStyle="bold"
+        android:text="可用BUFF"/>
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginHorizontal="@dimen/dp_5"
+        android:layout_marginBottom="@dimen/dp_5"
+        android:background="@drawable/frame_buff_browse">
+        <ImageView
+            android:id="@+id/img_loading"
+            android:layout_width="@dimen/dp_50"
+            android:layout_height="@dimen/dp_50"
+            android:src="@drawable/loading_brown"
+            android:layout_gravity="center"
+            android:visibility="gone"/>
+
+
+        <ScrollView
+            android:id="@+id/view_enabled_buffs"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginHorizontal="@dimen/dp_3"
+            android:layout_marginVertical="@dimen/dp_3">
+
+            <LinearLayout
+                android:id="@+id/layout_buff_folders"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@color/element_bg_null"
+                android:orientation="vertical">
+
+            </LinearLayout>
+        </ScrollView>
+    </FrameLayout>
+
+</LinearLayout>

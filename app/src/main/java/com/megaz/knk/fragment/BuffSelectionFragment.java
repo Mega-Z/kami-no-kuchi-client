@@ -15,33 +15,28 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import com.megaz.knk.R;
-import com.megaz.knk.activity.FightEffectDetailActivity;
-import com.megaz.knk.manager.EffectComputationManager;
 import com.megaz.knk.utils.DynamicStyleUtils;
 import com.megaz.knk.utils.ImageResourceUtils;
 import com.megaz.knk.vo.BuffVo;
 
-import java.util.Objects;
-
 /**
  * A simple {@link Fragment} subclass.
- * Use the {@link EnabledBuffFragment#newInstance} factory method to
+ * Use the {@link BuffSelectionFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class EnabledBuffFragment extends BaseFragment {
+public class BuffSelectionFragment extends BaseFragment {
     private BuffVo buffVo;
 
-    private TextView textBuffTitle, textBuffEffect, textBuffNumber;
+    private TextView textBuffTitle, textBuffEffect;
     private ImageView imageSourceIcon;
-    private LinearLayout buttonBuffDisable;
 
 
-    public EnabledBuffFragment() {
+    public BuffSelectionFragment() {
         // Required empty public constructor
     }
 
-    public static EnabledBuffFragment newInstance(BuffVo buffVo) {
-        EnabledBuffFragment fragment = new EnabledBuffFragment();
+    public static BuffSelectionFragment newInstance(BuffVo buffVo) {
+        BuffSelectionFragment fragment = new BuffSelectionFragment();
         Bundle args = new Bundle();
         args.putSerializable("buffVo", buffVo);
         fragment.setArguments(args);
@@ -60,7 +55,7 @@ public class EnabledBuffFragment extends BaseFragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_enabled_buff, container, false);
+        return inflater.inflate(R.layout.fragment_buff_selection, container, false);
     }
 
     @Override
@@ -78,56 +73,27 @@ public class EnabledBuffFragment extends BaseFragment {
         textBuffEffect.setBackgroundColor(requireContext()
                 .getColor(DynamicStyleUtils.getBuffFieldColor(buffVo.getBuffField())));
         textBuffEffect.setText(buffVo.getEffectText());
-        textBuffNumber = view.findViewById(R.id.text_buff_number);
-        textBuffNumber.setTypeface(typefaceNum);
-        textBuffNumber.setTextColor(requireContext()
-                .getColor(DynamicStyleUtils.getBuffFieldColor(buffVo.getBuffField())));
-        if(buffVo.getPercent()) {
-            textBuffNumber.setText(String.format("%.2f", buffVo.getEffectValue() * 100) + "%");
-        } else if (buffVo.getEffectValue() > 10000) {
-            textBuffNumber.setText(String.format("%d", Math.round(buffVo.getEffectValue())));
-        } else {
-            textBuffNumber.setText(String.format("%.2f", buffVo.getEffectValue()));
-        }
         imageSourceIcon = view.findViewById(R.id.img_source_icon);
         if(buffVo.getIcon() != null) {
             imageSourceIcon.setImageBitmap(ImageResourceUtils.getIconBitmap(requireContext(), buffVo.getIcon()));
         } else {
             imageSourceIcon.setImageResource(R.drawable.icon_buff_default);
         }
-        buttonBuffDisable = view.findViewById(R.id.btn_buff_disable);
-        buttonBuffDisable.setVisibility(View.GONE);
     }
 
     @Override
     protected void setCallback(@NonNull View view) {
         super.setCallback(view);
-        view.setOnLongClickListener(new BuffOnLongClickListener());
         view.setOnTouchListener(new BuffOnTouchListener());
         view.setOnClickListener(new BuffOnClickListener());
-        buttonBuffDisable.setOnClickListener(new DisableBuffOnclickListener());
     }
 
-    private class BuffOnLongClickListener implements View.OnLongClickListener {
-
-        @Override
-        public boolean onLongClick(View v) {
-            BuffDetailFragment buffDetailFragment = BuffDetailFragment.newInstance(buffVo);
-            buffDetailFragment.show(getParentFragmentManager(), "");
-            return false;
-        }
-    }
 
     private class BuffOnClickListener implements View.OnClickListener{
         @Override
         public void onClick(View v) {
-            if(buttonBuffDisable.getVisibility() == View.GONE) {
-                if(!buffVo.getForced()) {
-                    buttonBuffDisable.setVisibility(View.VISIBLE);
-                }
-            } else {
-                buttonBuffDisable.setVisibility(View.GONE);
-            }
+            BuffEnableFragment buffEnableFragment = BuffEnableFragment.newInstance(buffVo);
+            buffEnableFragment.show(getParentFragmentManager(), "");
         }
     }
 
@@ -143,14 +109,6 @@ public class EnabledBuffFragment extends BaseFragment {
                 v.setBackgroundResource(R.drawable.bg_enabled_buff);
             }
             return false;
-        }
-    }
-
-    private class DisableBuffOnclickListener implements View.OnClickListener{
-
-        @Override
-        public void onClick(View v) {
-            ((FightEffectDetailActivity)(requireActivity())).toDisableBuff(buffVo);
         }
     }
 }

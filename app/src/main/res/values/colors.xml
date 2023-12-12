@@ -85,4 +85,9 @@
     <color name="field_crit">#D50000</color>
     <color name="field_mastery">#00C853</color>
     <color name="field_reaction">#FF6D00</color>
+    <color name="bg_buff_detail">#E0F7FA</color>
+    <color name="bg_enabled_buff">#BB000000</color>
+    <color name="bg_enabled_buff_pressed">#77000000</color>
+    <color name="bg_buff_browse">#E3F2FD</color>
+    <color name="frame_buff_browse">#000E5E</color>
 </resources>

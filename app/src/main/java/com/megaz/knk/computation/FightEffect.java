@@ -1,5 +1,6 @@
 package com.megaz.knk.computation;
 
+import com.megaz.knk.constant.AttributeEnum;
 import com.megaz.knk.constant.EffectBaseAttributeEnum;
 import com.megaz.knk.constant.EffectFieldEnum;
 import com.megaz.knk.constant.FightEffectEnum;
@@ -17,7 +18,6 @@ import java.util.Objects;
 import java.util.Set;
 
 import lombok.Getter;
-import lombok.Setter;
 
 @Getter
 public class FightEffect implements Serializable {
@@ -29,7 +29,7 @@ public class FightEffect implements Serializable {
     protected Map<String, BuffEffect> availableBuffEffects;
     private List<EffectBaseAttributeEnum> baseFieldAttributeList;
     private List<Double> baseFieldMultiplierList;
-    private Set<EffectBaseAttributeEnum> basedAttributeSet;
+    private Set<AttributeEnum> relatedAttributeSet;
     private Set<BuffEffect> attributeAddBuffEffects;
     private Set<BuffEffect> baseFieldAddendBuffEffects;
     private Set<BuffEffect> baseFieldMultiplierBuffEffects;
@@ -41,7 +41,7 @@ public class FightEffect implements Serializable {
         this.characterAttribute = characterAttribute;
         baseFieldAttributeList = new ArrayList<>();
         baseFieldMultiplierList = new ArrayList<>();
-        basedAttributeSet = new HashSet<>();
+        relatedAttributeSet = new HashSet<>();
         availableBuffEffects = new HashMap<>();
         attributeAddBuffEffects = new HashSet<>();
         baseFieldAddendBuffEffects = new HashSet<>();
@@ -51,7 +51,8 @@ public class FightEffect implements Serializable {
     public void addBaseFieldMultiplierItem(EffectBaseAttributeEnum attribute, Double multiplier) {
         baseFieldAttributeList.add(attribute);
         baseFieldMultiplierList.add(multiplier);
-        basedAttributeSet.add(attribute);
+        if(attribute != null)
+             relatedAttributeSet.addAll(attribute.getRelatedAttributes());
     }
 
     public Double getValue() {
@@ -81,10 +82,7 @@ public class FightEffect implements Serializable {
         BuffQueryCondition buffQueryCondition = new BuffQueryCondition();
         buffQueryCondition.addBuffTypes(Arrays.asList(
                 FightEffectEnum.ATTRIBUTE_ADD, FightEffectEnum.VALUE_ADD, FightEffectEnum.MULTIPLIER));
-        for (EffectBaseAttributeEnum effectBaseAttribute : basedAttributeSet) {
-            if (effectBaseAttribute != null)
-                buffQueryCondition.addAddedAttributes(effectBaseAttribute.getRelatedAttributes());
-        }
+        buffQueryCondition.addAddedAttributes(new ArrayList<>(relatedAttributeSet));
         return buffQueryCondition;
     }
 
@@ -105,9 +103,7 @@ public class FightEffect implements Serializable {
     }
 
     public void enableBuffEffect(BuffEffect buffEffect) {
-        assert availableBuffEffects.containsKey(buffEffect.getBuffId());
-        buffEffect.enableBuff();
-        characterAttributeWithBuffs = null;
+        prepareToEnableBuff(buffEffect);
         if (buffEffect.getEffectType() == FightEffectEnum.ATTRIBUTE_ADD) {
             attributeAddBuffEffects.add(buffEffect);
         } else if (buffEffect.getEffectType() == FightEffectEnum.MULTIPLIER) {
@@ -120,9 +116,6 @@ public class FightEffect implements Serializable {
     }
 
     public void disableBuffEffect(BuffEffect buffEffect) {
-        assert availableBuffEffects.containsKey(buffEffect.getBuffId());
-        buffEffect.disableBuff();
-        characterAttributeWithBuffs = null;
         if (buffEffect.getEffectType() == FightEffectEnum.ATTRIBUTE_ADD) {
             attributeAddBuffEffects.remove(buffEffect);
         } else if (buffEffect.getEffectType() == FightEffectEnum.MULTIPLIER) {
@@ -134,24 +127,50 @@ public class FightEffect implements Serializable {
         }
     }
 
-    public final void fillAttributeBuffEffectsParam() {
-        for(BuffEffect buffEffect:attributeAddBuffEffects){
-            buffEffect.fillAttributeParam(characterAttribute);
+    public final void updateWithEnabledBuffs() {
+        updateCharacterAttributeWithBuff();
+        fillBuffEffectsParam();
+    }
+
+    protected void prepareToEnableBuff(BuffEffect buffEffect) {
+        assert availableBuffEffects.containsKey(buffEffect.getBuffId());
+        buffEffect.enableBuff();
+        characterAttributeWithBuffs = null;
+        if(buffEffect.getFromSelf())
+            relatedAttributeSet.addAll(buffEffect.getRelatedAttributeSet());
+    }
+
+    private void updateCharacterAttributeWithBuff() {
+        // 提瓦特的法则：基于某种属性带来的另一种属性的提升，该提升不可用于计算其他同类提升
+        // 先算不基于属性的属性提升
+        CharacterAttribute characterAttributeWithNoBaseBuffs = new CharacterAttribute(characterAttribute);
+        for(BuffEffect buffEffect:attributeAddBuffEffects) {
+            if(buffEffect.getBasedAttribute() == null || buffEffect.getBasedAttribute() == EffectBaseAttributeEnum.INPUT) {
+                if(buffEffect.getFromSelf()) {
+                    buffEffect.fillAttributeParam(characterAttribute);
+                }
+                characterAttributeWithNoBaseBuffs.addAttributeValue(buffEffect.getIncreasedAttribute(), buffEffect.getValue());
+            }
+        }
+        // 再算基于上述提升后属性的属性提升
+        characterAttributeWithBuffs = new CharacterAttribute(characterAttributeWithNoBaseBuffs);
+        for(BuffEffect buffEffect:attributeAddBuffEffects) {
+            if(buffEffect.getBasedAttribute() != null && buffEffect.getBasedAttribute() != EffectBaseAttributeEnum.INPUT) {
+                if (buffEffect.getFromSelf()) {
+                    buffEffect.fillAttributeParam(characterAttributeWithNoBaseBuffs);
+                }
+                characterAttributeWithBuffs.addAttributeValue(buffEffect.getIncreasedAttribute(), buffEffect.getValue());
+            }
         }
     }
 
-    public final void fillBuffEffectsParam() {
+    private void fillBuffEffectsParam() {
+        // 填充除属性增加之外已启用BUFF的参数
         assert characterAttributeWithBuffs != null;
         for(BuffEffect buffEffect: getEnabledBuffEffects()) {
-            buffEffect.fillAttributeParam(characterAttributeWithBuffs);
-        }
-    }
-
-    // ATTRIBUTE_ADD
-    public final void updateCharacterAttributeWithBuff() {
-        characterAttributeWithBuffs = new CharacterAttribute(characterAttribute);
-        for(BuffEffect buffEffect:attributeAddBuffEffects) {
-            characterAttributeWithBuffs.addAttributeValue(buffEffect.getIncreasedAttribute(), buffEffect.getValue());
+            if(buffEffect.getFromSelf()) {
+                buffEffect.fillAttributeParam(characterAttributeWithBuffs);
+            }
         }
     }
 

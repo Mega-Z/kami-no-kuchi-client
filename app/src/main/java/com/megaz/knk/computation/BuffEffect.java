@@ -1,8 +1,5 @@
 package com.megaz.knk.computation;
 
-import androidx.room.ColumnInfo;
-import androidx.room.PrimaryKey;
-
 import com.megaz.knk.constant.AttributeEnum;
 import com.megaz.knk.constant.BuffRangeEnum;
 import com.megaz.knk.constant.BuffSourceEnum;
@@ -16,7 +13,9 @@ import com.megaz.knk.entity.Buff;
 import com.megaz.knk.exception.BuffParamNotFilledException;
 
 import java.io.Serializable;
+import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -36,6 +35,7 @@ public class BuffEffect implements Serializable {
     private SourceTalentEnum sourceTalent;
     private String specialInput;
     private Boolean forced;
+    private Boolean fromSelf;
     private Boolean enabled;
     private Boolean defaultEnabled;
     // constant
@@ -67,7 +67,7 @@ public class BuffEffect implements Serializable {
     private Integer artifactNum;
 
 
-    public BuffEffect(Buff buff, Boolean force) {
+    public BuffEffect(Buff buff) {
         buffId = buff.getBuffId();
         buffName = buff.getBuffName();
         description = buff.getDescription();
@@ -80,7 +80,6 @@ public class BuffEffect implements Serializable {
         percent = buff.getPercent();
         sourceTalent = buff.getSourceTalent();
         specialInput = buff.getSpecialInput();
-        forced = force;
         enabled = false;
         defaultEnabled = buff.getDefaultEnabled();
         multiplierConstant = buff.getMultiplierConstant();
@@ -166,7 +165,22 @@ public class BuffEffect implements Serializable {
         }
     }
 
-    private void checkParam() {
+
+    public Set<AttributeEnum> getRelatedAttributeSet() {
+        Set<AttributeEnum> attributeSet = new HashSet<>();
+        if(basedAttribute != null) {
+            attributeSet.addAll(basedAttribute.getRelatedAttributes());
+        }
+        if(basedAttributeSecond != null) {
+            attributeSet.addAll(basedAttributeSecond.getRelatedAttributes());
+        }
+        if(maxValueBasedAttribute != null) {
+            attributeSet.addAll(maxValueBasedAttribute.getRelatedAttributes());
+        }
+        return attributeSet;
+    }
+
+    public void checkParam() {
         if (basedAttribute != null && basedAttributeValue == null) {
             throw new BuffParamNotFilledException(specialInput == null ? basedAttribute.getDesc() : specialInput);
         }

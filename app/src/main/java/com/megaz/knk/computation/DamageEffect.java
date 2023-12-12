@@ -67,9 +67,7 @@ public abstract class DamageEffect extends FightEffect{
 
     @Override
     public void enableBuffEffect(BuffEffect buffEffect) {
-        assert availableBuffEffects.containsKey(buffEffect.getBuffId());
-        buffEffect.enableBuff();
-        characterAttributeWithBuffs = null;
+        prepareToEnableBuff(buffEffect);
         if(buffEffect.getEffectType() == FightEffectEnum.RESIST_DOWN &&
                 buffEffect.getElement() ==element) {
             resistFieldBuffEffects.add(buffEffect);

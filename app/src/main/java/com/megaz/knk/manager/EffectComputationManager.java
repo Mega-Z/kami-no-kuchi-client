@@ -2,11 +2,11 @@ package com.megaz.knk.manager;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
-import android.view.View;
 
 import com.megaz.knk.KnkDatabase;
 import com.megaz.knk.computation.AmplifiedDamageEffect;
 import com.megaz.knk.computation.BuffEffect;
+import com.megaz.knk.computation.BuffInputParam;
 import com.megaz.knk.computation.BuffQueryCondition;
 import com.megaz.knk.computation.CharacterAttribute;
 import com.megaz.knk.computation.DirectDamageEffect;
@@ -17,6 +17,7 @@ import com.megaz.knk.computation.ShieldEffect;
 import com.megaz.knk.computation.UpheavalDamageEffect;
 import com.megaz.knk.constant.AttributeEnum;
 import com.megaz.knk.constant.BuffSourceEnum;
+import com.megaz.knk.constant.EffectBaseAttributeEnum;
 import com.megaz.knk.constant.EffectFieldEnum;
 import com.megaz.knk.constant.ElementEnum;
 import com.megaz.knk.constant.ElementReactionEnum;
@@ -55,11 +56,9 @@ import java.util.stream.Collectors;
 
 public class EffectComputationManager {
 
-    private Context context;
-    private KnkDatabase knkDatabase;
+    private final KnkDatabase knkDatabase;
 
     public EffectComputationManager(Context context) {
-        this.context = context;
         this.knkDatabase = KnkDatabase.getKnkDatabase(context);
     }
 
@@ -81,9 +80,7 @@ public class EffectComputationManager {
             FightEffect fightEffect = createFightEffect(entry.getValue(), characterAttribute);
             fightEffects.add(fightEffect);
             initializeBuffs(fightEffect, characterAttribute);
-            fightEffect.fillAttributeBuffEffectsParam();
-            fightEffect.updateCharacterAttributeWithBuff();
-            fightEffect.fillBuffEffectsParam();
+            fightEffect.updateWithEnabledBuffs();
             //System.out.println(fightEffect.getValue());
         }
         return fightEffects;
@@ -94,15 +91,15 @@ public class EffectComputationManager {
         EffectDetailVo effectDetailVo = new EffectDetailVo();
         effectDetailVo.setCanCritical(fightEffect instanceof DirectDamageEffect);
         effectDetailVo.setEffectDesc(fightEffect.getEffectDesc());
-        if(fightEffect instanceof DirectDamageEffect) {
+        if (fightEffect instanceof DirectDamageEffect) {
             effectDetailVo.setEffectValue(String.format("%d/%d",
-                    (int)(((DirectDamageEffect) fightEffect).getCriticalValue().doubleValue()),
-                    (int)((((DirectDamageEffect) fightEffect).getAverageValue().doubleValue()))));
+                    (int) (((DirectDamageEffect) fightEffect).getCriticalValue().doubleValue()),
+                    (int) ((((DirectDamageEffect) fightEffect).getAverageValue().doubleValue()))));
         } else {
-            if(fightEffect.getPercent()) {
-                effectDetailVo.setEffectValue(String.format("%.2f", fightEffect.getValue()*100)+"%");
-            } else if (fightEffect.getValue() > 1000){
-                effectDetailVo.setEffectValue(String.format("%d", (int)(fightEffect.getValue().doubleValue())));
+            if (fightEffect.getPercent()) {
+                effectDetailVo.setEffectValue(String.format("%.2f", fightEffect.getValue() * 100) + "%");
+            } else if (fightEffect.getValue() > 1000) {
+                effectDetailVo.setEffectValue(String.format("%d", (int) (fightEffect.getValue().doubleValue())));
             } else {
                 effectDetailVo.setEffectValue(String.format("%.2f", fightEffect.getValue()));
             }
@@ -117,36 +114,38 @@ public class EffectComputationManager {
         ArtifactDexDao artifactDexDao = knkDatabase.getArtifactDexDao();
 
         BuffVo buffVo = new BuffVo();
-        buffVo.setBuffTitle(buffEffect.getSourceName()+"："+buffEffect.getBuffName());
+        buffVo.setBuffId(buffEffect.getBuffId());
+        buffVo.setBuffTitle(buffEffect.getSourceName() + "：" + buffEffect.getBuffName());
         buffVo.setBuffDesc(buffEffect.getDescription());
         buffVo.setSourceType(buffEffect.getSourceType());
-        if(buffEffect.getSourceType() == BuffSourceEnum.CHARACTER) {
+        buffVo.setForced(buffEffect.getForced());
+        if (buffEffect.getSourceType() == BuffSourceEnum.CHARACTER) {
             List<CharacterDex> characterDexList = characterDexDao.selectByCharacterId(buffEffect.getSourceId());
-            if(characterDexList.size() != 1) {
+            if (characterDexList.size() != 1) {
                 throw new MetaDataQueryException("character_dex");
             }
             buffVo.setIcon(characterDexList.get(0).getIconAvatar());
         } else if (buffEffect.getSourceType() == BuffSourceEnum.WEAPON) {
             List<WeaponDex> weaponDexList = weaponDexDao.selectByWeaponId(buffEffect.getSourceId());
-            if(weaponDexList.size() != 1) {
+            if (weaponDexList.size() != 1) {
                 throw new MetaDataQueryException("weapon_dex");
             }
             buffVo.setIcon(weaponDexList.get(0).getIconAwaken());
         } else if (buffEffect.getSourceType() == BuffSourceEnum.ARTIFACT_SET) {
             List<ArtifactDex> artifactDexList = artifactDexDao.selectBySetId(buffEffect.getSourceId());
-            if(artifactDexList.size() <= 0) {
+            if (artifactDexList.size() <= 0) {
                 throw new MetaDataQueryException("artifact_dex");
             }
             buffVo.setIcon(artifactDexList.get(0).getIcon());
         }
         buffVo.setEnabled(buffEffect.getEnabled());
         buffVo.setPercent(buffEffect.getPercent());
-        if(buffEffect.getEnabled()) {
+        if (buffEffect.getEnabled()) {
             buffVo.setEffectValue(buffEffect.getValue());
         }
-        if(buffEffect.getEffectType() == FightEffectEnum.ATTRIBUTE_ADD ||
+        if (buffEffect.getEffectType() == FightEffectEnum.ATTRIBUTE_ADD ||
                 buffEffect.getEffectType() == FightEffectEnum.DAMAGE_UP) {
-            if(buffEffect.getIncreasedAttribute() == AttributeEnum.CRIT_RATE) {
+            if (buffEffect.getIncreasedAttribute() == AttributeEnum.CRIT_RATE) {
                 buffVo.setBuffField(EffectFieldEnum.CRIT_RATE);
             } else if (buffEffect.getIncreasedAttribute() == AttributeEnum.CRIT_DMG) {
                 buffVo.setBuffField(EffectFieldEnum.CRIT_DMG);
@@ -168,16 +167,16 @@ public class EffectComputationManager {
             buffVo.setBuffField(EffectFieldEnum.BASE_ADD);
         } else if (buffEffect.getEffectType() == FightEffectEnum.RESIST_DOWN) {
             buffVo.setBuffField(EffectFieldEnum.RESIST);
-        } else if(buffEffect.getEffectType() == FightEffectEnum.DEF_DOWN ||
-                buffEffect.getEffectType()==FightEffectEnum.DEF_IGNORE) {
+        } else if (buffEffect.getEffectType() == FightEffectEnum.DEF_DOWN ||
+                buffEffect.getEffectType() == FightEffectEnum.DEF_IGNORE) {
             buffVo.setBuffField(EffectFieldEnum.DEFENCE);
-        } else if(buffEffect.getEffectType() == FightEffectEnum.REACTION_UP) {
+        } else if (buffEffect.getEffectType() == FightEffectEnum.REACTION_UP) {
             buffVo.setBuffField(EffectFieldEnum.REACTION);
         } else {
             throw new BuffNoFieldMatchedException(buffEffect.getBuffName());
         }
         if (buffEffect.getEffectType() == FightEffectEnum.DEF_DOWN ||
-                buffEffect.getEffectType()==FightEffectEnum.DEF_IGNORE) {
+                buffEffect.getEffectType() == FightEffectEnum.DEF_IGNORE) {
             buffVo.setEffectText(buffEffect.getEffectType().getDesc());
         } else if (buffVo.getBuffField() == EffectFieldEnum.DAMAGE_UP) {
             buffVo.setEffectText(buffVo.getBuffField().getEffectText());
@@ -186,9 +185,138 @@ public class EffectComputationManager {
         } else {
             buffVo.setEffectText(buffVo.getBuffField().getEffectText());
         }
-
+        if (!buffEffect.getFromSelf())
+            buffVo.setBuffInputParamList(getInputParamOfBuff(buffEffect));
         return buffVo;
     }
+
+    public void disableBuffEffect(FightEffect fightEffect, BuffEffect buffEffect) {
+        assert fightEffect.getEnabledBuffEffects().contains(buffEffect);
+        fightEffect.disableBuffEffect(buffEffect);
+        fightEffect.updateWithEnabledBuffs();
+    }
+
+    public void enableBuffEffect(FightEffect fightEffect, BuffEffect buffEffect, List<BuffInputParam> buffInputParamList) {
+        Set<AttributeEnum> attributeSet = buffEffect.getRelatedAttributeSet();
+        attributeSet.removeAll(fightEffect.getRelatedAttributeSet());
+        if (!attributeSet.isEmpty()) {
+            List<BuffEffect> additionalBuffEffectList = checkAdditionalAttributeAddBuffs(fightEffect,
+                    new ArrayList<>(attributeSet));
+            fightEffect.addAvailableBuffEffects(additionalBuffEffectList);
+        }
+
+        if(buffEffect.getFromSelf()) {
+            fillBuffEffectCurveParam(buffEffect,
+                    fightEffect.getCharacterAttribute().getTalentLevel().get(buffEffect.getSourceTalent()),
+                    fightEffect.getCharacterAttribute().getWeaponRefinement());
+        } else {
+            assert buffInputParamList != null;
+            fillBuffEffectInputParam(buffEffect, buffInputParamList);
+        }
+        fightEffect.enableBuffEffect(buffEffect);
+        fightEffect.updateWithEnabledBuffs();
+    }
+
+    public List<BuffInputParam> getInputParamOfBuff(BuffEffect buffEffect) {
+        List<BuffInputParam> buffInputParamList = new ArrayList<>();
+        if (buffEffect.getBasedAttribute() != null) {
+            if (buffEffect.getBasedAttribute() == EffectBaseAttributeEnum.INPUT) {
+                buffInputParamList.add(new BuffInputParam(
+                        buffEffect.getSpecialInput(), false, true
+                ));
+            } else {
+                String hint;
+                if (buffEffect.getSourceType() == BuffSourceEnum.CHARACTER) {
+                    hint = buffEffect.getSourceName() + "的" + buffEffect.getBasedAttribute().getDesc();
+                } else {
+                    hint = "装备者的" + buffEffect.getBasedAttribute().getDesc();
+                }
+                buffInputParamList.add(new BuffInputParam(hint, buffEffect.getBasedAttribute().getPercent(), true));
+
+            }
+        }
+        if (buffEffect.getBasedAttributeSecond() != null) {
+            String hint;
+            if (buffEffect.getSourceType() == BuffSourceEnum.CHARACTER) {
+                hint = buffEffect.getSourceName() + "的" + buffEffect.getBasedAttributeSecond().getDesc();
+            } else {
+                hint = "装备者的" + buffEffect.getBasedAttributeSecond().getDesc();
+            }
+            buffInputParamList.add(new BuffInputParam(hint, buffEffect.getBasedAttributeSecond().getPercent(), true));
+        }
+        if (buffEffect.getMaxValueBasedAttribute() != null) {
+            if (buffEffect.getMaxValueBasedAttribute() != buffEffect.getBasedAttribute() &&
+                    buffEffect.getMaxValueBasedAttribute() != buffEffect.getBasedAttributeSecond()) {
+                String hint;
+                if (buffEffect.getSourceType() == BuffSourceEnum.CHARACTER) {
+                    hint = buffEffect.getSourceName() + "的" + buffEffect.getMaxValueBasedAttribute().getDesc();
+                } else {
+                    hint = "装备者的" + buffEffect.getMaxValueBasedAttribute().getDesc();
+                }
+                buffInputParamList.add(new BuffInputParam(hint, buffEffect.getMaxValueBasedAttribute().getPercent(), true));
+            }
+        }
+        if (buffEffect.getMultiplierTalentCurve() != null) {
+            buffInputParamList.add(new BuffInputParam(
+                    buffEffect.getSourceName() + "的" + buffEffect.getSourceTalent().getDesc() + "等级",
+                    false, false, 15.));
+        }
+        if (buffEffect.getMultiplierRefinementCurve() != null ||
+                buffEffect.getMaxValueRefinementCurve() != null) {
+            buffInputParamList.add(new BuffInputParam(
+                    buffEffect.getSourceName() + "的精炼等级",
+                    false, false, 5.));
+        }
+        return buffInputParamList;
+    }
+
+    private void fillBuffEffectInputParam(BuffEffect buffEffect, List<BuffInputParam> buffInputParamList) {
+        TalentCurveDao talentCurveDao = knkDatabase.getTalentCurveDao();
+        RefinementCurveDao refinementCurveDao = knkDatabase.getRefinementCurveDao();
+        int cursor = 0;
+        if (buffEffect.getBasedAttribute() != null) {
+            buffEffect.setBasedAttributeValue(buffInputParamList.get(cursor).getInputValue());
+            cursor++;
+        }
+        if (buffEffect.getBasedAttributeSecond() != null) {
+            buffEffect.setBasedAttributeSecondValue(buffInputParamList.get(cursor).getInputValue());
+            cursor++;
+        }
+        if (buffEffect.getMaxValueBasedAttribute() != null) {
+            if (buffEffect.getMaxValueBasedAttribute() == buffEffect.getBasedAttribute()) {
+                buffEffect.setMaxValueBasedAttributeValue(buffEffect.getBasedAttributeValue());
+            } else if (buffEffect.getMaxValueBasedAttribute() == buffEffect.getBasedAttributeSecond()) {
+                buffEffect.setMaxValueBasedAttributeValue(buffEffect.getBasedAttributeSecondValue());
+            } else {
+                buffEffect.setMaxValueBasedAttributeValue(buffInputParamList.get(cursor).getInputValue());
+                cursor++;
+            }
+        }
+        Integer talentLevel = null;
+        Integer refinementLevel = null;
+        if (buffEffect.getMultiplierTalentCurve() != null) {
+            talentLevel = buffInputParamList.get(cursor).getInputValue().intValue();
+            cursor++;
+        }
+        if (buffEffect.getMultiplierRefinementCurve() != null ||
+                buffEffect.getMaxValueRefinementCurve() != null) {
+            refinementLevel = buffInputParamList.get(cursor).getInputValue().intValue();
+        }
+        fillBuffEffectCurveParam(buffEffect, talentLevel, refinementLevel);
+    }
+
+    private List<BuffEffect> checkAdditionalAttributeAddBuffs(FightEffect fightEffect, List<AttributeEnum> additionalAttributes) {
+        BuffQueryCondition baseBuffQueryCondition = fightEffect.getBuffQueryCondition();
+        BuffQueryCondition additionalBuffQueryCondition = new BuffQueryCondition();
+        additionalBuffQueryCondition.addBuffTypes(Collections.singletonList(FightEffectEnum.ATTRIBUTE_ADD));
+        additionalBuffQueryCondition.setDamageElement(baseBuffQueryCondition.getDamageElement());
+        additionalBuffQueryCondition.setDamageLabel(baseBuffQueryCondition.getDamageLabel());
+        additionalBuffQueryCondition.setElementReaction(baseBuffQueryCondition.getElementReaction());
+        additionalBuffQueryCondition.addAddedAttributes(additionalAttributes);
+        return queryBuffByCondition(fightEffect.getCharacterAttribute(),
+                fightEffect.getEffectId(), additionalBuffQueryCondition);
+    }
+
 
     private FightEffect createFightEffect(List<FightEffectComputation> fightEffectComputations, CharacterAttribute characterAttribute) {
         TalentCurveDao talentCurveDao = knkDatabase.getTalentCurveDao();
@@ -256,27 +384,29 @@ public class EffectComputationManager {
                 characterAttribute, fightEffect.getEffectId(), buffQueryCondition);
         // enable default buff
         List<AttributeEnum> queriedAttributes = buffQueryCondition.getAddedAttributes();
-        List<AttributeEnum> additionalAttributes = enableDefaultBuffs(buffEffectList, characterAttribute);
+        List<AttributeEnum> additionalAttributes = getRelatedAttributesFromDefaultBuffs(buffEffectList);
         additionalAttributes.removeAll(queriedAttributes);
         // query additionally
-        while(!additionalAttributes.isEmpty()) {
+        while (!additionalAttributes.isEmpty()) {
             BuffQueryCondition additionalBuffQueryCondition = new BuffQueryCondition();
             additionalBuffQueryCondition.addBuffTypes(Collections.singletonList(FightEffectEnum.ATTRIBUTE_ADD));
             additionalBuffQueryCondition.setDamageElement(buffQueryCondition.getDamageElement());
             additionalBuffQueryCondition.setDamageLabel(buffQueryCondition.getDamageLabel());
             additionalBuffQueryCondition.setElementReaction(buffQueryCondition.getElementReaction());
             additionalBuffQueryCondition.addAddedAttributes(additionalAttributes);
-            queriedAttributes.addAll(additionalAttributes);
             List<BuffEffect> additionalBuffEffectList = queryBuffByCondition(characterAttribute, fightEffect.getEffectId(), additionalBuffQueryCondition);
             buffEffectList.addAll(additionalBuffEffectList);
-            // enable default buff again
-            additionalAttributes = enableDefaultBuffs(additionalBuffEffectList, characterAttribute);
+            additionalAttributes = getRelatedAttributesFromDefaultBuffs(additionalBuffEffectList);
             additionalAttributes.removeAll(queriedAttributes);
+            queriedAttributes.addAll(additionalAttributes);
         }
-        // add buff effects to fight effect
+        // add buff effects to fight effect and enable default buffs
         fightEffect.addAvailableBuffEffects(buffEffectList);
-        for(BuffEffect buffEffect:buffEffectList) {
-            if(buffEffect.getEnabled()) {
+        for (BuffEffect buffEffect : buffEffectList) {
+            if (buffEffect.getDefaultEnabled() && buffEffect.getFromSelf()) {
+                fillBuffEffectCurveParam(buffEffect,
+                        characterAttribute.getTalentLevel().get(buffEffect.getSourceTalent()),
+                        characterAttribute.getWeaponRefinement());
                 fightEffect.enableBuffEffect(buffEffect);
             }
         }
@@ -321,6 +451,8 @@ public class EffectComputationManager {
         }
         // query party ranged buffs
         buffs.addAll(buffDao.selectPartyRangedBuffByCondition(
+                characterAttribute.getCharacterId(),
+                characterAttribute.getPhase(), characterAttribute.getConstellation(),
                 buffQueryCondition.getBuffTypes(), buffQueryCondition.getAddedAttributes(),
                 buffQueryCondition.getDamageElement(), buffQueryCondition.getDamageLabel(),
                 buffQueryCondition.getElementReaction()));
@@ -332,86 +464,80 @@ public class EffectComputationManager {
                 buffQueryCondition.getElementReaction()));
         // create buff effects
         List<BuffEffect> buffEffectList = new ArrayList<>();
-        for(Buff buff:buffs) {
-            if(forcedBuffIdSet.contains(buff.getBuffId())) {
-                buffEffectList.add(new BuffEffect(buff, true));
+        for (Buff buff : buffs) {
+            if (forcedBuffIdSet.contains(buff.getBuffId())) {
+                buffEffectList.add(createBuffEffect(buff, true, characterAttribute));
             } else {
-                buffEffectList.add(new BuffEffect(buff, false));
+                buffEffectList.add(createBuffEffect(buff, false, characterAttribute));
             }
         }
         return buffEffectList;
     }
 
-    private List<AttributeEnum> enableDefaultBuffs(List<BuffEffect> buffEffectList, CharacterAttribute characterAttribute) {
+    private BuffEffect createBuffEffect(Buff buff, Boolean force, CharacterAttribute characterAttribute) {
+        BuffEffect buffEffect = new BuffEffect(buff);
+        buffEffect.setForced(force);
+        boolean selfFlag = false;
+        if (buffEffect.getSourceType() == BuffSourceEnum.CHARACTER &&
+                buffEffect.getSourceId().equals(characterAttribute.getCharacterId())) {
+            if (buffEffect.getPhase() < -1 * characterAttribute.getPhase() ||
+                    (buffEffect.getPhase() >= 0 && buffEffect.getPhase() <= characterAttribute.getPhase())) {
+                if (buffEffect.getConstellation() < -1 * characterAttribute.getConstellation() ||
+                        (buffEffect.getConstellation() >= 0 && buffEffect.getConstellation() <= characterAttribute.getConstellation())) {
+                    selfFlag = true;
+                }
+            }
+        }
+        if (buffEffect.getSourceType() == BuffSourceEnum.WEAPON &&
+                buffEffect.getSourceId().equals(characterAttribute.getWeaponId())) {
+            selfFlag = true;
+        }
+        if (buffEffect.getSourceType() == BuffSourceEnum.ARTIFACT_SET &&
+                characterAttribute.getArtifactSetCount().containsKey(buffEffect.getSourceId())) {
+            if (buffEffect.getArtifactNum() <= Objects.requireNonNull(characterAttribute.getArtifactSetCount().get(buffEffect.getSourceId()))) {
+                selfFlag = true;
+            }
+        }
+        buffEffect.setFromSelf(selfFlag);
+        return buffEffect;
+    }
+
+    private List<AttributeEnum> getRelatedAttributesFromDefaultBuffs(List<BuffEffect> buffEffectList) {
         Set<AttributeEnum> additionalAttributeSet = new HashSet<>();
-        for(BuffEffect buffEffect:buffEffectList) {
-            if(!buffEffect.getDefaultEnabled()) {
-                continue;
-            }
-            boolean enableFlag = false;
-            if(buffEffect.getSourceType() == BuffSourceEnum.CHARACTER &&
-                    buffEffect.getSourceId().equals(characterAttribute.getCharacterId())) {
-                if(buffEffect.getPhase() < -1 * characterAttribute.getPhase() ||
-                        (buffEffect.getPhase() >= 0 && buffEffect.getPhase() <= characterAttribute.getPhase())) {
-                    if(buffEffect.getConstellation() < -1 * characterAttribute.getConstellation() ||
-                            (buffEffect.getConstellation() >=0 && buffEffect.getConstellation() <= characterAttribute.getConstellation())){
-                        enableFlag = true;
-                    }
-                }
-            }
-            if(buffEffect.getSourceType() == BuffSourceEnum.WEAPON &&
-                    buffEffect.getSourceId().equals(characterAttribute.getWeaponId())){
-                enableFlag = true;
-            }
-            if(buffEffect.getSourceType() == BuffSourceEnum.ARTIFACT_SET &&
-                    characterAttribute.getArtifactSetCount().containsKey(buffEffect.getSourceId())) {
-                if(buffEffect.getArtifactNum() <= Objects.requireNonNull(characterAttribute.getArtifactSetCount().get(buffEffect.getSourceId()))) {
-                    enableFlag = true;
-                }
-            }
-            if(enableFlag) {
-                fillBuffEffectCurveParam(buffEffect, characterAttribute);
-                buffEffect.enableBuff();
-                if(buffEffect.getBasedAttribute() != null) {
-                    additionalAttributeSet.addAll(buffEffect.getBasedAttribute().getRelatedAttributes());
-                }
-                if(buffEffect.getBasedAttributeSecond() != null) {
-                    additionalAttributeSet.addAll(buffEffect.getBasedAttributeSecond().getRelatedAttributes());
-                }
-                if(buffEffect.getMaxValueBasedAttribute() != null) {
-                    additionalAttributeSet.addAll(buffEffect.getMaxValueBasedAttribute().getRelatedAttributes());
-                }
+        for (BuffEffect buffEffect : buffEffectList) {
+            if (buffEffect.getDefaultEnabled() && buffEffect.getFromSelf()) {
+                additionalAttributeSet.addAll(buffEffect.getRelatedAttributeSet());
             }
         }
         return new ArrayList<>(additionalAttributeSet);
     }
 
-    private void fillBuffEffectCurveParam(BuffEffect buffEffect, CharacterAttribute characterAttribute) {
+    private void fillBuffEffectCurveParam(BuffEffect buffEffect, Integer talentLevel, Integer refinementLevel) {
         TalentCurveDao talentCurveDao = knkDatabase.getTalentCurveDao();
         RefinementCurveDao refinementCurveDao = knkDatabase.getRefinementCurveDao();
-        if(buffEffect.getMultiplierTalentCurve() != null) {
+        if (buffEffect.getMultiplierTalentCurve() != null) {
             List<TalentCurve> talentCurveList = talentCurveDao.selectByCurveID(buffEffect.getMultiplierTalentCurve());
-            if(talentCurveList.size() != 1) {
+            if (talentCurveList.size() != 1) {
                 throw new MetaDataQueryException("talent_curve");
             }
             buffEffect.setMultiplierTalentCurveValue(talentCurveList.get(0).getValue(
-                    Objects.requireNonNull(characterAttribute.getTalentLevel().get(buffEffect.getSourceTalent()))));
+                    Objects.requireNonNull(talentLevel)));
         }
-        if(buffEffect.getMultiplierRefinementCurve() != null) {
+        if (buffEffect.getMultiplierRefinementCurve() != null) {
             List<RefinementCurve> refinementCurveList = refinementCurveDao.selectByCurveID(buffEffect.getMultiplierRefinementCurve());
-            if(refinementCurveList.size() != 1) {
+            if (refinementCurveList.size() != 1) {
                 throw new MetaDataQueryException("refinement_curve");
             }
             buffEffect.setMultiplierRefinementCurveValue(refinementCurveList.get(0).getValue(
-                    Objects.requireNonNull(characterAttribute.getWeaponRefinement())));
+                    Objects.requireNonNull(refinementLevel)));
         }
-        if(buffEffect.getMaxValueRefinementCurveValue() != null) {
+        if (buffEffect.getMaxValueRefinementCurveValue() != null) {
             List<RefinementCurve> refinementCurveList = refinementCurveDao.selectByCurveID(buffEffect.getMaxValueRefinementCurve());
-            if(refinementCurveList.size() != 1) {
+            if (refinementCurveList.size() != 1) {
                 throw new MetaDataQueryException("refinement_curve");
             }
             buffEffect.setMaxValueRefinementCurveValue(refinementCurveList.get(0).getValue(
-                    Objects.requireNonNull(characterAttribute.getWeaponRefinement())));
+                    Objects.requireNonNull(refinementLevel)));
         }
     }
 

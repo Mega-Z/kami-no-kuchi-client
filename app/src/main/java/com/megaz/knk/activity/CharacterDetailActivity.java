@@ -1,17 +1,21 @@
 package com.megaz.knk.activity;
 
 import android.annotation.SuppressLint;
+import android.content.Intent;
 import android.graphics.Bitmap;
+import android.os.Bundle;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import androidx.annotation.Nullable;
 import androidx.fragment.app.FragmentTransaction;
 
 import com.megaz.knk.R;
 import com.megaz.knk.computation.CharacterAttribute;
+import com.megaz.knk.computation.FightEffect;
 import com.megaz.knk.fragment.ArtifactEvaluationFragment;
 import com.megaz.knk.fragment.CharacterAttributeFragment;
 import com.megaz.knk.fragment.ConstellationFragment;
@@ -20,6 +24,7 @@ import com.megaz.knk.fragment.TalentFragment;
 import com.megaz.knk.fragment.WeaponFragment;
 import com.megaz.knk.utils.DynamicStyleUtils;
 import com.megaz.knk.utils.ImageResourceUtils;
+import com.megaz.knk.vo.BuffVo;
 import com.megaz.knk.vo.CharacterProfileVo;
 import com.megaz.knk.vo.ConstellationVo;
 import com.megaz.knk.vo.TalentVo;
@@ -128,6 +133,27 @@ public class CharacterDetailActivity extends ElasticScrollActivity {
                 - Math.round(getResources().getDimensionPixelOffset(R.dimen.dp_90) * getScrollProgress());
         layoutTalentQ.setLayoutParams(layoutTalentQParams);
 
+    }
+
+    public void toShowFightEffectDetail(FightEffect fightEffect) {
+        Intent intent = new Intent(getApplicationContext(), FightEffectDetailActivity.class);
+        Bundle bundle = new Bundle();
+        bundle.putSerializable("fightEffect", fightEffect);
+        bundle.putSerializable("characterAttribute", characterAttribute);
+        intent.putExtras(bundle);
+        startActivityForResult(intent, 1);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if(requestCode == 1) {
+            if(resultCode == RESULT_OK) {
+                assert data != null;
+                FightEffect fightEffect = (FightEffect) data.getExtras().getSerializable("fightEffect");
+                effectComputationFragment.updateFightEffect(fightEffect);
+            }
+        }
     }
 
 

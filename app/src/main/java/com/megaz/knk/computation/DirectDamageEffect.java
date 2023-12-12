@@ -88,9 +88,7 @@ public class DirectDamageEffect extends DamageEffect {
 
     @Override
     public void enableBuffEffect(BuffEffect buffEffect) {
-        assert availableBuffEffects.containsKey(buffEffect.getBuffId());
-        buffEffect.enableBuff();
-        characterAttributeWithBuffs = null;
+        prepareToEnableBuff(buffEffect);
         if (buffEffect.getEffectType() == FightEffectEnum.DAMAGE_UP && buffEffect.getIncreasedAttribute() == null &&
                 (buffEffect.getIncreasedDamageLabel() == label || buffEffect.getIncreasedDamageLabel() == null)) {
             damageUpFieldBuffEffects.add(buffEffect);

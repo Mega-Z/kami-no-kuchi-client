@@ -79,13 +79,19 @@ public interface BuffDao extends MetaDataDao<Buff> {
                                                             ElementEnum element, DamageLabelEnum damageLabel,
                                                             ElementReactionEnum elementReaction);
 
+    // 相同角色但命座或者等阶不符合条件的buff应排除
     @Query("SELECT * FROM buff WHERE buff_range='PARTY'" +
+            "AND ((NOT (source_type='CHARACTER' AND source_id=:characterId)) " +
+            "OR ((phase < -1 * :phase OR phase >= 0 AND phase <= :phase ) " +
+            "AND (constellation < -1 * :constellation OR constellation >= 0 AND constellation <= :constellation)))" +
             "AND effect_type IN (:effectTypes) " +
             "AND (increased_attribute IN (:increasedAttributes) OR increased_attribute IS NULL) " +
             "AND (element=:element OR element IS NULL) " +
             "AND (increased_damage_label=:damageLabel OR increased_damage_label IS NULL) " +
             "AND (element_reaction=:elementReaction OR element_reaction IS NULL)")
-    List<Buff> selectPartyRangedBuffByCondition(List<FightEffectEnum> effectTypes,
+    List<Buff> selectPartyRangedBuffByCondition(String characterId,
+                                                Integer phase, Integer constellation,
+                                                List<FightEffectEnum> effectTypes,
                                                 List<AttributeEnum> increasedAttributes,
                                                 ElementEnum element, DamageLabelEnum damageLabel,
                                                 ElementReactionEnum elementReaction);
