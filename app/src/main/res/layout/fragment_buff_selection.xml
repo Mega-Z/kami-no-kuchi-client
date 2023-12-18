@@ -36,18 +36,34 @@
             android:textStyle="bold"
             android:textSize="@dimen/sp_18"
             android:textColor="@color/white"/>
-
-        <TextView
-            android:id="@+id/text_buff_effect"
+        <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginRight="@dimen/dp_20"
-            android:paddingHorizontal="@dimen/dp_5"
-            android:text="暴击率"
-            android:textStyle="bold"
-            android:textSize="@dimen/sp_16"
-            android:textColor="@color/white"
-            android:background="@color/field_crit"/>
+            android:orientation="horizontal">
+            <TextView
+                android:id="@+id/text_buff_effect"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingHorizontal="@dimen/dp_5"
+                android:text="暴击率"
+                android:textStyle="bold"
+                android:textSize="@dimen/sp_16"
+                android:textColor="@color/white"
+                android:background="@color/field_crit"/>
+            <TextView
+                android:id="@+id/text_buff_constellation"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="@dimen/dp_3"
+                android:paddingHorizontal="@dimen/dp_5"
+                android:text="1命"
+                android:textStyle="bold"
+                android:textSize="@dimen/sp_16"
+                android:textColor="@color/white"
+                android:background="@color/cons_1"/>
+        </LinearLayout>
+
+
     </LinearLayout>
 
 </LinearLayout>

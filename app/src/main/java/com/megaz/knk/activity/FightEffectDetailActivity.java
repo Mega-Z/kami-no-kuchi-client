@@ -28,6 +28,7 @@ import com.megaz.knk.utils.DynamicStyleUtils;
 import com.megaz.knk.vo.BuffVo;
 import com.megaz.knk.vo.EffectDetailVo;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -317,8 +318,8 @@ public class FightEffectDetailActivity extends BaseActivity{
     }
 
     private void updateEnabledBuffList(List<BuffVo> buffVoList) {
+        buffVoList.sort(Comparator.comparing(BuffVo::getBuffId));
         layoutEnabledBuffs.removeAllViews();
-
         FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
         for(int i=0;i< buffVoList.size();i++) {
             LinearLayout layoutContainer = new LinearLayout(getApplicationContext());

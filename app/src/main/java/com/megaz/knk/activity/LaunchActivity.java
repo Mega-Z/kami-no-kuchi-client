@@ -91,8 +91,8 @@ public class LaunchActivity extends BaseActivity {
         try{
             Thread.sleep(500);
             textViewUpdating.setVisibility(View.INVISIBLE);
-            layoutProgressbarContainer.setVisibility(View.INVISIBLE);
-            Thread.sleep(500);
+            // layoutProgressbarContainer.setVisibility(View.INVISIBLE);
+            // Thread.sleep(500);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -149,8 +149,14 @@ public class LaunchActivity extends BaseActivity {
     @SuppressWarnings({"unchecked", "rawuse"})
     private void checkAndUpdateMetaData() {
         MetaDatabaseInfoDto metaDatabaseInfo = RequestUtils.getMetaDatabaseInfo(getApplicationContext());
-        if(false) {
-            //TODO: check data version
+        String latestVersion = metaDatabaseInfo.getVersion();
+        String currentVersion = sharedPreferences.getString("meta_version", "");
+
+        if(currentVersion.equals(latestVersion)) {
+            Message progressMsg = new Message();
+            progressMsg.obj = 1f;
+            progressHandler.sendMessage(progressMsg);
+
             Message msg = new Message();
             msg.what = 0;
             metaUpdateHandler.handleMessage(msg);
@@ -209,7 +215,7 @@ public class LaunchActivity extends BaseActivity {
             progressMsg.obj = ICON_UPDATING_PROGRESS + (1-ICON_UPDATING_PROGRESS) * tableCnt / tableNum;
             progressHandler.sendMessage(progressMsg);
         }
-
+        editor.putString("meta_version", latestVersion).commit();
         Message msg = new Message();
         msg.what = 0;
         metaUpdateHandler.handleMessage(msg);

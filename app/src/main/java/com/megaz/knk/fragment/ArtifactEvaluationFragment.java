@@ -84,9 +84,10 @@ public class ArtifactEvaluationFragment extends BaseFragment {
         updateEvaluationViews(null);
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     private void initEvaluationViews(@NonNull View view) {
         ((ImageView) view.findViewById(R.id.img_criterion_element)).setImageBitmap(
-                ImageResourceUtils.getElementIcon(Objects.requireNonNull(getContext()), characterProfileVo.getElement()));
+                ImageResourceUtils.getElementIcon(requireContext(), characterProfileVo.getElement()));
         textArtifactsScore = view.findViewById(R.id.text_artifacts_score);
         textArtifactsRank = view.findViewById(R.id.text_artifacts_rank);
         textCriterionName = view.findViewById(R.id.text_criterion_name);
@@ -110,6 +111,7 @@ public class ArtifactEvaluationFragment extends BaseFragment {
         layoutCriterionSelect = view.findViewById(R.id.layout_criterion_select);
         layoutArtifactOverview = view.findViewById(R.id.layout_artifact_overview);
         layoutArtifactOverview.setOnClickListener(new ArtifactOverviewOnClickListener());
+        layoutArtifactOverview.setOnTouchListener(new ArtifactOverviewOnTouchListener());
 
         if(characterProfileVo.getEvaluations().size() > 0) {
             characterProfileVo.getEvaluations().sort(new Comparator<ArtifactEvaluationVo>() {
@@ -126,7 +128,7 @@ public class ArtifactEvaluationFragment extends BaseFragment {
             return;
         }
         artifactFragmentMap = new HashMap<>();
-        FragmentTransaction fragmentTransaction = Objects.requireNonNull(getActivity()).getSupportFragmentManager().beginTransaction();
+        FragmentTransaction fragmentTransaction = requireActivity().getSupportFragmentManager().beginTransaction();
         for(ArtifactPositionEnum position : GenshinConstantMeta.ARTIFACT_POSITION_LIST) {
             ArtifactFragment artifactFragment = ArtifactFragment.newInstance(
                     characterProfileVo.getArtifacts().get(position),
@@ -139,6 +141,20 @@ public class ArtifactEvaluationFragment extends BaseFragment {
         }
         fragmentTransaction.commit();
 
+    }
+
+    private static class ArtifactOverviewOnTouchListener implements View.OnTouchListener {
+
+        @SuppressLint("ClickableViewAccessibility")
+        @Override
+        public boolean onTouch(View v, MotionEvent event) {
+            if(event.getAction()==MotionEvent.ACTION_DOWN || event.getAction()==MotionEvent.ACTION_MOVE){
+                v.setBackgroundResource(R.drawable.bg_artifact_overview_press);
+            }else{
+                v.setBackgroundResource(R.drawable.bg_artifact_overview);
+            }
+            return false;
+        }
     }
 
     private class ArtifactOverviewOnClickListener implements View.OnClickListener{
@@ -159,9 +175,9 @@ public class ArtifactEvaluationFragment extends BaseFragment {
         @Override
         public boolean onTouch(View v, MotionEvent event) {
             if(event.getAction()==MotionEvent.ACTION_DOWN || event.getAction()==MotionEvent.ACTION_MOVE){
-                v.setBackgroundColor(Objects.requireNonNull(getContext()).getColor(R.color.criterion_press));
+                v.setBackgroundColor(requireContext().getColor(R.color.criterion_press));
             }else{
-                v.setBackgroundColor(Objects.requireNonNull(getContext()).getColor(R.color.transparent));
+                v.setBackgroundColor(requireContext().getColor(R.color.transparent));
             }
             return false;
         }
@@ -206,7 +222,7 @@ public class ArtifactEvaluationFragment extends BaseFragment {
     @SuppressLint("ClickableViewAccessibility")
     private void addCriteria() {
         evaluationMap = new HashMap<>();
-        FragmentTransaction fragmentTransaction = Objects.requireNonNull(getActivity()).getSupportFragmentManager().beginTransaction();
+        FragmentTransaction fragmentTransaction = requireActivity().getSupportFragmentManager().beginTransaction();
         for(int i=0;i<characterProfileVo.getEvaluations().size();i++) {
             if(i>0) {
                 View viewDividingLine = new View(getContext());
@@ -254,16 +270,14 @@ public class ArtifactEvaluationFragment extends BaseFragment {
         String rank = DynamicStyleUtils.getRank(score/5);
         textArtifactsScore.setText(String.format("%.1f", score));
         textArtifactsRank.setText(rank);
-        textArtifactsRank.setTextColor(
-                getResources().getColor(DynamicStyleUtils.getRankColor(rank), Objects.requireNonNull(getContext()).getTheme()));
+        textArtifactsRank.setTextColor(requireContext().getColor(DynamicStyleUtils.getRankColor(rank)));
         textCriterionName.setText(
                 getString(R.string.text_criterion_name_prefix) + currentEvaluation.getCriterionName());
         for(Map.Entry<AttributeLabelEnum, TextView> entry:textAttributeWeights.entrySet()) {
             Integer weight = currentEvaluation.getAttributeWeight().get(entry.getKey());
             assert weight != null;
             entry.getValue().setText(String.format("%d", weight));
-            entry.getValue().setTextColor(
-                    getResources().getColor(DynamicStyleUtils.getWeightColor(weight), getContext().getTheme()));
+            entry.getValue().setTextColor(requireContext().getColor(DynamicStyleUtils.getWeightColor(weight)));
         }
         if(newArtifactEvaluationVo != null) { // update artifact fragments
             for(ArtifactPositionEnum position : GenshinConstantMeta.ARTIFACT_POSITION_LIST) {

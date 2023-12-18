@@ -30,8 +30,9 @@ public abstract class DamageEffect extends FightEffect{
         reactionFieldBuffEffects = new HashSet<>();
     }
 
-    public void setTargetAttribute(Double baseResist) {
-        this.baseResist = baseResist;
+    @Override
+    public void setEnemyAttribute(EnemyAttribute enemyAttribute) {
+        this.baseResist = enemyAttribute.getResist(element);
     }
 
     @Override

@@ -136,18 +136,44 @@
                             android:orientation="vertical"/>
 
                     </FrameLayout>
+                    <TextView
+                        android:id="@+id/text_title_artifact_evaluation"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/dp_2"
+                        android:paddingStart="@dimen/dp_15"
+                        android:paddingEnd="@dimen/dp_5"
+                        android:paddingVertical="@dimen/dp_1"
+                        android:background="@color/element_text_anemo"
+                        android:text="圣遗物评分(仅供参考)"
+                        android:textSize="@dimen/sp_12"
+                        android:textColor="@color/white"/>
 
                     <LinearLayout
                         android:id="@+id/layout_artifact_evaluation"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="@dimen/dp_5"
+                        android:layout_marginTop="@dimen/dp_2"
                         android:orientation="vertical"/>
+
+                    <TextView
+                        android:id="@+id/text_title_fight_effect_computation"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/dp_2"
+                        android:paddingStart="@dimen/dp_15"
+                        android:paddingEnd="@dimen/dp_5"
+                        android:paddingVertical="@dimen/dp_1"
+                        android:background="@color/element_text_anemo"
+                        android:text="实战评估(点击查看详情)"
+                        android:textSize="@dimen/sp_12"
+                        android:textColor="@color/white"/>
+
                     <LinearLayout
                         android:id="@+id/layout_effect_computation"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="@dimen/dp_5"
+                        android:layout_marginTop="@dimen/dp_2"
                         android:orientation="vertical"/>
 
 <!--                    <ImageView-->

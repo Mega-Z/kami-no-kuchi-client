@@ -17,6 +17,7 @@ public class BuffVo implements Serializable {
     private String buffTitle;
     private String buffDesc;
     private BuffSourceEnum sourceType;
+    private Integer constellation;
     private String icon;
     private Boolean forced;
     private Boolean enabled;

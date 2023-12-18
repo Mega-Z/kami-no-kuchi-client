@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.viewpager.widget.ViewPager;
 
+import android.content.res.Configuration;
 import android.os.Looper;
 import android.os.Message;
 import android.os.Handler;
@@ -42,6 +43,7 @@ public class HomeActivity extends BaseActivity {
         super.initView();
         viewPager = findViewById(R.id.viewpager);
         viewPager.addOnPageChangeListener(new HomePagerOnPageChangeListener());
+        viewPager.setOffscreenPageLimit(3);
         imagePageCharacter = findViewById(R.id.img_page_character);
         imagePageCharacter.setOnClickListener(new PageSelectOnClickListener(0));
         imagePageWish = findViewById(R.id.img_page_wish);
@@ -67,6 +69,7 @@ public class HomeActivity extends BaseActivity {
         };
 
     }
+
     private class PageSelectOnClickListener implements View.OnClickListener {
         private int item;
 

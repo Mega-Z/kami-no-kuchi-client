@@ -9,18 +9,20 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:src="@drawable/paimon_waiting"/>
+
     <ImageView
         android:id="@+id/paimon_eye_l"
-        android:layout_width="@dimen/dp_18"
-        android:layout_height="@dimen/dp_18"
-        android:src="@drawable/paimon_eye_l"
-        android:layout_marginTop="@dimen/dp_103"
-        android:layout_marginLeft="@dimen/dp_118"/>
+        android:layout_width="@dimen/dp_24"
+        android:layout_height="@dimen/dp_24"
+        android:layout_marginLeft="@dimen/dp_118"
+        android:layout_marginTop="@dimen/dp_148"
+        android:src="@drawable/paimon_eye_l" />
+
     <ImageView
         android:id="@+id/paimon_eye_r"
-        android:layout_width="@dimen/dp_18"
-        android:layout_height="@dimen/dp_18"
+        android:layout_width="@dimen/dp_24"
+        android:layout_height="@dimen/dp_24"
         android:src="@drawable/paimon_eye_r"
-        android:layout_marginTop="@dimen/dp_100"
-        android:layout_marginLeft="@dimen/dp_168"/>
+        android:layout_marginTop="@dimen/dp_143"
+        android:layout_marginLeft="@dimen/dp_183"/>
 </FrameLayout>

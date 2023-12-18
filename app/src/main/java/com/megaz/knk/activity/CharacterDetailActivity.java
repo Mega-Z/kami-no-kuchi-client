@@ -4,6 +4,8 @@ import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.Bundle;
+import android.view.MotionEvent;
+import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
@@ -15,7 +17,9 @@ import androidx.fragment.app.FragmentTransaction;
 
 import com.megaz.knk.R;
 import com.megaz.knk.computation.CharacterAttribute;
+import com.megaz.knk.computation.EnemyAttribute;
 import com.megaz.knk.computation.FightEffect;
+import com.megaz.knk.constant.GenshinConstantMeta;
 import com.megaz.knk.fragment.ArtifactEvaluationFragment;
 import com.megaz.knk.fragment.CharacterAttributeFragment;
 import com.megaz.knk.fragment.ConstellationFragment;
@@ -64,6 +68,10 @@ public class CharacterDetailActivity extends ElasticScrollActivity {
         characterProfileVo = (CharacterProfileVo) getIntent().getExtras().getSerializable("characterProfileVo");
         initConstants();
         layoutArt = findViewById(R.id.layout_art);
+        findViewById(R.id.text_title_artifact_evaluation)
+                .setBackgroundColor(getColor(DynamicStyleUtils.getElementTextColor(characterAttribute.getElement())));
+        findViewById(R.id.text_title_fight_effect_computation)
+                .setBackgroundColor(getColor(DynamicStyleUtils.getElementTextColor(characterAttribute.getElement())));
         initCharacterBaseInfo();
         initWeaponInfo();
         initCharacterAttribute();
@@ -144,6 +152,10 @@ public class CharacterDetailActivity extends ElasticScrollActivity {
         startActivityForResult(intent, 1);
     }
 
+    public void toUpdateEnemyAttribute(EnemyAttribute enemyAttribute) {
+        effectComputationFragment.updateEnemyAttribute(enemyAttribute);
+    }
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -162,7 +174,6 @@ public class CharacterDetailActivity extends ElasticScrollActivity {
         ART_HEIGHT = getResources().getDimensionPixelOffset(R.dimen.dp_300);
         TALENT_WIDTH = getResources().getDimensionPixelOffset(R.dimen.dp_50);
     }
-
 
 
     @SuppressLint("SetTextI18n")

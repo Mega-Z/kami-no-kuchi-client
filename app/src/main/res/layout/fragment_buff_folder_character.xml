@@ -6,6 +6,7 @@
     android:orientation="vertical"
     tools:context=".fragment.BuffFolderFragment">
     <FrameLayout
+        android:id="@+id/layout_folder"
         android:layout_width="match_parent"
         android:layout_height="@dimen/dp_40"
         android:layout_marginVertical="@dimen/dp_2"

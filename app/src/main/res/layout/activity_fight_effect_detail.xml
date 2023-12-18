@@ -321,13 +321,12 @@
                 android:background="@color/gray_black"
                 android:src="@drawable/ic_add"/>
         </LinearLayout>
-
         <ScrollView
             android:id="@+id/view_enabled_buffs"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
             android:layout_marginHorizontal="@dimen/dp_5"
-            android:layout_marginBottom="@dimen/dp_5"
             android:background="@drawable/frame_element_electro">
             <LinearLayout
                 android:id="@+id/layout_enabled_buffs"
@@ -338,6 +337,13 @@
                 android:orientation="vertical">
             </LinearLayout>
         </ScrollView>
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="@dimen/dp_20"
+            android:layout_marginVertical="@dimen/dp_5"
+            android:textColor="@color/gray_black"
+            android:text="@string/tips_of_buff_list"/>
     </LinearLayout>
 
 

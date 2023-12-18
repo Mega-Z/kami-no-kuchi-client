@@ -76,8 +76,8 @@
             android:layout_gravity="center"
             android:gravity="center"
             android:text="@string/text_effect_number_default"
-            android:textSize="@dimen/sp_18"/>
-    </LinearLayout>
+            android:textSize="@dimen/sp_16"/>
+</LinearLayout>
 
 
 </LinearLayout>

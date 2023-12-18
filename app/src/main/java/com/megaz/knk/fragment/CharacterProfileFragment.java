@@ -18,6 +18,7 @@ import com.megaz.knk.R;
 import com.megaz.knk.activity.CharacterDetailActivity;
 import com.megaz.knk.computation.CharacterAttribute;
 import com.megaz.knk.dto.CharacterProfileDto;
+import com.megaz.knk.utils.DynamicStyleUtils;
 import com.megaz.knk.utils.ImageResourceUtils;
 import com.megaz.knk.vo.CharacterProfileVo;
 
@@ -73,14 +74,15 @@ public class CharacterProfileFragment extends Fragment {
         textCharacterName.setText(characterProfileVo.getCharacterName());
         textCharacterLevel.setText(getString(R.string.text_level_prefix)+characterProfileVo.getLevel());
         textCharacterCons.setText(characterProfileVo.getConstellation()+getString(R.string.text_constellation_suffix));
-        textCharacterCons.setBackgroundResource(getResources().getIdentifier("cons_"+characterProfileVo.getConstellation(), "color", Objects.requireNonNull(getActivity()).getPackageName()));
+        textCharacterCons.setBackgroundColor(requireContext()
+                .getColor(DynamicStyleUtils.getConstellationColor(characterProfileVo.getConstellation())));
 
         if(characterProfileVo.getNewData()){
             imageIsNew.setVisibility(View.VISIBLE);
         }else{
             imageIsNew.setVisibility(View.INVISIBLE);
         }
-        imageCharacterCard.setImageBitmap(ImageResourceUtils.getIconBitmap(Objects.requireNonNull(getContext()), characterProfileVo.getCardIcon()));
+        imageCharacterCard.setImageBitmap(ImageResourceUtils.getIconBitmap(requireContext(), characterProfileVo.getCardIcon()));
         view.setOnTouchListener(new CharacterProfileOnTouchListener());
         view.setOnClickListener(new CharacterProfileOnClickListener());
     }

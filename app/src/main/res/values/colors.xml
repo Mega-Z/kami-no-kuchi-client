@@ -37,8 +37,9 @@
     <color name="attr_useless">#BABABA</color>
     <color name="char_profile_bg">#FFFEFEFE</color>
     <color name="char_profile_bg_press">#FFCDCDCD</color>
-    <color name="attribute_bg_0">#CC111111</color>
-    <color name="attribute_bg_1">#CC000000</color>
+    <color name="bg_attribute_0">#CC111111</color>
+    <color name="bg_attribute_1">#CC000000</color>
+    <color name="artifact_overview_press">#E8424242</color>
     <color name="criterion_press">#77777777</color>
     <color name="fight_effect_press">#77777777</color>
     <color name="prop_low">#F44336</color>
@@ -90,4 +91,6 @@
     <color name="bg_enabled_buff_pressed">#77000000</color>
     <color name="bg_buff_browse">#E3F2FD</color>
     <color name="frame_buff_browse">#000E5E</color>
+    <color name="bg_enemy_attribute">#CC333333</color>
+    <color name="fragment_press_gray">#77777777</color>
 </resources>

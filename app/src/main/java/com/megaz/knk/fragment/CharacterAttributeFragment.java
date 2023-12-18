@@ -93,7 +93,7 @@ public class CharacterAttributeFragment extends BaseFragment {
             selectMaxDmgElement();
         }
         ((ImageView) view.findViewById(R.id.img_dmg_elem)).setImageBitmap(
-                ImageResourceUtils.getElementIcon(Objects.requireNonNull(getContext()), maxDmgElement));
+                ImageResourceUtils.getElementIcon(requireContext(), maxDmgElement));
     }
 
     @SuppressLint({"SetTextI18n", "DefaultLocale"})

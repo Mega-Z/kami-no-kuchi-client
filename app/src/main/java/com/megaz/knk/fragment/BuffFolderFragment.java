@@ -7,6 +7,9 @@ import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 
+import android.os.Handler;
+import android.os.Looper;
+import android.os.Message;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -20,6 +23,7 @@ import com.megaz.knk.entity.Buff;
 import com.megaz.knk.vo.BuffVo;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 
@@ -32,6 +36,8 @@ public class BuffFolderFragment extends BaseFragment {
     private BuffSourceEnum source;
     private List<BuffVo> buffVoList;
     private Boolean showBuffs;
+
+    private Handler buffViewAddHandler;
 
     private TextView textSourceTitle;
     private ImageView imageFolderAngle;
@@ -98,13 +104,19 @@ public class BuffFolderFragment extends BaseFragment {
                 break;
         }
         unfoldBuffs();
-        addBuffViews();
+        new Thread(this::addBuffViewsAsync).start();
     }
 
     @Override
     protected void setCallback(@NonNull View view) {
         super.setCallback(view);
-        imageFolderAngle.setOnClickListener(new FolderOnCLickListener());
+        view.findViewById(R.id.layout_folder).setOnClickListener(new FolderOnCLickListener());
+        buffViewAddHandler = new Handler(Looper.myLooper()) {
+            @Override
+            public void handleMessage(@NonNull Message msg) {
+                handleBuffViewAddMessage(msg);
+            }
+        };
     }
 
     private class FolderOnCLickListener implements View.OnClickListener {
@@ -131,13 +143,33 @@ public class BuffFolderFragment extends BaseFragment {
         layoutBuffList.setVisibility(View.GONE);
     }
 
-    private void addBuffViews() {
-        FragmentTransaction fragmentTransaction = requireActivity().getSupportFragmentManager().beginTransaction();
-        int id = layoutBuffList.getId();
+    private void addBuffViewsAsync() {
+        buffVoList.sort(Comparator.comparing(BuffVo::getBuffId));
         for (BuffVo buffVo : buffVoList) {
-            BuffSelectionFragment buffSelectionFragment = BuffSelectionFragment.newInstance(buffVo);
-            fragmentTransaction.add(layoutBuffList.getId(), buffSelectionFragment);
+            try{
+                Thread.sleep(100);
+                Message msg = new Message();
+                msg.obj = buffVo;
+                msg.what = 0;
+                buffViewAddHandler.sendMessage(msg);
+            }catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
+    }
+
+    private void handleBuffViewAddMessage(Message msg) {
+        switch (msg.what) {
+            case 0:
+                BuffVo buffVo = (BuffVo) msg.obj;
+                if(isAdded()) addBuffView(buffVo);
+        }
+    }
+
+    private void addBuffView(BuffVo buffVo) {
+        FragmentTransaction fragmentTransaction = requireActivity().getSupportFragmentManager().beginTransaction();
+        BuffSelectionFragment buffSelectionFragment = BuffSelectionFragment.newInstance(buffVo);
+        fragmentTransaction.add(layoutBuffList.getId(), buffSelectionFragment);
         fragmentTransaction.commit();
     }
 }

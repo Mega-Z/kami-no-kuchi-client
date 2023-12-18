@@ -170,4 +170,24 @@ public class DynamicStyleUtils {
         }
         return R.color.gray_black;
     }
+
+    public static int getConstellationColor(int constellation) {
+        switch (constellation) {
+            case 0:
+                return R.color.cons_0;
+            case 1:
+                return R.color.cons_1;
+            case 2:
+                return R.color.cons_2;
+            case 3:
+                return R.color.cons_3;
+            case 4:
+                return R.color.cons_4;
+            case 5:
+                return R.color.cons_5;
+            case 6:
+                return R.color.cons_6;
+        }
+        return R.color.cons_0;
+    }
 }

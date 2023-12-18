@@ -132,7 +132,7 @@ public class PlayerProfileFragment extends BaseFragment {
         switch (msg.what) {
             case 0:
                 playerProfileVo = (PlayerProfileVo) msg.obj;
-                updateProfileView();
+                if(isAdded()) updateProfileView();
                 break;
             case 1:
                 toast.setText((String) msg.obj);
@@ -198,7 +198,6 @@ public class PlayerProfileFragment extends BaseFragment {
             //将Spec传入GridLayout.LayoutParams并设置宽高为0，必须设置宽高，否则视图异常
             GridLayout.LayoutParams layoutParams = new GridLayout.LayoutParams(rowSpec, columnSpec);
             layoutParams.height = getResources().getDimensionPixelOffset(R.dimen.dp_70);
-            //layoutParams.height = 0;
             layoutParams.width = 0;
             layoutParams.setGravity(Gravity.CENTER_VERTICAL);
             layoutParams.setMargins(getResources().getDimensionPixelOffset(R.dimen.dp_5),

@@ -5,7 +5,6 @@ import com.megaz.knk.constant.DamageLabelEnum;
 import com.megaz.knk.constant.EffectFieldEnum;
 import com.megaz.knk.constant.FightEffectEnum;
 import com.megaz.knk.constant.GenshinConstantMeta;
-import com.megaz.knk.entity.Buff;
 import com.megaz.knk.entity.FightEffectComputation;
 
 import java.util.Arrays;
@@ -31,9 +30,9 @@ public class DirectDamageEffect extends DamageEffect {
     }
 
     @Override
-    public void setTargetAttribute(Double baseResist) {
-        //TODO set enemy level
-        super.setTargetAttribute(baseResist);
+    public void setEnemyAttribute(EnemyAttribute enemyAttribute) {
+        targetLevel = enemyAttribute.getLevel();
+        super.setEnemyAttribute(enemyAttribute);
     }
 
     @Override

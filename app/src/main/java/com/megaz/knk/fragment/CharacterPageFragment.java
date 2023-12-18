@@ -67,8 +67,6 @@ public class CharacterPageFragment extends BaseFragment {
         return inflater.inflate(R.layout.fragment_character_page, container, false);
     }
 
-
-
     @Override
     protected void initView(@NonNull View view){
         super.initView(view);

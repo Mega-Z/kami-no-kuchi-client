@@ -125,6 +125,9 @@ public class EffectComputationManager {
                 throw new MetaDataQueryException("character_dex");
             }
             buffVo.setIcon(characterDexList.get(0).getIconAvatar());
+            if(buffEffect.getConstellation()!=null && buffEffect.getConstellation() > 0) {
+                buffVo.setConstellation(buffEffect.getConstellation());
+            }
         } else if (buffEffect.getSourceType() == BuffSourceEnum.WEAPON) {
             List<WeaponDex> weaponDexList = weaponDexDao.selectByWeaponId(buffEffect.getSourceId());
             if (weaponDexList.size() != 1) {

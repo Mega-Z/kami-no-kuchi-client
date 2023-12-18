@@ -66,7 +66,7 @@
         <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="@dimen/dp_16"
-            android:background="@color/attribute_bg_1"
+            android:background="@color/bg_attribute_1"
             android:paddingVertical="@dimen/dp_1"
             android:paddingHorizontal="@dimen/dp_6">
             <TextView
@@ -89,7 +89,7 @@
         <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="@dimen/dp_13"
-            android:background="@color/attribute_bg_0"
+            android:background="@color/bg_attribute_0"
             android:paddingVertical="@dimen/dp_1"
             android:paddingHorizontal="@dimen/dp_8">
             <TextView
@@ -110,7 +110,7 @@
         <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="@dimen/dp_13"
-            android:background="@color/attribute_bg_1"
+            android:background="@color/bg_attribute_1"
             android:paddingVertical="@dimen/dp_1"
             android:paddingHorizontal="@dimen/dp_8">
             <TextView
@@ -131,7 +131,7 @@
         <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="@dimen/dp_13"
-            android:background="@color/attribute_bg_0"
+            android:background="@color/bg_attribute_0"
             android:paddingVertical="@dimen/dp_1"
             android:paddingHorizontal="@dimen/dp_8">
             <TextView

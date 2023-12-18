@@ -29,6 +29,7 @@ public class BaseFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setRetainInstance(true);
         toast = Toast.makeText(requireActivity().getApplicationContext(), "", Toast.LENGTH_SHORT);
         sharedPreferences = requireActivity().getSharedPreferences("KNK", MODE_PRIVATE);
         editor = sharedPreferences.edit();

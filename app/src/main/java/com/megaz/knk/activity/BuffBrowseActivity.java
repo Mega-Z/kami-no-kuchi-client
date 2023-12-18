@@ -107,7 +107,6 @@ public class BuffBrowseActivity extends BaseActivity {
 
     private void updateAvailableBuffList(List<BuffVo> buffVoList) {
         FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
-
         Map<BuffSourceEnum, ArrayList<BuffVo>> buffVoMap = new HashMap<>();
         for (BuffSourceEnum source : GenshinConstantMeta.BUFF_SOURCE_LIST) {
             buffVoMap.put(source, new ArrayList<>());

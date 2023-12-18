@@ -27,7 +27,7 @@ import com.megaz.knk.vo.BuffVo;
 public class BuffSelectionFragment extends BaseFragment {
     private BuffVo buffVo;
 
-    private TextView textBuffTitle, textBuffEffect;
+    private TextView textBuffTitle, textBuffEffect, textBuffConstellation;
     private ImageView imageSourceIcon;
 
 
@@ -73,6 +73,15 @@ public class BuffSelectionFragment extends BaseFragment {
         textBuffEffect.setBackgroundColor(requireContext()
                 .getColor(DynamicStyleUtils.getBuffFieldColor(buffVo.getBuffField())));
         textBuffEffect.setText(buffVo.getEffectText());
+        textBuffConstellation = view.findViewById(R.id.text_buff_constellation);
+        if(buffVo.getConstellation()!=null && buffVo.getConstellation() > 0) {
+            textBuffConstellation.setText(buffVo.getConstellation() + getString(R.string.text_constellation_suffix));
+            textBuffConstellation.setBackgroundColor(requireContext()
+                    .getColor(DynamicStyleUtils.getConstellationColor(buffVo.getConstellation())));
+            textBuffConstellation.setVisibility(View.VISIBLE);
+        } else {
+            textBuffConstellation.setVisibility(View.GONE);
+        }
         imageSourceIcon = view.findViewById(R.id.img_source_icon);
         if(buffVo.getIcon() != null) {
             imageSourceIcon.setImageBitmap(ImageResourceUtils.getIconBitmap(requireContext(), buffVo.getIcon()));

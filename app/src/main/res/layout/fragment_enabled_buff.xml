@@ -59,7 +59,7 @@
             android:paddingHorizontal="@dimen/dp_5"
             android:text="15.0%"
             android:textColor="@color/field_crit"
-            android:textSize="@dimen/sp_28"/>
+            android:textSize="@dimen/sp_24"/>
         <LinearLayout
             android:id="@+id/btn_buff_disable"
             android:layout_width="@dimen/dp_60"

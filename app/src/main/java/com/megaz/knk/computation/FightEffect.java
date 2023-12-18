@@ -102,6 +102,10 @@ public class FightEffect implements Serializable {
         return buffEffectList;
     }
 
+    public void setEnemyAttribute(EnemyAttribute enemyAttribute) {
+
+    }
+
     public void enableBuffEffect(BuffEffect buffEffect) {
         prepareToEnableBuff(buffEffect);
         if (buffEffect.getEffectType() == FightEffectEnum.ATTRIBUTE_ADD) {
