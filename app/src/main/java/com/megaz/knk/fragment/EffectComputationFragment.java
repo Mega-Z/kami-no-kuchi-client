@@ -20,11 +20,11 @@ import com.megaz.knk.R;
 import com.megaz.knk.computation.CharacterAttribute;
 import com.megaz.knk.computation.EnemyAttribute;
 import com.megaz.knk.computation.FightEffect;
-
 import com.megaz.knk.constant.ElementEnum;
 import com.megaz.knk.constant.GenshinConstantMeta;
 import com.megaz.knk.manager.EffectComputationManager;
 
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -50,6 +50,8 @@ public class EffectComputationFragment extends BaseFragment {
     private TextView textEnemyLevel;
     private Map<ElementEnum, TextView> textResist;
 
+    private List<FightEffectFragment> fightEffectFragmentList;
+
 
     public EffectComputationFragment() {
         // Required empty public constructor
@@ -69,6 +71,7 @@ public class EffectComputationFragment extends BaseFragment {
         if (getArguments() != null) {
             characterAttribute = (CharacterAttribute) getArguments().getSerializable("characterAttribute");
         }
+        fightEffectFragmentList = new ArrayList<>();
     }
 
     @Override
@@ -177,7 +180,11 @@ public class EffectComputationFragment extends BaseFragment {
         fightEffectList.sort(Comparator.comparing(FightEffect::getEffectId));
         textNoEffect.setVisibility(View.GONE);
         layoutEffects.removeAllViews();
-        FragmentTransaction fragmentTransaction = requireActivity().getSupportFragmentManager().beginTransaction();
+        FragmentTransaction fragmentTransaction = getChildFragmentManager().beginTransaction();
+        for (FightEffectFragment fightEffectFragment:fightEffectFragmentList) {
+            fragmentTransaction.remove(fightEffectFragment);
+        }
+        fightEffectFragmentList.clear();
         for (int i = 0; i < fightEffectList.size(); i++) {
             View viewDividingLine = new View(getContext());
             viewDividingLine.setBackgroundResource(R.drawable.bg_div_gr_black);
@@ -189,6 +196,7 @@ public class EffectComputationFragment extends BaseFragment {
             int id = View.generateViewId();
             layoutContainer.setId(id);
             FightEffectFragment fightEffectFragment = FightEffectFragment.newInstance(fightEffectList.get(i));
+            fightEffectFragmentList.add(fightEffectFragment);
             fragmentTransaction.add(id, fightEffectFragment);
             layoutEffects.addView(layoutContainer);
         }

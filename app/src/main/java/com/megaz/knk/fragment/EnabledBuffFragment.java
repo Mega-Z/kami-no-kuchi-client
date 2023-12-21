@@ -84,7 +84,7 @@ public class EnabledBuffFragment extends BaseFragment {
                 .getColor(DynamicStyleUtils.getBuffFieldColor(buffVo.getBuffField())));
         if(buffVo.getPercent()) {
             textBuffNumber.setText(String.format("%.2f", buffVo.getEffectValue() * 100) + "%");
-        } else if (buffVo.getEffectValue() > 10000) {
+        } else if (buffVo.getEffectValue() >= 1000) {
             textBuffNumber.setText(String.format("%d", Math.round(buffVo.getEffectValue())));
         } else {
             textBuffNumber.setText(String.format("%.2f", buffVo.getEffectValue()));

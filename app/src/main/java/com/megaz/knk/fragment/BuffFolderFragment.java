@@ -167,7 +167,7 @@ public class BuffFolderFragment extends BaseFragment {
     }
 
     private void addBuffView(BuffVo buffVo) {
-        FragmentTransaction fragmentTransaction = requireActivity().getSupportFragmentManager().beginTransaction();
+        FragmentTransaction fragmentTransaction = getChildFragmentManager().beginTransaction();
         BuffSelectionFragment buffSelectionFragment = BuffSelectionFragment.newInstance(buffVo);
         fragmentTransaction.add(layoutBuffList.getId(), buffSelectionFragment);
         fragmentTransaction.commit();

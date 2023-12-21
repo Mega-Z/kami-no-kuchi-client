@@ -6,7 +6,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -257,7 +256,7 @@ public class FightEffectDetailActivity extends BaseActivity{
             }
             if(effectDetailVo.getFieldDetail().containsKey(EffectFieldEnum.BASE_ADD)) {
                 double addend = Objects.requireNonNull(effectDetailVo.getFieldDetail().get(EffectFieldEnum.BASE_ADD));
-                text += "×"+String.format("%d", (int)addend);
+                text += "+"+String.format("%d", (int)addend);
             }
             textFieldBase.setText(text);
         } else {

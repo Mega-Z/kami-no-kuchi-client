@@ -282,7 +282,7 @@
                     android:layout_gravity="center_vertical"
                     android:textColor="@color/white"
                     android:textSize="@dimen/sp_16"
-                    android:text="雷元素抗性："
+                    android:text="风元素抗性："
                     android:textStyle="bold"/>
             </LinearLayout>
             <LinearLayout
@@ -330,7 +330,7 @@
                     android:layout_gravity="center_vertical"
                     android:textColor="@color/white"
                     android:textSize="@dimen/sp_16"
-                    android:text="雷元素抗性："
+                    android:text="岩元素抗性："
                     android:textStyle="bold"/>
             </LinearLayout>
             <LinearLayout
@@ -378,7 +378,7 @@
                     android:layout_gravity="center_vertical"
                     android:textColor="@color/white"
                     android:textSize="@dimen/sp_16"
-                    android:text="雷元素抗性："
+                    android:text="草元素抗性："
                     android:textStyle="bold"/>
             </LinearLayout>
             <LinearLayout

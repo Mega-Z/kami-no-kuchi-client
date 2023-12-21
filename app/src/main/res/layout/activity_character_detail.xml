@@ -66,6 +66,8 @@
                                 android:textSize="@dimen/sp_40"
                                 android:textColor="@color/element_text_anemo"
                                 android:textStyle="bold"
+                                android:shadowColor="@color/gray_black"
+                                android:shadowRadius="4"
                                 android:text="@string/text_default_character_name"/>
                             <TextView
                                 android:id="@+id/text_character_level"

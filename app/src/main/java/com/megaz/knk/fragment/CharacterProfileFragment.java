@@ -17,12 +17,9 @@ import androidx.fragment.app.Fragment;
 import com.megaz.knk.R;
 import com.megaz.knk.activity.CharacterDetailActivity;
 import com.megaz.knk.computation.CharacterAttribute;
-import com.megaz.knk.dto.CharacterProfileDto;
 import com.megaz.knk.utils.DynamicStyleUtils;
 import com.megaz.knk.utils.ImageResourceUtils;
 import com.megaz.knk.vo.CharacterProfileVo;
-
-import java.util.Objects;
 
 public class CharacterProfileFragment extends Fragment {
 

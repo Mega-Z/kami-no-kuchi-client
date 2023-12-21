@@ -29,7 +29,6 @@ import com.megaz.knk.vo.CharacterProfileVo;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -48,7 +47,7 @@ public class ArtifactEvaluationFragment extends BaseFragment {
     private Map<ArtifactPositionEnum, ArtifactFragment> artifactFragmentMap;
     private int CRITERION_SELECTION_HEIGHT;
 
-    private ValueAnimator animatorCriteriaExtend;
+    private ValueAnimator animatorCriteriaExtend, animatorCriteriaRetract;
 
 
     public ArtifactEvaluationFragment() {
@@ -77,11 +76,24 @@ public class ArtifactEvaluationFragment extends BaseFragment {
         return inflater.inflate(R.layout.fragment_artifact_evaluation, container, false);
     }
 
+
     @Override
-    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
+    protected void initView(@NonNull View view) {
+        super.initView(view);
         initEvaluationViews(view);
+        addCriteriaFragments();
         updateEvaluationViews(null);
+    }
+
+    @Override
+    protected void setCallback(@NonNull View view) {
+        super.setCallback(view);
+        animatorCriteriaExtend = ValueAnimator.ofFloat(0,1);
+        animatorCriteriaExtend.setDuration(200);
+        animatorCriteriaExtend.addUpdateListener(new CriterionAnimatorUpdateListener());
+        animatorCriteriaRetract = ValueAnimator.ofFloat(1,0);
+        animatorCriteriaRetract.setDuration(200);
+        animatorCriteriaRetract.addUpdateListener(new CriterionAnimatorUpdateListener());
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -128,7 +140,7 @@ public class ArtifactEvaluationFragment extends BaseFragment {
             return;
         }
         artifactFragmentMap = new HashMap<>();
-        FragmentTransaction fragmentTransaction = requireActivity().getSupportFragmentManager().beginTransaction();
+        FragmentTransaction fragmentTransaction = getChildFragmentManager().beginTransaction();
         for(ArtifactPositionEnum position : GenshinConstantMeta.ARTIFACT_POSITION_LIST) {
             ArtifactFragment artifactFragment = ArtifactFragment.newInstance(
                     characterProfileVo.getArtifacts().get(position),
@@ -211,18 +223,23 @@ public class ArtifactEvaluationFragment extends BaseFragment {
     private void showCriterionSelection() {
         if(animatorCriteriaExtend != null) {
             animatorCriteriaExtend.cancel();
+            animatorCriteriaExtend.start();
         }
-        animatorCriteriaExtend = ValueAnimator.ofFloat(0,1);
-        animatorCriteriaExtend.setDuration(200);
-        animatorCriteriaExtend.addUpdateListener(new CriterionAnimatorUpdateListener());
-        animatorCriteriaExtend.start();
-        addCriteria();
     }
 
+
+    private void hideCriterionSelection() {
+        if(animatorCriteriaRetract != null) {
+            animatorCriteriaRetract.cancel();
+            animatorCriteriaRetract.start();
+        }
+    }
+
+
     @SuppressLint("ClickableViewAccessibility")
-    private void addCriteria() {
+    private void addCriteriaFragments() {
         evaluationMap = new HashMap<>();
-        FragmentTransaction fragmentTransaction = requireActivity().getSupportFragmentManager().beginTransaction();
+        FragmentTransaction fragmentTransaction = getChildFragmentManager().beginTransaction();
         for(int i=0;i<characterProfileVo.getEvaluations().size();i++) {
             if(i>0) {
                 View viewDividingLine = new View(getContext());
@@ -244,18 +261,6 @@ public class ArtifactEvaluationFragment extends BaseFragment {
             layoutCriterionSelect.addView(layoutContainer);
         }
         fragmentTransaction.commit();
-    }
-
-
-    private void hideCriterionSelection() {
-        if(animatorCriteriaExtend != null) {
-            animatorCriteriaExtend.cancel();
-        }
-        animatorCriteriaExtend = ValueAnimator.ofFloat(1,0);
-        animatorCriteriaExtend.setDuration(200);
-        animatorCriteriaExtend.addUpdateListener(new CriterionAnimatorUpdateListener());
-        animatorCriteriaExtend.start();
-        layoutCriterionSelect.removeAllViews();
     }
 
     @SuppressLint({"DefaultLocale", "SetTextI18n"})

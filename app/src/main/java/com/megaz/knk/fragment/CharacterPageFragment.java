@@ -3,6 +3,7 @@ package com.megaz.knk.fragment;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.ObjectAnimator;
+import android.annotation.SuppressLint;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -77,11 +78,12 @@ public class CharacterPageFragment extends BaseFragment {
         editTextUid.setText(sharedPreferences.getString("uid", ""));
         layoutPaimon = view.findViewById(R.id.layout_paimon);
         paimonWaiting = PaimonWaitingFragment.newInstance();
-        Objects.requireNonNull(getActivity()).getSupportFragmentManager().beginTransaction().add(R.id.layout_paimon, paimonWaiting).commit();
+        requireActivity().getSupportFragmentManager().beginTransaction().add(R.id.layout_paimon, paimonWaiting).commit();
         layoutProfile = view.findViewById(R.id.layout_profile);
         profileQueryManager = new ProfileQueryManager(getContext());
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     @Override
     protected void setCallback(@NonNull View view) {
         editTextUid.setOnTouchListener(new BaseActivity.EditTextOnTouchListener((BaseActivity) getActivity()));
@@ -151,7 +153,7 @@ public class CharacterPageFragment extends BaseFragment {
                 return;
             }
             lastClick = System.currentTimeMillis();
-            ((BaseActivity) Objects.requireNonNull(getActivity())).hideInputMethod();
+            ((BaseActivity) requireActivity()).hideInputMethod();
             if(!isValidUidInput()) {
                 toast.setText("uid格式错误");
                 toast.show();
@@ -269,7 +271,7 @@ public class CharacterPageFragment extends BaseFragment {
     private void refreshProfileView(PlayerProfileDto playerProfileDto) {
         if(playerProfileFragment == null) {
             playerProfileFragment = PlayerProfileFragment.newInstance(playerProfileDto);
-            Objects.requireNonNull(getActivity()).getSupportFragmentManager().beginTransaction().add(R.id.layout_profile, playerProfileFragment).commit();
+            requireActivity().getSupportFragmentManager().beginTransaction().add(R.id.layout_profile, playerProfileFragment).commit();
         } else {
             playerProfileFragment.toUpdateProfileView(playerProfileDto);
         }

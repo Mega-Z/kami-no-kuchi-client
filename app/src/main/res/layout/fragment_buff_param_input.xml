@@ -33,15 +33,17 @@
             android:text="%"
             android:textColor="@color/gray_black"
             android:textSize="@dimen/sp_24"/>
+
         <EditText
-            android:layout_centerVertical="true"
-            android:layout_toStartOf="@id/text_percent"
             android:id="@+id/edtx_param_value"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_toStartOf="@id/text_percent"
             android:background="@color/white"
             android:gravity="center"
             android:inputType="number"
+            android:maxLength="5"
             android:singleLine="true"
             android:textSize="@dimen/sp_20" />
 

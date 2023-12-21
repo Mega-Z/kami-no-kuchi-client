@@ -62,11 +62,6 @@
     <string name="second_fragment_label">Second Fragment</string>
     <string name="next">Next</string>
     <string name="previous">Previous</string>
-
-    <string name="hello_first_fragment">Hello first fragment</string>
-    <string name="hello_second_fragment">Hello second fragment. Arg: %1$s</string>
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="tips_of_buff_list">Tips:\n\t· 长按BUFF查看BUFF详情\n\t· 点按BUFF选择关闭BUFF</string>
     <string name="text_title_enemy_attribute">怪物目标参数配置</string>
 </resources>

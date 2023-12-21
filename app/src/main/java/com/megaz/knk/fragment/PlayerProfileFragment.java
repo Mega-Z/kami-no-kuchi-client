@@ -3,18 +3,12 @@ package com.megaz.knk.fragment;
 import android.animation.ObjectAnimator;
 import android.animation.ValueAnimator;
 import android.annotation.SuppressLint;
-import android.content.Intent;
 import android.os.Bundle;
-
-import androidx.annotation.NonNull;
-import androidx.fragment.app.Fragment;
-
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 import android.view.Gravity;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.GridLayout;
@@ -22,8 +16,11 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentTransaction;
+
 import com.megaz.knk.R;
-import com.megaz.knk.activity.CharacterDetailActivity;
 import com.megaz.knk.activity.HomeActivity;
 import com.megaz.knk.computation.CharacterAttribute;
 import com.megaz.knk.dto.CharacterProfileDto;
@@ -33,10 +30,8 @@ import com.megaz.knk.utils.ImageResourceUtils;
 import com.megaz.knk.vo.CharacterProfileVo;
 import com.megaz.knk.vo.PlayerProfileVo;
 
-import java.security.MessageDigest;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -57,6 +52,8 @@ public class PlayerProfileFragment extends BaseFragment {
 
     private Handler profileConvertHandler;
     private ProfileQueryManager profileQueryManager;
+
+    private List<CharacterProfileFragment> characterProfileFragmentList;
 
     public PlayerProfileFragment() {
     }
@@ -172,6 +169,9 @@ public class PlayerProfileFragment extends BaseFragment {
         if(this.playerProfileVo == null) {
             return;
         }
+        if(characterProfileFragmentList == null) {
+            characterProfileFragmentList = new ArrayList<>();
+        }
         textUid.setText(String.format("%s%s", getString(R.string.text_uid_prefix), playerProfileVo.getUid()));
         textPlayerName.setText(playerProfileVo.getNickname());
         textSignature.setText(playerProfileVo.getSign());
@@ -180,6 +180,11 @@ public class PlayerProfileFragment extends BaseFragment {
         }
         // update character list
         layoutCharacterList.removeAllViews();
+        FragmentTransaction fragmentTransaction = getChildFragmentManager().beginTransaction();
+        for(CharacterProfileFragment characterProfileFragment:characterProfileFragmentList) {
+            fragmentTransaction.remove(characterProfileFragment);
+        }
+        characterProfileFragmentList.clear();
         int idx = 0;
         for(;idx<playerProfileVo.getCharacters().size();idx++){
             CharacterProfileDto characterProfileDto = playerProfileDto.getCharacters().get(idx);
@@ -190,8 +195,8 @@ public class PlayerProfileFragment extends BaseFragment {
             linearLayout.setId(newViewId);
             CharacterProfileFragment characterProfileFragment = CharacterProfileFragment.newInstance(
                     new CharacterAttribute(characterProfileDto), characterProfileVo);
-            requireActivity().getSupportFragmentManager().beginTransaction()
-                    .add(newViewId, characterProfileFragment).commitAllowingStateLoss();
+            characterProfileFragmentList.add(characterProfileFragment);
+            fragmentTransaction.add(newViewId, characterProfileFragment);
             //使用Spec定义子控件的位置和比重
             GridLayout.Spec rowSpec = GridLayout.spec(idx / 2);
             GridLayout.Spec columnSpec = GridLayout.spec(idx % 2, 1f);
@@ -206,6 +211,7 @@ public class PlayerProfileFragment extends BaseFragment {
                     getResources().getDimensionPixelOffset(R.dimen.dp_5));
             layoutCharacterList.addView(linearLayout, layoutParams);
         }
+        fragmentTransaction.commit();
         // 如果角色总数是奇数，再塞一个linearlayout
         if(playerProfileVo.getCharacters().size() % 2 != 0){
             LinearLayout linearLayout = new LinearLayout(getContext());

@@ -112,7 +112,6 @@ public class EffectComputationManager {
         CharacterDexDao characterDexDao = knkDatabase.getCharacterDexDao();
         WeaponDexDao weaponDexDao = knkDatabase.getWeaponDexDao();
         ArtifactDexDao artifactDexDao = knkDatabase.getArtifactDexDao();
-
         BuffVo buffVo = new BuffVo();
         buffVo.setBuffId(buffEffect.getBuffId());
         buffVo.setBuffTitle(buffEffect.getSourceName() + "：" + buffEffect.getBuffName());
@@ -319,7 +318,6 @@ public class EffectComputationManager {
         return queryBuffByCondition(fightEffect.getCharacterAttribute(),
                 fightEffect.getEffectId(), additionalBuffQueryCondition);
     }
-
 
     private FightEffect createFightEffect(List<FightEffectComputation> fightEffectComputations, CharacterAttribute characterAttribute) {
         TalentCurveDao talentCurveDao = knkDatabase.getTalentCurveDao();
