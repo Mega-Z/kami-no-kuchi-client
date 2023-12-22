@@ -70,7 +70,7 @@ public abstract class DamageEffect extends FightEffect{
     public void enableBuffEffect(BuffEffect buffEffect) {
         prepareToEnableBuff(buffEffect);
         if(buffEffect.getEffectType() == FightEffectEnum.RESIST_DOWN &&
-                buffEffect.getElement() ==element) {
+                (buffEffect.getElement() == element || buffEffect.getElement() == null)) {
             resistFieldBuffEffects.add(buffEffect);
         } else if(buffEffect.getEffectType() == FightEffectEnum.REACTION_UP &&
                 buffEffect.getElementReaction() == reaction) {
@@ -86,7 +86,7 @@ public abstract class DamageEffect extends FightEffect{
         buffEffect.disableBuff();
         characterAttributeWithBuffs = null;
         if(buffEffect.getEffectType() == FightEffectEnum.RESIST_DOWN &&
-                buffEffect.getElement() ==element) {
+                (buffEffect.getElement() == element || buffEffect.getElement() == null)) {
             resistFieldBuffEffects.remove(buffEffect);
         } else if(buffEffect.getEffectType() == FightEffectEnum.REACTION_UP &&
                 buffEffect.getElementReaction() == reaction) {
