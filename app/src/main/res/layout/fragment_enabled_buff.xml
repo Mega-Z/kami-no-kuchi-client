@@ -54,11 +54,11 @@
             android:layout_height="wrap_content"
             android:layout_gravity="right|bottom"
             android:layout_marginBottom="@dimen/dp_6"
-            android:layout_marginRight="@dimen/dp_60"
+            android:layout_marginRight="@dimen/dp_20"
             android:paddingHorizontal="@dimen/dp_5"
             android:text="15.0%"
             android:textColor="@color/field_crit"
-            android:textSize="@dimen/sp_24"/>
+            android:textSize="@dimen/sp_28"/>
         <LinearLayout
             android:id="@+id/btn_buff_disable"
             android:layout_width="@dimen/dp_60"

@@ -38,7 +38,7 @@ public class EnabledBuffFragment extends BaseFragment {
     private LinearLayout buttonBuffDisable;
 
     private int CROSS_WIDTH;
-    private final float FADE_OUT_VALUE = 0.4f;
+    private final float FADE_OUT_VALUE = 0.2f;
     private final float FADE_IN_VALUE = 0.8f;
 
     private ValueAnimator animatorCrossExtend, animatorCrossRetract;
@@ -145,14 +145,17 @@ public class EnabledBuffFragment extends BaseFragment {
             } else {
                 buttonBuffDisable.setVisibility(View.VISIBLE);
             }
+            float alphaCross;
             if((float)animation.getAnimatedValue() >= FADE_OUT_VALUE &&
                     (float)animation.getAnimatedValue() <= FADE_IN_VALUE) {
-                buttonBuffDisable.setAlpha(((float)animation.getAnimatedValue() - FADE_OUT_VALUE)/(FADE_IN_VALUE - FADE_OUT_VALUE));
+                alphaCross = ((float)animation.getAnimatedValue() - FADE_OUT_VALUE)/(FADE_IN_VALUE - FADE_OUT_VALUE);
             } else if ((float)animation.getAnimatedValue() > FADE_IN_VALUE) {
-                buttonBuffDisable.setAlpha(1f);
+                alphaCross = 1f;
             } else {
-                buttonBuffDisable.setAlpha(0f);
+                alphaCross = 0f;
             }
+            buttonBuffDisable.setAlpha(alphaCross);
+            textBuffNumber.setAlpha(1-alphaCross);
         }
     }
 
