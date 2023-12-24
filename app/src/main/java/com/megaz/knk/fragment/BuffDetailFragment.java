@@ -113,12 +113,6 @@ public class BuffDetailFragment extends DialogFragment {
 
         Objects.requireNonNull(getDialog()).requestWindowFeature(Window.FEATURE_NO_TITLE);
         getDialog().getWindow().setBackgroundDrawableResource(R.color.transparent);
-        view.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Objects.requireNonNull(getDialog()).dismiss();
-            }
-        });
     }
 
     private class ModifyOnClickListener implements View.OnClickListener{

@@ -1,11 +1,13 @@
 package com.megaz.knk.fragment;
 
+import android.animation.ValueAnimator;
 import android.annotation.SuppressLint;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -35,6 +37,11 @@ public class EnabledBuffFragment extends BaseFragment {
     private ImageView imageSourceIcon;
     private LinearLayout buttonBuffDisable;
 
+    private int CROSS_WIDTH;
+    private final float FADE_OUT_VALUE = 0.4f;
+    private final float FADE_IN_VALUE = 0.8f;
+
+    private ValueAnimator animatorCrossExtend, animatorCrossRetract;
 
     public EnabledBuffFragment() {
         // Required empty public constructor
@@ -97,17 +104,7 @@ public class EnabledBuffFragment extends BaseFragment {
         }
         buttonBuffDisable = view.findViewById(R.id.btn_buff_disable);
         buttonBuffDisable.setVisibility(View.GONE);
-    }
-
-    @SuppressLint({"DefaultLocale", "SetTextI18n"})
-    public void updateBuffNumberByVo(BuffVo buffVo) {
-        if(buffVo.getPercent()) {
-            textBuffNumber.setText(String.format("%.2f", buffVo.getEffectValue() * 100) + "%");
-        } else if (buffVo.getEffectValue() >= 1000) {
-            textBuffNumber.setText(String.format("%d", Math.round(buffVo.getEffectValue())));
-        } else {
-            textBuffNumber.setText(String.format("%.2f", buffVo.getEffectValue()));
-        }
+        CROSS_WIDTH = getResources().getDimensionPixelOffset(R.dimen.dp_60);
     }
 
     @Override
@@ -117,6 +114,46 @@ public class EnabledBuffFragment extends BaseFragment {
         view.setOnTouchListener(new BuffOnTouchListener());
         view.setOnClickListener(new BuffOnClickListener());
         buttonBuffDisable.setOnClickListener(new DisableBuffOnclickListener());
+        animatorCrossExtend = ValueAnimator.ofFloat(0,1);
+        animatorCrossExtend.setDuration(200);
+        animatorCrossExtend.addUpdateListener(new CrossAnimatorUpdateListener());
+        animatorCrossRetract = ValueAnimator.ofFloat(1,0);
+        animatorCrossRetract.setDuration(200);
+        animatorCrossRetract.setStartDelay(2000);
+        animatorCrossRetract.addUpdateListener(new CrossAnimatorUpdateListener());
+    }
+
+    @SuppressLint({"DefaultLocale", "SetTextI18n"})
+    public void updateBuffNumberByVo(BuffVo buffVo) {
+        if(buffVo.getPercent()) {
+            textBuffNumber.setText(String.format("%.1f", buffVo.getEffectValue() * 100) + "%");
+        } else if (buffVo.getEffectValue() >= 1000) {
+            textBuffNumber.setText(String.format("%d", Math.round(buffVo.getEffectValue())));
+        } else {
+            textBuffNumber.setText(String.format("%.2f", buffVo.getEffectValue()));
+        }
+    }
+
+    private class CrossAnimatorUpdateListener implements ValueAnimator.AnimatorUpdateListener{
+        @Override
+        public void onAnimationUpdate(ValueAnimator animation) {
+            FrameLayout.LayoutParams layoutParams = (FrameLayout.LayoutParams) buttonBuffDisable.getLayoutParams();
+            layoutParams.width = Math.round(CROSS_WIDTH * (float) animation.getAnimatedValue());
+            buttonBuffDisable.setLayoutParams(layoutParams);
+            if((float)animation.getAnimatedValue() <= 0){
+                buttonBuffDisable.setVisibility(View.GONE);
+            } else {
+                buttonBuffDisable.setVisibility(View.VISIBLE);
+            }
+            if((float)animation.getAnimatedValue() >= FADE_OUT_VALUE &&
+                    (float)animation.getAnimatedValue() <= FADE_IN_VALUE) {
+                buttonBuffDisable.setAlpha(((float)animation.getAnimatedValue() - FADE_OUT_VALUE)/(FADE_IN_VALUE - FADE_OUT_VALUE));
+            } else if ((float)animation.getAnimatedValue() > FADE_IN_VALUE) {
+                buttonBuffDisable.setAlpha(1f);
+            } else {
+                buttonBuffDisable.setAlpha(0f);
+            }
+        }
     }
 
     private class BuffOnLongClickListener implements View.OnLongClickListener {
@@ -133,11 +170,8 @@ public class EnabledBuffFragment extends BaseFragment {
         @Override
         public void onClick(View v) {
             if(buttonBuffDisable.getVisibility() == View.GONE) {
-                if(!buffVo.getForced()) {
-                    buttonBuffDisable.setVisibility(View.VISIBLE);
-                }
-            } else {
-                buttonBuffDisable.setVisibility(View.GONE);
+                animatorCrossExtend.start();
+                animatorCrossRetract.start();
             }
         }
     }
