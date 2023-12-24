@@ -3,6 +3,8 @@ package com.megaz.knk.manager;
 import android.annotation.SuppressLint;
 import android.content.Context;
 
+import androidx.annotation.WorkerThread;
+
 import com.megaz.knk.KnkDatabase;
 import com.megaz.knk.computation.AmplifiedDamageEffect;
 import com.megaz.knk.computation.BuffEffect;
@@ -16,6 +18,7 @@ import com.megaz.knk.computation.QuickenDamageEffect;
 import com.megaz.knk.computation.ShieldEffect;
 import com.megaz.knk.computation.UpheavalDamageEffect;
 import com.megaz.knk.constant.AttributeEnum;
+import com.megaz.knk.constant.BuffRangeEnum;
 import com.megaz.knk.constant.BuffSourceEnum;
 import com.megaz.knk.constant.EffectBaseAttributeEnum;
 import com.megaz.knk.constant.EffectFieldEnum;
@@ -62,6 +65,7 @@ public class EffectComputationManager {
         this.knkDatabase = KnkDatabase.getKnkDatabase(context);
     }
 
+    @WorkerThread
     public List<FightEffect> getFightEffectsByCharacterAttribute(CharacterAttribute characterAttribute) {
         FightEffectComputationDao fightEffectComputationDao = knkDatabase.getFightEffectComputationDao();
         List<FightEffectComputation> fightEffectComputationList = fightEffectComputationDao
@@ -108,6 +112,7 @@ public class EffectComputationManager {
         return effectDetailVo;
     }
 
+    @WorkerThread
     public BuffVo createBuffVo(BuffEffect buffEffect) {
         CharacterDexDao characterDexDao = knkDatabase.getCharacterDexDao();
         WeaponDexDao weaponDexDao = knkDatabase.getWeaponDexDao();
@@ -124,7 +129,7 @@ public class EffectComputationManager {
                 throw new MetaDataQueryException("character_dex");
             }
             buffVo.setIcon(characterDexList.get(0).getIconAvatar());
-            if(buffEffect.getConstellation()!=null && buffEffect.getConstellation() > 0) {
+            if (buffEffect.getConstellation() != null && buffEffect.getConstellation() > 0) {
                 buffVo.setConstellation(buffEffect.getConstellation());
             }
         } else if (buffEffect.getSourceType() == BuffSourceEnum.WEAPON) {
@@ -187,8 +192,7 @@ public class EffectComputationManager {
         } else {
             buffVo.setEffectText(buffVo.getBuffField().getEffectText());
         }
-        if (!buffEffect.getFromSelf())
-            buffVo.setBuffInputParamList(getInputParamOfBuff(buffEffect));
+        buffVo.setBuffInputParamList(getInputParamOfBuff(buffEffect));
         return buffVo;
     }
 
@@ -198,6 +202,7 @@ public class EffectComputationManager {
         fightEffect.updateWithEnabledBuffs();
     }
 
+    @WorkerThread
     public void enableBuffEffect(FightEffect fightEffect, BuffEffect buffEffect, List<BuffInputParam> buffInputParamList) {
         Set<AttributeEnum> attributeSet = buffEffect.getRelatedAttributeSet();
         attributeSet.removeAll(fightEffect.getRelatedAttributeSet());
@@ -207,12 +212,12 @@ public class EffectComputationManager {
             fightEffect.addAvailableBuffEffects(additionalBuffEffectList);
         }
 
-        if(buffEffect.getFromSelf()) {
+        if (buffEffect.getFromSelf()) {
             fillBuffEffectCurveParam(buffEffect,
                     fightEffect.getCharacterAttribute().getTalentLevel().get(buffEffect.getSourceTalent()),
                     fightEffect.getCharacterAttribute().getWeaponRefinement());
-        } else {
-            assert buffInputParamList != null;
+        }
+        if (buffInputParamList != null) {
             fillBuffEffectInputParam(buffEffect, buffInputParamList);
         }
         fightEffect.enableBuffEffect(buffEffect);
@@ -221,11 +226,24 @@ public class EffectComputationManager {
 
     public List<BuffInputParam> getInputParamOfBuff(BuffEffect buffEffect) {
         List<BuffInputParam> buffInputParamList = new ArrayList<>();
+        if (buffEffect.getFromSelf()) {
+            switch (buffEffect.getBuffId()) {
+                case "BC10000073-5":  // 净善摄受明论
+                case "BW12416-1":
+                case "BW13416-1":
+                case "BW15416-1":  // 驭浪的海祇民
+                    buffInputParamList.add(new BuffInputParam(
+                            buffEffect.getSpecialInput(), buffEffect.getBasedAttributeValue(),
+                            false, true));
+                    break;
+            }
+            return buffInputParamList;
+        }
         if (buffEffect.getBasedAttribute() != null) {
             if (buffEffect.getBasedAttribute() == EffectBaseAttributeEnum.INPUT) {
                 buffInputParamList.add(new BuffInputParam(
-                        buffEffect.getSpecialInput(), false, true
-                ));
+                        buffEffect.getSpecialInput(), buffEffect.getBasedAttributeValue(),
+                        false, true));
             } else {
                 String hint;
                 if (buffEffect.getSourceType() == BuffSourceEnum.CHARACTER) {
@@ -233,8 +251,8 @@ public class EffectComputationManager {
                 } else {
                     hint = "装备者的" + buffEffect.getBasedAttribute().getDesc();
                 }
-                buffInputParamList.add(new BuffInputParam(hint, buffEffect.getBasedAttribute().getPercent(), true));
-
+                buffInputParamList.add(new BuffInputParam(hint, buffEffect.getBasedAttributeValue(),
+                        buffEffect.getBasedAttribute().getPercent(), true));
             }
         }
         if (buffEffect.getBasedAttributeSecond() != null) {
@@ -244,7 +262,8 @@ public class EffectComputationManager {
             } else {
                 hint = "装备者的" + buffEffect.getBasedAttributeSecond().getDesc();
             }
-            buffInputParamList.add(new BuffInputParam(hint, buffEffect.getBasedAttributeSecond().getPercent(), true));
+            buffInputParamList.add(new BuffInputParam(hint, buffEffect.getBasedAttributeSecondValue(),
+                    buffEffect.getBasedAttributeSecond().getPercent(), true));
         }
         if (buffEffect.getMaxValueBasedAttribute() != null) {
             if (buffEffect.getMaxValueBasedAttribute() != buffEffect.getBasedAttribute() &&
@@ -255,26 +274,25 @@ public class EffectComputationManager {
                 } else {
                     hint = "装备者的" + buffEffect.getMaxValueBasedAttribute().getDesc();
                 }
-                buffInputParamList.add(new BuffInputParam(hint, buffEffect.getMaxValueBasedAttribute().getPercent(), true));
+                buffInputParamList.add(new BuffInputParam(hint, buffEffect.getMaxValueBasedAttributeValue(),
+                        buffEffect.getMaxValueBasedAttribute().getPercent(), true));
             }
         }
         if (buffEffect.getMultiplierTalentCurve() != null) {
             buffInputParamList.add(new BuffInputParam(
                     buffEffect.getSourceName() + "的" + buffEffect.getSourceTalent().getDesc() + "等级",
-                    false, false, 15.));
+                    null, false, false, 15.));
         }
         if (buffEffect.getMultiplierRefinementCurve() != null ||
                 buffEffect.getMaxValueRefinementCurve() != null) {
             buffInputParamList.add(new BuffInputParam(
                     buffEffect.getSourceName() + "的精炼等级",
-                    false, false, 5.));
+                    null,false, false, 5.));
         }
         return buffInputParamList;
     }
 
     private void fillBuffEffectInputParam(BuffEffect buffEffect, List<BuffInputParam> buffInputParamList) {
-        TalentCurveDao talentCurveDao = knkDatabase.getTalentCurveDao();
-        RefinementCurveDao refinementCurveDao = knkDatabase.getRefinementCurveDao();
         int cursor = 0;
         if (buffEffect.getBasedAttribute() != null) {
             buffEffect.setBasedAttributeValue(buffInputParamList.get(cursor).getInputValue());
@@ -498,6 +516,9 @@ public class EffectComputationManager {
             if (buffEffect.getArtifactNum() <= Objects.requireNonNull(characterAttribute.getArtifactSetCount().get(buffEffect.getSourceId()))) {
                 selfFlag = true;
             }
+        }
+        if (buffEffect.getBuffRange() == BuffRangeEnum.OTHERS) {
+            selfFlag = false;
         }
         buffEffect.setFromSelf(selfFlag);
         return buffEffect;

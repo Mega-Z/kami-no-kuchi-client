@@ -41,7 +41,6 @@ public class BuffEnableFragment extends DialogFragment {
 
     private TextView textBuffTitle, textBuffEffect, textBuffDesc;
     private ImageView imageSourceIcon;
-    private LinearLayout layoutBuffParam;
     private Button buttonEnable, buttonCancel;
     private List<BuffParamInputFragment> buffParamInputFragmentList;
 
@@ -92,7 +91,6 @@ public class BuffEnableFragment extends DialogFragment {
         }
         textBuffDesc = view.findViewById(R.id.text_buff_desc);
         textBuffDesc.setText(buffVo.getBuffDesc()+"\n");
-        layoutBuffParam = view.findViewById(R.id.layout_buff_param);
         buttonEnable = view.findViewById(R.id.btn_enable);
         buttonEnable.setOnClickListener(new EnableOnClickListener());
         buttonCancel = view.findViewById(R.id.btn_cancel);
@@ -142,8 +140,7 @@ public class BuffEnableFragment extends DialogFragment {
         return true;
     }
 
-
-    public void returnWithBuffVo(BuffVo buffVo) {
+    private void returnWithBuffVo(BuffVo buffVo) {
         Intent returnIntent = new Intent();
         returnIntent.putExtra("buffVo", buffVo);
         requireActivity().setResult(RESULT_OK, returnIntent);

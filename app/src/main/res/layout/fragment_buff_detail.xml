@@ -75,5 +75,27 @@
         android:textColor="@color/white"
         android:textSize="@dimen/sp_14"
         android:text="施放天街巡游时，刻晴的暴击率提升15%。施放天街巡游时，刻晴的暴击率提升15%。施放天街巡游时，刻晴的暴击率提升15%。施放天街巡游时，刻晴的暴击率提升15%。施放天街巡游时，刻晴的暴击率提升15%。"/>
-
+    <LinearLayout
+        android:id="@+id/layout_buff_param"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+    </LinearLayout>
+    <LinearLayout
+        android:id="@+id/layout_modify"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingVertical="@dimen/dp_10"
+        android:orientation="horizontal">
+        <Button
+            android:id="@+id/btn_modify"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/dp_40"
+            android:layout_marginHorizontal="@dimen/dp_50"
+            android:background="@drawable/bg_btn_blue"
+            android:text="参数修改"
+            android:textSize="@dimen/sp_16"
+            android:textStyle="bold"
+            android:textColor="@color/white"/>
+    </LinearLayout>
 </LinearLayout>

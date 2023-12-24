@@ -3,6 +3,7 @@ package com.megaz.knk.computation;
 import com.megaz.knk.constant.AttributeEnum;
 import com.megaz.knk.constant.BuffRangeEnum;
 import com.megaz.knk.constant.BuffSourceEnum;
+import com.megaz.knk.constant.BuffStageEnum;
 import com.megaz.knk.constant.DamageLabelEnum;
 import com.megaz.knk.constant.EffectBaseAttributeEnum;
 import com.megaz.knk.constant.ElementEnum;
@@ -36,6 +37,7 @@ public class BuffEffect implements Serializable {
     private String specialInput;
     private Boolean forced;
     private Boolean fromSelf;
+    private BuffStageEnum stage;
     private Boolean enabled;
     private Boolean defaultEnabled;
     // constant
@@ -99,6 +101,21 @@ public class BuffEffect implements Serializable {
         phase = buff.getPhase();
         constellation = buff.getConstellation();
         artifactNum = buff.getArtifactNum();
+        setStage();
+    }
+
+    private void setStage() {
+        if (effectType == FightEffectEnum.ATTRIBUTE_ADD) {
+            stage = BuffStageEnum.ATTRIBUTE_OVER_CONSTANT;
+            if (basedAttribute != null && basedAttribute != EffectBaseAttributeEnum.INPUT) {
+                stage = BuffStageEnum.ATTRIBUTE_OVER_ATTRIBUTE;
+            }
+            if (buffId.equals("BC10000073-5")) { // 净善摄受明论
+                stage = BuffStageEnum.ATTRIBUTE_OVER_ATTRIBUTE;
+            }
+        } else {
+            stage = BuffStageEnum.ATTRIBUTE_UNCHANGED;
+        }
     }
 
     public Double getValue() {
@@ -125,7 +142,7 @@ public class BuffEffect implements Serializable {
         if (maxValueConstant != null) {
             maxValue = maxValueConstant;
         }
-        if(maxValueBasedAttribute != null) {
+        if (maxValueBasedAttribute != null) {
             maxValue *= maxValueBasedAttributeValue;
         }
         if (maxValueRefinementCurve != null) {
@@ -149,12 +166,27 @@ public class BuffEffect implements Serializable {
         maxValueRefinementCurveValue = null;
     }
 
-    public void fillAttributeParam(CharacterAttribute characterAttribute) {
-        if(buffId.equals("BC10000052-1")) { //神变·恶曜开眼
-            basedAttributeValue = 90.;
+    public void fillDefaultInputParam(CharacterAttribute characterAttribute) {
+        if(basedAttributeValue != null) {
             return;
         }
-        if (basedAttribute != null) {
+        switch (buffId) {
+            case "BC10000052-1":  // 神变·恶曜开眼
+                basedAttributeValue = 90.;
+                break;
+            case "BC10000073-5":  // 净善摄受明论
+                basedAttributeValue = characterAttribute.getMastery();
+                break;
+            case "BW12416-1":
+            case "BW13416-1":
+            case "BW15416-1":  // 驭浪的海祇民
+                basedAttributeValue = 320.;
+                break;
+        }
+    }
+
+    public void fillSelfAttributeParam(CharacterAttribute characterAttribute) {
+        if (basedAttribute != null && basedAttribute != EffectBaseAttributeEnum.INPUT) {
             basedAttributeValue = characterAttribute.getEffectBasedAttribute(basedAttribute);
         }
         if (basedAttributeSecond != null) {
@@ -165,16 +197,15 @@ public class BuffEffect implements Serializable {
         }
     }
 
-
     public Set<AttributeEnum> getRelatedAttributeSet() {
         Set<AttributeEnum> attributeSet = new HashSet<>();
-        if(basedAttribute != null) {
+        if (basedAttribute != null) {
             attributeSet.addAll(basedAttribute.getRelatedAttributes());
         }
-        if(basedAttributeSecond != null) {
+        if (basedAttributeSecond != null) {
             attributeSet.addAll(basedAttributeSecond.getRelatedAttributes());
         }
-        if(maxValueBasedAttribute != null) {
+        if (maxValueBasedAttribute != null) {
             attributeSet.addAll(maxValueBasedAttribute.getRelatedAttributes());
         }
         return attributeSet;
@@ -196,7 +227,7 @@ public class BuffEffect implements Serializable {
         if (maxValueBasedAttribute != null && maxValueBasedAttributeValue == null) {
             throw new BuffParamNotFilledException(maxValueBasedAttribute.getDesc());
         }
-        if(maxValueRefinementCurve != null && maxValueRefinementCurveValue == null) {
+        if (maxValueRefinementCurve != null && maxValueRefinementCurveValue == null) {
             throw new BuffParamNotFilledException("精炼等级");
         }
     }

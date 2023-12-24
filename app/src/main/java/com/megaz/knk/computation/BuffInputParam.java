@@ -16,14 +16,16 @@ public class BuffInputParam implements Serializable {
     private Boolean percent;
     private Boolean decimal;
 
-    public BuffInputParam(String inputHint, Boolean percent, Boolean decimal) {
+    public BuffInputParam(String inputHint, Double inputValue, Boolean percent, Boolean decimal) {
         this.inputHint = inputHint;
+        this.inputValue = inputValue;
         this.percent = percent;
         this.decimal = decimal;
     }
 
-    public BuffInputParam(String inputHint, Boolean percent, Boolean decimal, Double maxValue) {
+    public BuffInputParam(String inputHint, Double inputValue, Boolean percent, Boolean decimal, Double maxValue) {
         this.inputHint = inputHint;
+        this.inputValue = inputValue;
         this.percent = percent;
         this.decimal = decimal;
         this.maxValue = maxValue;

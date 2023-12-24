@@ -99,6 +99,17 @@ public class EnabledBuffFragment extends BaseFragment {
         buttonBuffDisable.setVisibility(View.GONE);
     }
 
+    @SuppressLint({"DefaultLocale", "SetTextI18n"})
+    public void updateBuffNumberByVo(BuffVo buffVo) {
+        if(buffVo.getPercent()) {
+            textBuffNumber.setText(String.format("%.2f", buffVo.getEffectValue() * 100) + "%");
+        } else if (buffVo.getEffectValue() >= 1000) {
+            textBuffNumber.setText(String.format("%d", Math.round(buffVo.getEffectValue())));
+        } else {
+            textBuffNumber.setText(String.format("%.2f", buffVo.getEffectValue()));
+        }
+    }
+
     @Override
     protected void setCallback(@NonNull View view) {
         super.setCallback(view);

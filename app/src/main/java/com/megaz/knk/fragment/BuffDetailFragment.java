@@ -8,19 +8,27 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentTransaction;
 
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
+import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.megaz.knk.R;
+import com.megaz.knk.activity.FightEffectDetailActivity;
+import com.megaz.knk.computation.BuffInputParam;
 import com.megaz.knk.utils.DynamicStyleUtils;
 import com.megaz.knk.utils.ImageResourceUtils;
 import com.megaz.knk.vo.BuffVo;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -33,6 +41,10 @@ public class BuffDetailFragment extends DialogFragment {
 
     private TextView textBuffTitle, textBuffEffect, textBuffNumber, textBuffDesc;
     private ImageView imageSourceIcon;
+    private Button buttonModify;
+    private LinearLayout layoutModify;
+
+    private List<BuffParamInputFragment> buffParamInputFragmentList;
 
     public BuffDetailFragment() {
         // Required empty public constructor
@@ -92,6 +104,13 @@ public class BuffDetailFragment extends DialogFragment {
         textBuffDesc = view.findViewById(R.id.text_buff_desc);
         textBuffDesc.setText(buffVo.getBuffDesc()+"\n");
 
+        layoutModify = view.findViewById(R.id.layout_modify);
+        buttonModify = view.findViewById(R.id.btn_modify);
+        buttonModify.setOnClickListener(new ModifyOnClickListener());
+
+        buffParamInputFragmentList = new ArrayList<>();
+        setParamInput();
+
         Objects.requireNonNull(getDialog()).requestWindowFeature(Window.FEATURE_NO_TITLE);
         getDialog().getWindow().setBackgroundDrawableResource(R.color.transparent);
         view.setOnClickListener(new View.OnClickListener() {
@@ -100,5 +119,49 @@ public class BuffDetailFragment extends DialogFragment {
                 Objects.requireNonNull(getDialog()).dismiss();
             }
         });
+    }
+
+    private class ModifyOnClickListener implements View.OnClickListener{
+        @Override
+        public void onClick(View v) {
+            if(checkInput()) {
+                ((FightEffectDetailActivity)requireActivity()).toModifyBuff(buffVo);
+                Objects.requireNonNull(getDialog()).dismiss();
+            } else {
+                Toast toast = Toast.makeText(getContext(), "", Toast.LENGTH_SHORT);
+                toast.setText("请正确填入BUFF参数");
+                toast.show();
+            }
+        }
+    }
+
+    private Boolean checkInput() {
+        if(buffVo.getBuffInputParamList() == null || buffVo.getBuffInputParamList().isEmpty()) {
+            return true;
+        }
+        for(int i=0;i<buffVo.getBuffInputParamList().size();i++) {
+            assert buffParamInputFragmentList.size() > i;
+            if(buffParamInputFragmentList.get(i).getValue() == null) {
+                return false;
+            } else {
+                buffVo.getBuffInputParamList().get(i).setInputValue(buffParamInputFragmentList.get(i).getValue());
+            }
+        }
+        return true;
+    }
+
+    private void setParamInput() {
+        if(buffVo.getBuffInputParamList() == null || buffVo.getBuffInputParamList().isEmpty()) {
+            layoutModify.setVisibility(View.GONE);
+            return;
+        }
+        layoutModify.setVisibility(View.VISIBLE);
+        FragmentTransaction fragmentTransaction = getChildFragmentManager().beginTransaction();
+        for(BuffInputParam buffInputParam:buffVo.getBuffInputParamList()) {
+            BuffParamInputFragment buffParamInputFragment = BuffParamInputFragment.newInstance(buffInputParam);
+            fragmentTransaction.add(R.id.layout_buff_param, buffParamInputFragment);
+            buffParamInputFragmentList.add(buffParamInputFragment);
+        }
+        fragmentTransaction.commit();
     }
 }

@@ -48,6 +48,7 @@ public abstract class BaseActivity extends AppCompatActivity {
         inputMethodManager = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
         initView();
         setCallback();
+        initialize();
     }
 
     protected abstract void setContent();
@@ -57,6 +58,10 @@ public abstract class BaseActivity extends AppCompatActivity {
     }
 
     protected void setCallback() {
+
+    }
+
+    protected void initialize() {
 
     }
 

@@ -1,6 +1,7 @@
 package com.megaz.knk.computation;
 
 import com.megaz.knk.constant.AttributeEnum;
+import com.megaz.knk.constant.BuffStageEnum;
 import com.megaz.knk.constant.EffectBaseAttributeEnum;
 import com.megaz.knk.constant.EffectFieldEnum;
 import com.megaz.knk.constant.FightEffectEnum;
@@ -149,9 +150,10 @@ public class FightEffect implements Serializable {
         // 先算不基于属性的属性提升
         CharacterAttribute characterAttributeWithNoBaseBuffs = new CharacterAttribute(characterAttribute);
         for(BuffEffect buffEffect:attributeAddBuffEffects) {
-            if(buffEffect.getBasedAttribute() == null || buffEffect.getBasedAttribute() == EffectBaseAttributeEnum.INPUT) {
+            if(buffEffect.getStage() == BuffStageEnum.ATTRIBUTE_OVER_CONSTANT) {
                 if(buffEffect.getFromSelf()) {
-                    buffEffect.fillAttributeParam(characterAttribute);
+                    buffEffect.fillDefaultInputParam(characterAttribute);
+                    buffEffect.fillSelfAttributeParam(characterAttribute);
                 }
                 characterAttributeWithNoBaseBuffs.addAttributeValue(buffEffect.getIncreasedAttribute(), buffEffect.getValue());
             }
@@ -159,9 +161,10 @@ public class FightEffect implements Serializable {
         // 再算基于上述提升后属性的属性提升
         characterAttributeWithBuffs = new CharacterAttribute(characterAttributeWithNoBaseBuffs);
         for(BuffEffect buffEffect:attributeAddBuffEffects) {
-            if(buffEffect.getBasedAttribute() != null && buffEffect.getBasedAttribute() != EffectBaseAttributeEnum.INPUT) {
+            if(buffEffect.getStage() == BuffStageEnum.ATTRIBUTE_OVER_ATTRIBUTE) {
                 if (buffEffect.getFromSelf()) {
-                    buffEffect.fillAttributeParam(characterAttributeWithNoBaseBuffs);
+                    buffEffect.fillDefaultInputParam(characterAttributeWithNoBaseBuffs);
+                    buffEffect.fillSelfAttributeParam(characterAttributeWithNoBaseBuffs);
                 }
                 characterAttributeWithBuffs.addAttributeValue(buffEffect.getIncreasedAttribute(), buffEffect.getValue());
             }
@@ -173,7 +176,8 @@ public class FightEffect implements Serializable {
         assert characterAttributeWithBuffs != null;
         for(BuffEffect buffEffect: getEnabledBuffEffects()) {
             if(buffEffect.getFromSelf()) {
-                buffEffect.fillAttributeParam(characterAttributeWithBuffs);
+                buffEffect.fillDefaultInputParam(characterAttributeWithBuffs);
+                buffEffect.fillSelfAttributeParam(characterAttributeWithBuffs);
             }
         }
     }

@@ -2,7 +2,6 @@ package com.megaz.knk.activity;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
-import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
@@ -27,8 +26,11 @@ import com.megaz.knk.utils.DynamicStyleUtils;
 import com.megaz.knk.vo.BuffVo;
 import com.megaz.knk.vo.EffectDetailVo;
 
+import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -36,7 +38,7 @@ public class FightEffectDetailActivity extends BaseActivity{
 
     private CharacterAttribute characterAttribute;
     private FightEffect fightEffect;
-    private BuffVo buffVoToEnable, buffVoToDisable;
+    private BuffVo buffVoToEnable, buffVoToDisable, buffVoToModify;
 
     private EffectComputationManager effectComputationManager;
     private Handler buffVoCreateHandler, fightEffectUpdateHandler;
@@ -50,12 +52,17 @@ public class FightEffectDetailActivity extends BaseActivity{
     private ImageView buttonBuffAdd;
     private ScrollView viewEnabledBuffs;
 
+    private Map<String, EnabledBuffFragment> buffFragmentMap;
+    private Map<String, BuffVo> buffVoMap;
+
     @Override
     protected void setContent() {
         setContentView(R.layout.activity_fight_effect_detail);
         characterAttribute = (CharacterAttribute) getIntent().getExtras().getSerializable("characterAttribute");
         fightEffect = (FightEffect) getIntent().getExtras().getSerializable("fightEffect");
         effectComputationManager = new EffectComputationManager(getApplicationContext());
+        buffFragmentMap = new HashMap<>();
+        buffVoMap = new HashMap<>();
     }
 
     @Override
@@ -99,7 +106,7 @@ public class FightEffectDetailActivity extends BaseActivity{
         textFieldReaction = findViewById(R.id.text_field_reaction);
         textFieldReaction.setTypeface(typefaceNum);
 
-        updateView();
+        updateFightEffectView();
     }
 
     @Override
@@ -121,8 +128,8 @@ public class FightEffectDetailActivity extends BaseActivity{
     }
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+    protected void initialize() {
+        super.initialize();
         new Thread(this::createEnabledBuffVo).start();
     }
 
@@ -157,25 +164,32 @@ public class FightEffectDetailActivity extends BaseActivity{
         super.onBackPressed();
     }
 
-
     public void toDisableBuff(BuffVo buffVo) {
         buffVoToDisable = buffVo;
+        removeBuffViewByBuffVo(buffVo);
         new Thread(this::disableBuffByBuffVo).start();
+    }
+
+    public void toModifyBuff(BuffVo buffVo) {
+        buffVoToModify = buffVo;
+        new Thread(this::modifyBuffByBuffVo).start();
     }
 
     private void handleBuffVoCreateMessage(Message msg) {
         switch (msg.what) {
             case 0:
                 List<BuffVo> buffVoList = (List<BuffVo>) msg.obj;
-                updateEnabledBuffList(buffVoList);
+                initializeEnabledBuffViews(buffVoList);
         }
     }
 
     private void handleFightEffectUpdateMessage(Message msg) {
+        // fight effect 对象更新完成，开始更新视图
         switch (msg.what) {
             case 0:
-                updateView();
-                new Thread(this::createEnabledBuffVo).start();
+                updateFightEffectView();
+                updateBuffVo();
+                updateEnabledBuffViews();
         }
     }
 
@@ -184,11 +198,7 @@ public class FightEffectDetailActivity extends BaseActivity{
         BuffEffect buffEffect = fightEffect.getAvailableBuffEffects().get(buffId);
         try {
             assert buffEffect != null;
-            if (buffEffect.getFromSelf()) {
-                effectComputationManager.enableBuffEffect(fightEffect, buffEffect, null);
-            } else {
-                effectComputationManager.enableBuffEffect(fightEffect, buffEffect, buffVoToEnable.getBuffInputParamList());
-            }
+            effectComputationManager.enableBuffEffect(fightEffect, buffEffect, buffVoToEnable.getBuffInputParamList());
             Message msg = new Message();
             msg.what = 0;
             fightEffectUpdateHandler.sendMessage(msg);
@@ -203,6 +213,21 @@ public class FightEffectDetailActivity extends BaseActivity{
         try {
             assert buffEffect != null;
             effectComputationManager.disableBuffEffect(fightEffect, buffEffect);
+            Message msg = new Message();
+            msg.what = 0;
+            fightEffectUpdateHandler.sendMessage(msg);
+        } catch (RuntimeException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void modifyBuffByBuffVo() {
+        String buffId = buffVoToModify.getBuffId();
+        BuffEffect buffEffect = fightEffect.getAvailableBuffEffects().get(buffId);
+        try {
+            assert buffEffect != null;
+            effectComputationManager.disableBuffEffect(fightEffect, buffEffect);
+            effectComputationManager.enableBuffEffect(fightEffect, buffEffect, buffVoToModify.getBuffInputParamList());
             Message msg = new Message();
             msg.what = 0;
             fightEffectUpdateHandler.sendMessage(msg);
@@ -229,8 +254,27 @@ public class FightEffectDetailActivity extends BaseActivity{
         }
     }
 
+    private void updateBuffVo() {
+        if(buffVoToEnable != null) {
+            buffVoMap.put(buffVoToEnable.getBuffId(), buffVoToEnable);
+            buffVoToEnable = null;
+        }
+        if(buffVoToDisable != null) {
+            buffVoMap.remove(buffVoToDisable.getBuffId());
+            buffVoToDisable = null;
+        }
+        if(buffVoToModify != null) {
+            buffVoToModify = null;
+        }
+        for (BuffEffect buffEffect : fightEffect.getEnabledBuffEffects()) {
+            assert buffVoMap.containsKey(buffEffect.getBuffId());
+            Objects.requireNonNull(buffVoMap.get(buffEffect.getBuffId()))
+                    .setEffectValue(buffEffect.getValue());
+        }
+    }
+
     @SuppressLint({"DefaultLocale", "SetTextI18n"})
-    private void updateView() {
+    private void updateFightEffectView() {
         EffectDetailVo effectDetailVo = effectComputationManager.createFightEffectDetail(fightEffect);
 
         textEffectDesc.setText(effectDetailVo.getEffectDesc());
@@ -316,19 +360,43 @@ public class FightEffectDetailActivity extends BaseActivity{
 
     }
 
-    private void updateEnabledBuffList(List<BuffVo> buffVoList) {
+    private void initializeEnabledBuffViews(List<BuffVo> buffVoList) {
         buffVoList.sort(Comparator.comparing(BuffVo::getBuffId));
-        layoutEnabledBuffs.removeAllViews();
         FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
-        for(int i=0;i< buffVoList.size();i++) {
-            LinearLayout layoutContainer = new LinearLayout(getApplicationContext());
-            int id = View.generateViewId();
-            layoutContainer.setId(id);
-            EnabledBuffFragment enabledBuffFragment = EnabledBuffFragment.newInstance(buffVoList.get(i));
-            fragmentTransaction.add(id, enabledBuffFragment);
-            layoutEnabledBuffs.addView(layoutContainer);
+        for(BuffVo buffVo:buffVoList) {
+            EnabledBuffFragment enabledBuffFragment = EnabledBuffFragment.newInstance(buffVo);
+            fragmentTransaction.add(layoutEnabledBuffs.getId(), enabledBuffFragment);
+            buffFragmentMap.put(buffVo.getBuffId(), enabledBuffFragment);
+            buffVoMap.put(buffVo.getBuffId(), buffVo);
         }
         fragmentTransaction.commit();
     }
 
+    private void updateEnabledBuffViews() {
+        List<BuffVo> buffVoList = new ArrayList<>(buffVoMap.values());
+        buffVoList.sort(Comparator.comparing(BuffVo::getBuffId));
+        FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
+        for(BuffVo buffVo:buffVoList) {
+            if(buffFragmentMap.containsKey(buffVo.getBuffId())){ // update
+                EnabledBuffFragment enabledBuffFragment = buffFragmentMap.get(buffVo.getBuffId());
+                assert enabledBuffFragment != null;
+                enabledBuffFragment.updateBuffNumberByVo(buffVo);
+                // fragmentTransaction.add(layoutEnabledBuffs.getId(), enabledBuffFragment);
+            } else { // new buff
+                EnabledBuffFragment enabledBuffFragment = EnabledBuffFragment.newInstance(buffVo);
+                fragmentTransaction.add(layoutEnabledBuffs.getId(), enabledBuffFragment);
+                buffFragmentMap.put(buffVo.getBuffId(), enabledBuffFragment);
+            }
+        }
+        fragmentTransaction.commit();
+    }
+
+    private void removeBuffViewByBuffVo(BuffVo buffVo) {
+        assert buffFragmentMap.containsKey(buffVo.getBuffId());
+        FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
+        EnabledBuffFragment enabledBuffFragment = buffFragmentMap.get(buffVo.getBuffId());
+        assert enabledBuffFragment != null;
+        fragmentTransaction.remove(enabledBuffFragment).commit();
+        buffFragmentMap.remove(buffVo.getBuffId());
+    }
 }

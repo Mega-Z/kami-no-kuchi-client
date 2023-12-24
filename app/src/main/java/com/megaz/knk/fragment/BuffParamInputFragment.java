@@ -82,6 +82,23 @@ public class BuffParamInputFragment extends BaseFragment {
         } else {
             editTextParamValue.setInputType(InputType.TYPE_CLASS_NUMBER);
         }
+        setValue();
+    }
+
+    @SuppressLint("DefaultLocale")
+    private void setValue() {
+        if(buffInputParam.getInputValue() == null) {
+            return;
+        }
+        double value = buffInputParam.getInputValue();
+        if(buffInputParam.getPercent()) {
+            value *= 100;
+        }
+        if(buffInputParam.getDecimal()) {
+            editTextParamValue.setText(String.format("%.2f", value));
+        } else {
+            editTextParamValue.setText(String.format("%d", Math.round(value)));
+        }
     }
 
     public Double getValue() {

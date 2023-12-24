@@ -1,15 +1,9 @@
 package com.megaz.knk.activity;
 
-import android.animation.ObjectAnimator;
-import android.animation.ValueAnimator;
-import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
-import android.view.View;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.FragmentTransaction;
@@ -20,7 +14,6 @@ import com.megaz.knk.computation.FightEffect;
 import com.megaz.knk.constant.BuffSourceEnum;
 import com.megaz.knk.constant.GenshinConstantMeta;
 import com.megaz.knk.fragment.BuffFolderFragment;
-import com.megaz.knk.fragment.EnabledBuffFragment;
 import com.megaz.knk.manager.EffectComputationManager;
 import com.megaz.knk.vo.BuffVo;
 
@@ -73,12 +66,11 @@ public class BuffBrowseActivity extends BaseActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        new Thread(this::createEnabledBuffVo).start();
-//        animatorLoading.start();
+        new Thread(this::createAvailableBuffVo).start();
     }
 
 
-    private void createEnabledBuffVo() {
+    private void createAvailableBuffVo() {
         try {
             List<BuffEffect> availableBuffEffectList = new ArrayList<>(fightEffect.getAvailableBuffEffects().values());
             availableBuffEffectList.removeAll(fightEffect.getEnabledBuffEffects());

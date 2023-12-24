@@ -178,7 +178,7 @@ public class CharacterDetailActivity extends ElasticScrollActivity {
         // name&level
         TextView textName = findViewById(R.id.text_character_name);
         textName.setTypeface(typefaceNZBZ);
-        textName.setText(characterProfileVo.getCharacterName()+" ");
+        textName.setText(" "+characterProfileVo.getCharacterName()+" ");
         textName.setTextColor(getColor(DynamicStyleUtils.getElementTextColor(characterProfileVo.getElement())));
         TextView textLevel = findViewById(R.id.text_character_level);
         textLevel.setTypeface(typefaceNum);

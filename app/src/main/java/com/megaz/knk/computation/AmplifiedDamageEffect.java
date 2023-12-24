@@ -42,6 +42,6 @@ public class AmplifiedDamageEffect extends DirectDamageEffect{
 
     @Override
     protected Double getMasteryFieldValue() {
-        return characterAttribute.getMastery()*2.78/(characterAttribute.getMastery()+1400);
+        return characterAttributeWithBuffs.getMastery()*2.78/(characterAttributeWithBuffs.getMastery()+1400);
     }
 }
