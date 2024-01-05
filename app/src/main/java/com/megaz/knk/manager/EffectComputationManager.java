@@ -17,15 +17,18 @@ import com.megaz.knk.computation.HealEffect;
 import com.megaz.knk.computation.QuickenDamageEffect;
 import com.megaz.knk.computation.ShieldEffect;
 import com.megaz.knk.computation.UpheavalDamageEffect;
+import com.megaz.knk.constant.ArtifactPositionEnum;
 import com.megaz.knk.constant.AttributeEnum;
 import com.megaz.knk.constant.BuffRangeEnum;
 import com.megaz.knk.constant.BuffSourceEnum;
+import com.megaz.knk.constant.CharacterBaseAttribute;
 import com.megaz.knk.constant.EffectBaseAttributeEnum;
 import com.megaz.knk.constant.EffectFieldEnum;
 import com.megaz.knk.constant.ElementEnum;
 import com.megaz.knk.constant.ElementReactionEnum;
 import com.megaz.knk.constant.FightEffectEnum;
 import com.megaz.knk.constant.GenshinConstantMeta;
+import com.megaz.knk.constant.WeaponBaseAttribute;
 import com.megaz.knk.dao.ArtifactDexDao;
 import com.megaz.knk.dao.BuffDao;
 import com.megaz.knk.dao.BuffEffectRelationDao;
@@ -34,6 +37,9 @@ import com.megaz.knk.dao.FightEffectComputationDao;
 import com.megaz.knk.dao.RefinementCurveDao;
 import com.megaz.knk.dao.TalentCurveDao;
 import com.megaz.knk.dao.WeaponDexDao;
+import com.megaz.knk.dto.ArtifactProfileDto;
+import com.megaz.knk.dto.CharacterProfileDto;
+import com.megaz.knk.dto.WeaponProfileDto;
 import com.megaz.knk.entity.ArtifactDex;
 import com.megaz.knk.entity.Buff;
 import com.megaz.knk.entity.BuffEffectRelation;
@@ -46,6 +52,8 @@ import com.megaz.knk.exception.BuffNoFieldMatchedException;
 import com.megaz.knk.exception.MetaDataQueryException;
 import com.megaz.knk.vo.BuffVo;
 import com.megaz.knk.vo.EffectDetailVo;
+
+import org.w3c.dom.Attr;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -63,6 +71,79 @@ public class EffectComputationManager {
 
     public EffectComputationManager(Context context) {
         this.knkDatabase = KnkDatabase.getKnkDatabase(context);
+    }
+
+    @WorkerThread
+    public CharacterAttribute createCharacterBaseAttribute(CharacterProfileDto characterProfileDto) {
+        CharacterDexDao characterDexDao = knkDatabase.getCharacterDexDao();
+        WeaponDexDao weaponDexDao = knkDatabase.getWeaponDexDao();
+        CharacterDex characterDex = queryCharacterDex(characterDexDao, characterProfileDto.getCharacterId());
+        WeaponProfileDto weaponProfileDto = characterProfileDto.getWeapon();
+        WeaponDex weaponDex = queryWeaponDex(weaponDexDao, weaponProfileDto.getWeaponId());
+
+        CharacterAttribute characterAttribute = new CharacterAttribute(characterProfileDto);
+        Map<AttributeEnum, String> baseCurveNames = new HashMap<>();
+        baseCurveNames.put(AttributeEnum.BASE_ATK, characterDex.getCurveBaseAtk());
+        baseCurveNames.put(AttributeEnum.BASE_HP, characterDex.getCurveBaseHp());
+        baseCurveNames.put(AttributeEnum.BASE_DEF, characterDex.getCurveBaseDef());
+        Map<AttributeEnum, Double> characterBaseAttributeMulti = CharacterBaseAttribute.getBaseAttributeMultiByLevel(characterProfileDto.getLevel(), baseCurveNames);
+        Map<AttributeEnum, Double> characterBaseAttributeAdd = CharacterBaseAttribute.getBaseAttributesByPhase(characterProfileDto.getPhase(), characterDex.getPromoteId());
+        Map<AttributeEnum, Double> weaponBaseAttributeMulti = WeaponBaseAttribute.getBaseAttributeMultiByLevel(weaponProfileDto.getLevel(), weaponDex.getCurveBaseAtk(), weaponDex.getCurveAttribute());
+        Map<AttributeEnum, Double> weaponBaseAttributeAdd = WeaponBaseAttribute.getBaseAttributesByPhase(weaponProfileDto.getPhase(), weaponDex.getPromoteId());
+
+        // set base (white) attribute
+        characterAttribute.setBaseAtk(
+                characterDex.getBaseAtk() * Objects.requireNonNull(characterBaseAttributeMulti.get(AttributeEnum.BASE_ATK))
+                        + Objects.requireNonNull(characterBaseAttributeAdd.getOrDefault(AttributeEnum.BASE_ATK, 0.))
+                        + weaponDex.getBaseAtk() * Objects.requireNonNull(weaponBaseAttributeMulti.get(AttributeEnum.BASE_ATK))
+                        + Objects.requireNonNull(weaponBaseAttributeAdd.getOrDefault(AttributeEnum.BASE_ATK, 0.))
+        );
+        characterAttribute.setBaseHp(
+                characterDex.getBaseHp() * Objects.requireNonNull(characterBaseAttributeMulti.get(AttributeEnum.BASE_HP))
+                        + Objects.requireNonNull(characterBaseAttributeAdd.getOrDefault(AttributeEnum.BASE_HP, 0.))
+        );
+        characterAttribute.setBaseDef(
+                characterDex.getBaseDef() * Objects.requireNonNull(characterBaseAttributeMulti.get(AttributeEnum.BASE_DEF))
+                        + Objects.requireNonNull(characterBaseAttributeAdd.getOrDefault(AttributeEnum.BASE_DEF, 0.))
+        );
+        // add character attribute
+        for (AttributeEnum attribute : characterBaseAttributeAdd.keySet()) {
+            if (attribute != AttributeEnum.BASE_ATK && attribute != AttributeEnum.BASE_HP && attribute != AttributeEnum.BASE_DEF) {
+                characterAttribute.addAttributeValue(attribute, Objects.requireNonNull(characterBaseAttributeAdd.get(attribute)));
+            }
+        }
+        // add weapon attribute
+        if (weaponDex.getAttribute() != null && weaponBaseAttributeMulti.containsKey(AttributeEnum.NULL)) {
+            characterAttribute.addAttributeValue(weaponDex.getAttribute(),
+                    weaponDex.getAttributeValue() * Objects.requireNonNull(weaponBaseAttributeMulti.get(AttributeEnum.NULL)));
+        } else {
+            if (!(weaponDex.getAttribute() == null && !weaponBaseAttributeMulti.containsKey(AttributeEnum.NULL))) {
+                throw new MetaDataQueryException("weapon_dex");
+            }
+        }
+        for (AttributeEnum attribute : weaponBaseAttributeAdd.keySet()) {
+            if (attribute != AttributeEnum.BASE_ATK) {
+                characterAttribute.addAttributeValue(attribute, Objects.requireNonNull(weaponBaseAttributeAdd.get(attribute)));
+            }
+        }
+        // add artifacts attribute
+        for (ArtifactPositionEnum position : GenshinConstantMeta.ARTIFACT_POSITION_LIST) {
+            if (characterProfileDto.getArtifacts().containsKey(position)) {
+                ArtifactProfileDto artifactProfileDto = characterProfileDto.getArtifacts().get(position);
+                assert artifactProfileDto != null;
+                characterAttribute.addAttributeValue(
+                        artifactProfileDto.getMainAttribute(), artifactProfileDto.getMainAttributeVal()
+                );
+                for (int i = 0; i < artifactProfileDto.getSubAttributes().size(); i++) {
+                    characterAttribute.addAttributeValue(
+                            artifactProfileDto.getSubAttributes().get(i),
+                            artifactProfileDto.getSubAttributesVal().get(i)
+                    );
+                }
+            }
+        }
+
+        return characterAttribute;
     }
 
     @WorkerThread
@@ -124,20 +205,14 @@ public class EffectComputationManager {
         buffVo.setSourceType(buffEffect.getSourceType());
         buffVo.setForced(buffEffect.getForced());
         if (buffEffect.getSourceType() == BuffSourceEnum.CHARACTER) {
-            List<CharacterDex> characterDexList = characterDexDao.selectByCharacterId(buffEffect.getSourceId());
-            if (characterDexList.size() != 1) {
-                throw new MetaDataQueryException("character_dex");
-            }
-            buffVo.setIcon(characterDexList.get(0).getIconAvatar());
+            CharacterDex characterDex = queryCharacterDex(characterDexDao, buffEffect.getSourceId());
+            buffVo.setIcon(characterDex.getIconAvatar());
             if (buffEffect.getConstellation() != null && buffEffect.getConstellation() > 0) {
                 buffVo.setConstellation(buffEffect.getConstellation());
             }
         } else if (buffEffect.getSourceType() == BuffSourceEnum.WEAPON) {
-            List<WeaponDex> weaponDexList = weaponDexDao.selectByWeaponId(buffEffect.getSourceId());
-            if (weaponDexList.size() != 1) {
-                throw new MetaDataQueryException("weapon_dex");
-            }
-            buffVo.setIcon(weaponDexList.get(0).getIconAwaken());
+            WeaponDex weaponDex = queryWeaponDex(weaponDexDao, buffEffect.getSourceId());
+            buffVo.setIcon(weaponDex.getIconAwaken());
         } else if (buffEffect.getSourceType() == BuffSourceEnum.ARTIFACT_SET) {
             List<ArtifactDex> artifactDexList = artifactDexDao.selectBySetId(buffEffect.getSourceId());
             if (artifactDexList.size() <= 0) {
@@ -287,7 +362,7 @@ public class EffectComputationManager {
                 buffEffect.getMaxValueRefinementCurve() != null) {
             buffInputParamList.add(new BuffInputParam(
                     buffEffect.getSourceName() + "的精炼等级",
-                    null,false, false, 5.));
+                    null, false, false, 5.));
         }
         return buffInputParamList;
     }
@@ -553,7 +628,7 @@ public class EffectComputationManager {
             buffEffect.setMultiplierRefinementCurveValue(refinementCurveList.get(0).getValue(
                     Objects.requireNonNull(refinementLevel)));
         }
-        if (buffEffect.getMaxValueRefinementCurveValue() != null) {
+        if (buffEffect.getMaxValueRefinementCurve() != null) {
             List<RefinementCurve> refinementCurveList = refinementCurveDao.selectByCurveID(buffEffect.getMaxValueRefinementCurve());
             if (refinementCurveList.size() != 1) {
                 throw new MetaDataQueryException("refinement_curve");
@@ -561,6 +636,22 @@ public class EffectComputationManager {
             buffEffect.setMaxValueRefinementCurveValue(refinementCurveList.get(0).getValue(
                     Objects.requireNonNull(refinementLevel)));
         }
+    }
+
+    private CharacterDex queryCharacterDex(CharacterDexDao characterDexDao, String characterId) {
+        List<CharacterDex> characterDexList = characterDexDao.selectByCharacterId(characterId);
+        if (characterDexList.size() != 1) {
+            throw new MetaDataQueryException("character_dex");
+        }
+        return characterDexList.get(0);
+    }
+
+    private WeaponDex queryWeaponDex(WeaponDexDao weaponDexDao, String weaponId) {
+        List<WeaponDex> weaponDexList = weaponDexDao.selectByWeaponId(weaponId);
+        if (weaponDexList.size() != 1) {
+            throw new MetaDataQueryException("weapon_dex");
+        }
+        return weaponDexList.get(0);
     }
 
 }

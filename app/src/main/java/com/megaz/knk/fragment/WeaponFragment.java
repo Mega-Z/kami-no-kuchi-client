@@ -75,7 +75,7 @@ public class WeaponFragment extends BaseFragment {
         super.onViewCreated(view, savedInstanceState);
         layoutWeapon = view.findViewById(R.id.layout_weapon);
         imageWeapon = view.findViewById(R.id.img_weapon);
-        Bitmap bitmapWeapon = ImageResourceUtils.getIconBitmap(Objects.requireNonNull(getContext()), weaponProfileVo.getWeaponIcon());
+        Bitmap bitmapWeapon = ImageResourceUtils.getIconBitmap(requireContext(), weaponProfileVo.getWeaponIcon());
         imageWeapon.setImageBitmap(bitmapWeapon);
         imageWeapon.setTranslationX(WEAPON_OFFSET_X);
         layoutWeaponInfo = view.findViewById(R.id.layout_weapon_info);
@@ -94,7 +94,7 @@ public class WeaponFragment extends BaseFragment {
             ((TextView) view.findViewById(R.id.text_weapon_sub_attribute)).setText(weaponProfileVo.getAttribute().getDesc());
             if(weaponProfileVo.getAttribute().isPercent()) {
                 ((TextView) view.findViewById(R.id.text_weapon_sub_attribute_value)).setText(
-                        String.format("%.1f", weaponProfileVo.getAttributeVal())+"%");
+                        String.format("%.1f", weaponProfileVo.getAttributeVal() * 100)+"%");
             } else {
                 ((TextView) view.findViewById(R.id.text_weapon_sub_attribute_value)).setText(
                         String.format("%d", Math.round(weaponProfileVo.getAttributeVal())));

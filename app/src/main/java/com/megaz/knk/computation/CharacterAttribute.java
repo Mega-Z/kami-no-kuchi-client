@@ -5,6 +5,7 @@ import com.megaz.knk.constant.AttributeEnum;
 import com.megaz.knk.constant.EffectBaseAttributeEnum;
 import com.megaz.knk.constant.ElementEnum;
 import com.megaz.knk.constant.GenshinConstantMeta;
+import com.megaz.knk.constant.ShownAttributeEnum;
 import com.megaz.knk.constant.SourceTalentEnum;
 import com.megaz.knk.dto.CharacterProfileDto;
 
@@ -14,6 +15,8 @@ import java.util.Map;
 import java.util.Objects;
 
 import lombok.Getter;
+import lombok.Setter;
+
 
 @Getter
 public class CharacterAttribute implements Serializable {
@@ -22,10 +25,13 @@ public class CharacterAttribute implements Serializable {
     private Integer level;
     private Integer phase;
     private Integer constellation;
+    @Setter
     private Double baseHp;
     private Double plusHp;
+    @Setter
     private Double baseAtk;
     private Double plusAtk;
+    @Setter
     private Double baseDef;
     private Double plusDef;
     private Double mastery;
@@ -47,18 +53,22 @@ public class CharacterAttribute implements Serializable {
         level = characterProfileDto.getLevel();
         phase = characterProfileDto.getPhase();
         constellation = characterProfileDto.getConstellation();
-        baseHp = characterProfileDto.getBaseHp();
-        plusHp = characterProfileDto.getPlusHp();
-        baseAtk = characterProfileDto.getBaseAtk();
-        plusAtk = characterProfileDto.getPlusAtk();
-        baseDef = characterProfileDto.getBaseDef();
-        plusDef = characterProfileDto.getPlusDef();
-        recharge = characterProfileDto.getRecharge();
-        mastery = characterProfileDto.getMastery();
-        critRate = characterProfileDto.getCritRate();
-        critDmg = characterProfileDto.getCritDmg();
-        dmgUp = characterProfileDto.getDmgUp();
-        healUp = characterProfileDto.getHealUp();
+
+        baseHp = 0.;
+        plusHp = 0.;
+        baseAtk = 0.;
+        plusAtk = 0.;
+        baseDef = 0.;
+        plusDef = 0.;
+        recharge = 1.;
+        mastery = 0.;
+        critRate = 0.05;
+        critDmg = 0.5;
+        dmgUp = new HashMap<>();
+        for(ElementEnum element:GenshinConstantMeta.ELEMENT_LIST) {
+            dmgUp.put(element, 0.);
+        }
+        healUp = 0.;
         healedUp = 0.;
         shieldStrength = 0.;
         talentLevel = new HashMap<>();
@@ -125,6 +135,23 @@ public class CharacterAttribute implements Serializable {
             case RECHARGE: return recharge;
             case BASE_ATK: return baseAtk;
             case CRIT_RATE: return critRate;
+            case HEAL: return healUp;
+            default: return null;
+        }
+    }
+
+    public Double getShownAttribute(ShownAttributeEnum attribute, ElementEnum element) {
+        switch (attribute) {
+            case HP: return baseHp + plusHp;
+            case ATK: return baseAtk + plusAtk;
+            case DEF: return baseDef + plusDef;
+            case MASTERY: return mastery;
+            case RECHARGE: return recharge;
+            case CRIT_RATE: return critRate;
+            case CRIT_DMG: return critDmg;
+            case DMG:
+                assert element != null;
+                return dmgUp.get(element);
             case HEAL: return healUp;
             default: return null;
         }

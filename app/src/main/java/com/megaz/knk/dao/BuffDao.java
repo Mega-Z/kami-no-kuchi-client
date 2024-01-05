@@ -39,7 +39,8 @@ public interface BuffDao extends MetaDataDao<Buff> {
                                                  ElementEnum element, DamageLabelEnum damageLabel,
                                                  ElementReactionEnum elementReaction);
 
-    @Query("SELECT * FROM buff WHERE source_type='CHARACTER' AND source_id=:sourceId AND buff_range='CHARACTER'" +
+    @Query("SELECT * FROM buff WHERE source_type='CHARACTER' AND source_id=:sourceId " +
+            "AND buff_range IN ('CHARACTER', 'STATIC') " +
             "AND (phase < -1 * :phase OR phase >= 0 AND phase <= :phase ) " +
             "AND (constellation < -1 * :constellation OR constellation >= 0 AND constellation <= :constellation) " +
             "AND effect_type IN (:effectTypes) " +
@@ -54,7 +55,8 @@ public interface BuffDao extends MetaDataDao<Buff> {
                                                              ElementEnum element, DamageLabelEnum damageLabel,
                                                              ElementReactionEnum elementReaction);
 
-    @Query("SELECT * FROM buff WHERE source_type='WEAPON' AND source_id=:sourceId AND buff_range='CHARACTER'" +
+    @Query("SELECT * FROM buff WHERE source_type='WEAPON' AND source_id=:sourceId " +
+            "AND buff_range IN ('CHARACTER', 'STATIC') " +
             "AND effect_type IN (:effectTypes) " +
             "AND (increased_attribute IN (:increasedAttributes) OR increased_attribute IS NULL) " +
             "AND (element=:element OR element IS NULL) " +
@@ -66,7 +68,8 @@ public interface BuffDao extends MetaDataDao<Buff> {
                                                           ElementEnum element, DamageLabelEnum damageLabel,
                                                           ElementReactionEnum elementReaction);
 
-    @Query("SELECT * FROM buff WHERE source_type='ARTIFACT_SET' AND source_id=:sourceId AND buff_range='CHARACTER'" +
+    @Query("SELECT * FROM buff WHERE source_type='ARTIFACT_SET' AND source_id=:sourceId " +
+            "AND buff_range IN ('CHARACTER', 'STATIC') " +
             "AND (artifact_num <= :artifactNum ) " +
             "AND effect_type IN (:effectTypes) " +
             "AND (increased_attribute IN (:increasedAttributes) OR increased_attribute IS NULL) " +

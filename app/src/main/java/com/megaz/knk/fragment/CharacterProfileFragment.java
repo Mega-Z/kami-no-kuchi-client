@@ -16,14 +16,14 @@ import androidx.fragment.app.Fragment;
 
 import com.megaz.knk.R;
 import com.megaz.knk.activity.CharacterDetailActivity;
-import com.megaz.knk.computation.CharacterAttribute;
+import com.megaz.knk.dto.CharacterProfileDto;
 import com.megaz.knk.utils.DynamicStyleUtils;
 import com.megaz.knk.utils.ImageResourceUtils;
 import com.megaz.knk.vo.CharacterProfileVo;
 
 public class CharacterProfileFragment extends Fragment {
 
-    private CharacterAttribute characterAttribute;
+    private CharacterProfileDto characterProfileDto;
     private CharacterProfileVo characterProfileVo;
 
     private TextView textCharacterName, textCharacterLevel, textCharacterCons;
@@ -33,10 +33,10 @@ public class CharacterProfileFragment extends Fragment {
         // Required empty public constructor
     }
 
-    public static CharacterProfileFragment newInstance(CharacterAttribute characterAttribute, CharacterProfileVo characterProfileVo) {
+    public static CharacterProfileFragment newInstance(CharacterProfileDto characterProfileDto, CharacterProfileVo characterProfileVo) {
         CharacterProfileFragment fragment = new CharacterProfileFragment();
         Bundle args = new Bundle();
-        args.putSerializable("characterAttribute", characterAttribute);
+        args.putSerializable("characterProfileDto", characterProfileDto);
         args.putSerializable("characterProfileVo", characterProfileVo);
         fragment.setArguments(args);
         return fragment;
@@ -47,7 +47,7 @@ public class CharacterProfileFragment extends Fragment {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
             characterProfileVo = (CharacterProfileVo) getArguments().getSerializable("characterProfileVo");
-            characterAttribute = (CharacterAttribute) getArguments().getSerializable("characterAttribute");
+            characterProfileDto = (CharacterProfileDto) getArguments().getSerializable("characterProfileDto");
         }
     }
 
@@ -112,7 +112,7 @@ public class CharacterProfileFragment extends Fragment {
         Intent intent = new Intent(requireActivity().getApplicationContext(), CharacterDetailActivity.class);
         Bundle bundle = new Bundle();
         bundle.putSerializable("characterProfileVo", characterProfileVo);
-        bundle.putSerializable("characterAttribute", characterAttribute);
+        bundle.putSerializable("characterProfileDto", characterProfileDto);
         intent.putExtras(bundle);
         startActivity(intent);
     }

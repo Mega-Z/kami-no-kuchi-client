@@ -42,10 +42,17 @@
         android:text="@string/text_effect_number_default"
         android:textSize="@dimen/sp_40"
         android:gravity="center"
-        android:paddingVertical="@dimen/dp_6"
+        android:paddingVertical="@dimen/dp_2"
         android:shadowColor="@color/gray_black"
         android:shadowRadius="4"
         android:textColor="@color/number_dmg_electro"/>
+    <LinearLayout
+        android:id="@+id/layout_attribute_with_buff"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="@dimen/dp_4"
+        android:orientation="vertical">
+    </LinearLayout>
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -64,7 +71,7 @@
                 android:gravity="center"
                 android:text="基础倍率"
                 android:textStyle="bold"
-                android:textSize="@dimen/sp_16"
+                android:textSize="@dimen/sp_12"
                 android:textColor="@color/white"
                 android:background="@color/field_base"/>
 
@@ -77,7 +84,7 @@
                 android:gravity="left"
                 android:text="10000"
                 android:textStyle="bold"
-                android:textSize="@dimen/sp_18"
+                android:textSize="@dimen/sp_14"
                 android:textColor="@color/field_base"/>
 
         </LinearLayout>
@@ -94,7 +101,7 @@
                 android:gravity="center"
                 android:text="加成区"
                 android:textStyle="bold"
-                android:textSize="@dimen/sp_16"
+                android:textSize="@dimen/sp_12"
                 android:textColor="@color/white"
                 android:background="@color/field_up"/>
 
@@ -107,7 +114,7 @@
                 android:gravity="left"
                 android:text="10.0%"
                 android:textStyle="bold"
-                android:textSize="@dimen/sp_18"
+                android:textSize="@dimen/sp_14"
                 android:textColor="@color/field_up"/>
 
         </LinearLayout>
@@ -124,7 +131,7 @@
                 android:gravity="center"
                 android:text="增伤区"
                 android:textStyle="bold"
-                android:textSize="@dimen/sp_16"
+                android:textSize="@dimen/sp_12"
                 android:textColor="@color/white"
                 android:background="@color/field_up"/>
 
@@ -137,7 +144,7 @@
                 android:gravity="left"
                 android:text="10.0%"
                 android:textStyle="bold"
-                android:textSize="@dimen/sp_18"
+                android:textSize="@dimen/sp_14"
                 android:textColor="@color/field_up"/>
 
         </LinearLayout>
@@ -154,7 +161,7 @@
                 android:gravity="center"
                 android:text="抗性区"
                 android:textStyle="bold"
-                android:textSize="@dimen/sp_16"
+                android:textSize="@dimen/sp_12"
                 android:textColor="@color/white"
                 android:background="@color/field_resist"/>
 
@@ -167,7 +174,7 @@
                 android:gravity="left"
                 android:text="10.0%"
                 android:textStyle="bold"
-                android:textSize="@dimen/sp_18"
+                android:textSize="@dimen/sp_14"
                 android:textColor="@color/field_resist"/>
 
         </LinearLayout>
@@ -184,7 +191,7 @@
                 android:gravity="center"
                 android:text="防御区"
                 android:textStyle="bold"
-                android:textSize="@dimen/sp_16"
+                android:textSize="@dimen/sp_12"
                 android:textColor="@color/white"
                 android:background="@color/field_defence"/>
 
@@ -197,7 +204,7 @@
                 android:gravity="left"
                 android:text="10.0%"
                 android:textStyle="bold"
-                android:textSize="@dimen/sp_18"
+                android:textSize="@dimen/sp_14"
                 android:textColor="@color/field_defence"/>
 
         </LinearLayout>
@@ -214,7 +221,7 @@
                 android:gravity="center"
                 android:text="暴击区"
                 android:textStyle="bold"
-                android:textSize="@dimen/sp_16"
+                android:textSize="@dimen/sp_12"
                 android:textColor="@color/white"
                 android:background="@color/field_crit"/>
 
@@ -227,7 +234,7 @@
                 android:gravity="left"
                 android:text="10.0%/100.0%"
                 android:textStyle="bold"
-                android:textSize="@dimen/sp_18"
+                android:textSize="@dimen/sp_14"
                 android:textColor="@color/field_crit"/>
 
         </LinearLayout>
@@ -244,7 +251,7 @@
                 android:gravity="center"
                 android:text="精通加成"
                 android:textStyle="bold"
-                android:textSize="@dimen/sp_16"
+                android:textSize="@dimen/sp_12"
                 android:textColor="@color/white"
                 android:background="@color/field_mastery"/>
 
@@ -257,7 +264,7 @@
                 android:gravity="left"
                 android:text="10.0%"
                 android:textStyle="bold"
-                android:textSize="@dimen/sp_18"
+                android:textSize="@dimen/sp_14"
                 android:textColor="@color/field_mastery"/>
 
         </LinearLayout>
@@ -274,7 +281,7 @@
                 android:gravity="center"
                 android:text="反应加成"
                 android:textStyle="bold"
-                android:textSize="@dimen/sp_16"
+                android:textSize="@dimen/sp_12"
                 android:textColor="@color/white"
                 android:background="@color/field_reaction"/>
 
@@ -287,12 +294,11 @@
                 android:gravity="left"
                 android:text="10.0%"
                 android:textStyle="bold"
-                android:textSize="@dimen/sp_18"
+                android:textSize="@dimen/sp_14"
                 android:textColor="@color/field_reaction"/>
 
         </LinearLayout>
     </LinearLayout>
-
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -310,7 +316,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
                 android:paddingHorizontal="@dimen/dp_5"
-                android:textSize="@dimen/sp_18"
+                android:textSize="@dimen/sp_16"
                 android:textColor="@color/white"
                 android:textStyle="bold"
                 android:text="启用BUFF"/>

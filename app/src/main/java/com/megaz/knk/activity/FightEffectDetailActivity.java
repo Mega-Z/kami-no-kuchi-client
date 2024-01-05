@@ -20,6 +20,7 @@ import com.megaz.knk.computation.BuffEffect;
 import com.megaz.knk.computation.CharacterAttribute;
 import com.megaz.knk.computation.FightEffect;
 import com.megaz.knk.constant.EffectFieldEnum;
+import com.megaz.knk.fragment.AttributeWithBuffFragment;
 import com.megaz.knk.fragment.EnabledBuffFragment;
 import com.megaz.knk.manager.EffectComputationManager;
 import com.megaz.knk.utils.DynamicStyleUtils;
@@ -52,6 +53,7 @@ public class FightEffectDetailActivity extends BaseActivity{
     private ImageView buttonBuffAdd;
     private ScrollView viewEnabledBuffs;
 
+    private AttributeWithBuffFragment attributeWithBuffFragment;
     private Map<String, EnabledBuffFragment> buffFragmentMap;
     private Map<String, BuffVo> buffVoMap;
 
@@ -275,6 +277,15 @@ public class FightEffectDetailActivity extends BaseActivity{
 
     @SuppressLint({"DefaultLocale", "SetTextI18n"})
     private void updateFightEffectView() {
+        if(attributeWithBuffFragment == null) {
+            attributeWithBuffFragment = AttributeWithBuffFragment.newInstance(fightEffect);
+            FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
+            fragmentTransaction.add(R.id.layout_attribute_with_buff, attributeWithBuffFragment);
+            fragmentTransaction.commit();
+        } else {
+            attributeWithBuffFragment.updateViewByFightEffect(fightEffect);
+        }
+
         EffectDetailVo effectDetailVo = effectComputationManager.createFightEffectDetail(fightEffect);
 
         textEffectDesc.setText(effectDetailVo.getEffectDesc());

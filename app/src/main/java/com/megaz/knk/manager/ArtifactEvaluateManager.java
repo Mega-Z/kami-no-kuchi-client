@@ -15,6 +15,7 @@ import com.megaz.knk.vo.ArtifactEvaluationVo;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -22,8 +23,8 @@ import java.util.Map;
 import java.util.Objects;
 
 public class ArtifactEvaluateManager {
-    private static final List<AttributeEnum> FLOWER_ATTRIBUTE_CHOICES = Arrays.asList(AttributeEnum.HP_PLUS);
-    private static final List<AttributeEnum> PLUME_ATTRIBUTE_CHOICES = Arrays.asList(AttributeEnum.ATK_PLUS);
+    private static final List<AttributeEnum> FLOWER_ATTRIBUTE_CHOICES = Collections.singletonList(AttributeEnum.HP_PLUS);
+    private static final List<AttributeEnum> PLUME_ATTRIBUTE_CHOICES = Collections.singletonList(AttributeEnum.ATK_PLUS);
     private static final List<AttributeEnum> SANDS_ATTRIBUTE_CHOICES = Arrays.asList(
             AttributeEnum.ATK, AttributeEnum.HP, AttributeEnum.DEF, AttributeEnum.MASTERY, AttributeEnum.RECHARGE);
     private static final List<AttributeEnum> GOBLET_ATTRIBUTE_CHOICES = Arrays.asList(
@@ -107,13 +108,13 @@ public class ArtifactEvaluateManager {
                     scorePerItem.put(attribute, 0.);
                 }
             } else if (attribute == AttributeEnum.ATK_PLUS) {
-                scorePerItem.put(attribute, attribute.getUnitValue() / characterProfileDto.getBaseAtk() * 100
+                scorePerItem.put(attribute, attribute.getUnitValue() / characterProfileDto.getBaseAtk()
                         / AttributeEnum.ATK.getUnitValue() * ITEM_SCORE_WEIGHT_100 * attributeWeight / 100);
             } else if (attribute == AttributeEnum.HP_PLUS) {
-                scorePerItem.put(attribute, attribute.getUnitValue() / characterProfileDto.getBaseHp() * 100
+                scorePerItem.put(attribute, attribute.getUnitValue() / characterProfileDto.getBaseHp()
                         / AttributeEnum.HP.getUnitValue() * ITEM_SCORE_WEIGHT_100 * attributeWeight / 100);
             } else if (attribute == AttributeEnum.DEF_PLUS) {
-                scorePerItem.put(attribute, attribute.getUnitValue() / characterProfileDto.getBaseDef() * 100
+                scorePerItem.put(attribute, attribute.getUnitValue() / characterProfileDto.getBaseDef()
                         / AttributeEnum.DEF.getUnitValue() * ITEM_SCORE_WEIGHT_100 * attributeWeight / 100);
             } else {
                 scorePerItem.put(attribute, ITEM_SCORE_WEIGHT_100 * attributeWeight / 100);

@@ -4,12 +4,16 @@ import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.Message;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.FragmentTransaction;
 
@@ -17,12 +21,14 @@ import com.megaz.knk.R;
 import com.megaz.knk.computation.CharacterAttribute;
 import com.megaz.knk.computation.EnemyAttribute;
 import com.megaz.knk.computation.FightEffect;
+import com.megaz.knk.dto.CharacterProfileDto;
 import com.megaz.knk.fragment.ArtifactEvaluationFragment;
 import com.megaz.knk.fragment.CharacterAttributeFragment;
 import com.megaz.knk.fragment.ConstellationFragment;
 import com.megaz.knk.fragment.EffectComputationFragment;
 import com.megaz.knk.fragment.TalentFragment;
 import com.megaz.knk.fragment.WeaponFragment;
+import com.megaz.knk.manager.EffectComputationManager;
 import com.megaz.knk.utils.DynamicStyleUtils;
 import com.megaz.knk.utils.ImageResourceUtils;
 import com.megaz.knk.vo.CharacterProfileVo;
@@ -35,8 +41,9 @@ public class CharacterDetailActivity extends ElasticScrollActivity {
     private float SCROLL_STEP_PROGRESS; // 划动动画的中间进度，武器信息缩回开始移动
     private float ART_SCALE_RATIO;
 
-    private CharacterAttribute characterAttribute;
+    private CharacterAttribute characterBaseAttribute;
     private CharacterProfileVo characterProfileVo;
+    private CharacterProfileDto characterProfileDto;
 
     private WeaponFragment weaponFragment;
     private CharacterAttributeFragment characterAttributeFragment;
@@ -51,28 +58,73 @@ public class CharacterDetailActivity extends ElasticScrollActivity {
     private LinearLayout layoutWeapon;
     private ImageView imageCharacterArt;
 
+    private Handler attributeCreateHandler;
+
+    private EffectComputationManager effectComputationManager;
+
     @Override
     protected void setContent() {
         super.setContent();
         setContentView(R.layout.activity_character_detail);
+        effectComputationManager = new EffectComputationManager(getApplicationContext());
     }
 
     @Override
-    protected void initView(){
+    protected void initView() {
         super.initView();
-        characterAttribute = (CharacterAttribute) getIntent().getExtras().getSerializable("characterAttribute");
+        characterProfileDto = (CharacterProfileDto) getIntent().getExtras().getSerializable("characterProfileDto");
         characterProfileVo = (CharacterProfileVo) getIntent().getExtras().getSerializable("characterProfileVo");
         initConstants();
         layoutArt = findViewById(R.id.layout_art);
         findViewById(R.id.text_title_artifact_evaluation)
-                .setBackgroundColor(getColor(DynamicStyleUtils.getElementTextColor(characterAttribute.getElement())));
+                .setBackgroundColor(getColor(DynamicStyleUtils.getElementTextColor(characterProfileDto.getElement())));
         findViewById(R.id.text_title_fight_effect_computation)
-                .setBackgroundColor(getColor(DynamicStyleUtils.getElementTextColor(characterAttribute.getElement())));
+                .setBackgroundColor(getColor(DynamicStyleUtils.getElementTextColor(characterProfileDto.getElement())));
         initCharacterBaseInfo();
         initWeaponInfo();
-        initCharacterAttribute();
-        initArtifactEvaluation();
-        initEffectComputation();
+        initCharacterAttributeFragment();
+        initArtifactEvaluationFragment();
+        // initEffectComputationFragment();
+    }
+
+    @Override
+    protected void setCallback() {
+        super.setCallback();
+        attributeCreateHandler = new Handler(Looper.myLooper()) {
+            @Override
+            public void handleMessage(@NonNull Message msg) {
+                handleAttributeCreated(msg);
+            }
+        };
+    }
+
+    @Override
+    protected void initialize() {
+        super.initialize();
+        new Thread(this::createCharacterAttributeWithoutBuff).start();
+    }
+
+    private void createCharacterAttributeWithoutBuff() {
+        try {
+            CharacterAttribute characterAttribute = effectComputationManager.createCharacterBaseAttribute(characterProfileDto);
+            Message msg = new Message();
+            msg.what = 0;
+            msg.obj = characterAttribute;
+            attributeCreateHandler.sendMessage(msg);
+        } catch (RuntimeException e) {
+            e.printStackTrace();
+            Message msg = new Message();
+            msg.what = 1;
+            attributeCreateHandler.sendMessage(msg);
+        }
+    }
+
+    private void handleAttributeCreated(Message msg) {
+        switch (msg.what) {
+            case 0:
+                characterBaseAttribute = (CharacterAttribute) msg.obj;
+                initEffectComputationFragment();
+        }
     }
 
     @Override
@@ -81,7 +133,7 @@ public class CharacterDetailActivity extends ElasticScrollActivity {
         SCROLL_MAX = getResources().getDimensionPixelOffset(R.dimen.dp_170);
         SCROLL_ELASTIC_POSITION = SCROLL_MAX / 2;
         SCROLL_THRESHOLD = 5;
-        SCROLL_STEP_PROGRESS = 2f/3;
+        SCROLL_STEP_PROGRESS = 2f / 3;
         ART_SCALE_RATIO = 0.05f;
     }
 
@@ -92,7 +144,6 @@ public class CharacterDetailActivity extends ElasticScrollActivity {
         lockingScrollViews.add(findViewById(R.id.view_character_detail));
     }
 
-
     @Override
     protected void updateScrollStatus() {
         // total layout
@@ -100,9 +151,9 @@ public class CharacterDetailActivity extends ElasticScrollActivity {
         layoutArtParams.height = getResources().getDimensionPixelOffset(R.dimen.dp_300) + getScrollY();
         layoutArt.setLayoutParams(layoutArtParams);
         // art
-        imageCharacterArt.setScaleX(1+getScrollProgress()*ART_SCALE_RATIO);
-        imageCharacterArt.setScaleY(1+getScrollProgress()*ART_SCALE_RATIO);
-        imageCharacterArt.setTranslationX(ART_OFFSET_X*(1-getScrollProgress()));
+        imageCharacterArt.setScaleX(1 + getScrollProgress() * ART_SCALE_RATIO);
+        imageCharacterArt.setScaleY(1 + getScrollProgress() * ART_SCALE_RATIO);
+        imageCharacterArt.setTranslationX(ART_OFFSET_X * (1 - getScrollProgress()));
         // constellations
         FrameLayout.LayoutParams layoutConstellationParams = (FrameLayout.LayoutParams) layoutConstellation.getLayoutParams();
         layoutConstellationParams.bottomMargin = getScrollY();
@@ -110,13 +161,13 @@ public class CharacterDetailActivity extends ElasticScrollActivity {
         // weapon
         FrameLayout.LayoutParams layoutWeaponParams = (FrameLayout.LayoutParams) layoutWeapon.getLayoutParams();
         layoutWeaponParams.bottomMargin = getScrollY();
-        if(getScrollProgress() >= SCROLL_STEP_PROGRESS) {
+        if (getScrollProgress() >= SCROLL_STEP_PROGRESS) {
             layoutWeaponParams.rightMargin = getResources().getDimensionPixelOffset(R.dimen.dp_10) +
-                    Math.round(getResources().getDimensionPixelOffset(R.dimen.dp_185) * (1-getScrollProgress())/(1-SCROLL_STEP_PROGRESS));
+                    Math.round(getResources().getDimensionPixelOffset(R.dimen.dp_185) * (1 - getScrollProgress()) / (1 - SCROLL_STEP_PROGRESS));
             weaponFragment.setInfoExtend(0);
-        }else {
+        } else {
             layoutWeaponParams.rightMargin = getResources().getDimensionPixelOffset(R.dimen.dp_195);
-            weaponFragment.setInfoExtend(1-getScrollProgress()/SCROLL_STEP_PROGRESS);
+            weaponFragment.setInfoExtend(1 - getScrollProgress() / SCROLL_STEP_PROGRESS);
         }
         layoutWeapon.setLayoutParams(layoutWeaponParams);
         // talents
@@ -124,13 +175,13 @@ public class CharacterDetailActivity extends ElasticScrollActivity {
         layoutTalentAParams.bottomMargin = getResources().getDimensionPixelOffset(R.dimen.dp_155) + getScrollY()
                 + Math.round(getResources().getDimensionPixelOffset(R.dimen.dp_10) * getScrollProgress());
         layoutTalentA.setLayoutParams(layoutTalentAParams);
-        layoutTalentA.setTranslationX(TALENT_WIDTH * 2 * (getScrollProgress()-1));
+        layoutTalentA.setTranslationX(TALENT_WIDTH * 2 * (getScrollProgress() - 1));
 
         FrameLayout.LayoutParams layoutTalentEParams = (FrameLayout.LayoutParams) layoutTalentE.getLayoutParams();
         layoutTalentEParams.bottomMargin = getResources().getDimensionPixelOffset(R.dimen.dp_155) + getScrollY()
                 - Math.round(getResources().getDimensionPixelOffset(R.dimen.dp_40) * getScrollProgress());
         layoutTalentE.setLayoutParams(layoutTalentEParams);
-        layoutTalentE.setTranslationX(TALENT_WIDTH * (getScrollProgress()-1));
+        layoutTalentE.setTranslationX(TALENT_WIDTH * (getScrollProgress() - 1));
 
         FrameLayout.LayoutParams layoutTalentQParams = (FrameLayout.LayoutParams) layoutTalentQ.getLayoutParams();
         layoutTalentQParams.bottomMargin = getResources().getDimensionPixelOffset(R.dimen.dp_155) + getScrollY()
@@ -143,7 +194,7 @@ public class CharacterDetailActivity extends ElasticScrollActivity {
         Intent intent = new Intent(getApplicationContext(), FightEffectDetailActivity.class);
         Bundle bundle = new Bundle();
         bundle.putSerializable("fightEffect", fightEffect);
-        bundle.putSerializable("characterAttribute", characterAttribute);
+        bundle.putSerializable("characterAttribute", characterBaseAttribute);
         intent.putExtras(bundle);
         startActivityForResult(intent, 1);
     }
@@ -155,8 +206,8 @@ public class CharacterDetailActivity extends ElasticScrollActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if(requestCode == 1) {
-            if(resultCode == RESULT_OK) {
+        if (requestCode == 1) {
+            if (resultCode == RESULT_OK) {
                 assert data != null;
                 FightEffect fightEffect = (FightEffect) data.getExtras().getSerializable("fightEffect");
                 effectComputationFragment.updateFightEffect(fightEffect);
@@ -166,7 +217,7 @@ public class CharacterDetailActivity extends ElasticScrollActivity {
 
 
     private void initConstants() {
-        ART_OFFSET_X = Math.round(-1*getResources().getDimensionPixelOffset(R.dimen.dp_300)/5f);
+        ART_OFFSET_X = Math.round(-1 * getResources().getDimensionPixelOffset(R.dimen.dp_300) / 5f);
         ART_HEIGHT = getResources().getDimensionPixelOffset(R.dimen.dp_300);
         TALENT_WIDTH = getResources().getDimensionPixelOffset(R.dimen.dp_50);
     }
@@ -178,7 +229,7 @@ public class CharacterDetailActivity extends ElasticScrollActivity {
         // name&level
         TextView textName = findViewById(R.id.text_character_name);
         textName.setTypeface(typefaceNZBZ);
-        textName.setText(" "+characterProfileVo.getCharacterName()+" ");
+        textName.setText(" " + characterProfileVo.getCharacterName() + " ");
         textName.setTextColor(getColor(DynamicStyleUtils.getElementTextColor(characterProfileVo.getElement())));
         TextView textLevel = findViewById(R.id.text_character_level);
         textLevel.setTypeface(typefaceNum);
@@ -188,7 +239,7 @@ public class CharacterDetailActivity extends ElasticScrollActivity {
         imageCharacterArt = findViewById(R.id.img_character_art);
         Bitmap bitmapArt = ImageResourceUtils.getIconBitmap(getApplicationContext(), characterProfileVo.getArtIcon());
         Bitmap bitmapArtScaled = Bitmap.createScaledBitmap(bitmapArt,
-                ART_HEIGHT*bitmapArt.getWidth()/bitmapArt.getHeight(), ART_HEIGHT, true);
+                ART_HEIGHT * bitmapArt.getWidth() / bitmapArt.getHeight(), ART_HEIGHT, true);
         imageCharacterArt.setImageBitmap(bitmapArtScaled);
         imageCharacterArt.setTranslationX((ART_OFFSET_X));
         // bg
@@ -196,11 +247,11 @@ public class CharacterDetailActivity extends ElasticScrollActivity {
         imageBg.setBackgroundColor(getColor(DynamicStyleUtils.getElementBackgroundColor(characterProfileVo.getElement())));
 //        imageBg.setImageBitmap(ImageResourceUtils.getBackgroundByElement(getApplicationContext(), characterProfileVo.getElement()));
         // constellation
-        for(int c=1;c<=6;c++) {
+        for (int c = 1; c <= 6; c++) {
             ConstellationVo constellationVo = new ConstellationVo();
             constellationVo.setElement(characterProfileVo.getElement());
             constellationVo.setActive(characterProfileVo.getConstellation() >= c);
-            constellationVo.setIcon(characterProfileVo.getConsIcons().get(c-1));
+            constellationVo.setIcon(characterProfileVo.getConsIcons().get(c - 1));
             ConstellationFragment constellationFragment = ConstellationFragment.newInstance(constellationVo);
             fragmentTransaction.add(R.id.layout_constellation, constellationFragment);
         }
@@ -233,8 +284,8 @@ public class CharacterDetailActivity extends ElasticScrollActivity {
         layoutTalentA = findViewById(R.id.layout_talent_A);
         layoutTalentE = findViewById(R.id.layout_talent_E);
         layoutTalentQ = findViewById(R.id.layout_talent_Q);
-        layoutTalentA.setTranslationX((float)TALENT_WIDTH*-2);
-        layoutTalentE.setTranslationX((float)TALENT_WIDTH*-1);
+        layoutTalentA.setTranslationX((float) TALENT_WIDTH * -2);
+        layoutTalentE.setTranslationX((float) TALENT_WIDTH * -1);
 
         fragmentTransaction.commit();
     }
@@ -247,23 +298,23 @@ public class CharacterDetailActivity extends ElasticScrollActivity {
         fragmentTransaction.commit();
     }
 
-    private void initCharacterAttribute() {
+    private void initCharacterAttributeFragment() {
         FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
         characterAttributeFragment = CharacterAttributeFragment.newInstance(characterProfileVo);
         fragmentTransaction.add(R.id.layout_attribute, characterAttributeFragment);
         fragmentTransaction.commit();
     }
 
-    private void initArtifactEvaluation() {
+    private void initArtifactEvaluationFragment() {
         FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
         artifactEvaluationFragment = ArtifactEvaluationFragment.newInstance(characterProfileVo);
         fragmentTransaction.add(R.id.layout_artifact_evaluation, artifactEvaluationFragment);
         fragmentTransaction.commit();
     }
 
-    private void initEffectComputation() {
+    private void initEffectComputationFragment() {
         FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
-        effectComputationFragment = EffectComputationFragment.newInstance(characterAttribute);
+        effectComputationFragment = EffectComputationFragment.newInstance(characterBaseAttribute);
         fragmentTransaction.add(R.id.layout_effect_computation, effectComputationFragment);
         fragmentTransaction.commit();
     }

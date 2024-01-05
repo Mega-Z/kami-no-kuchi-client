@@ -194,7 +194,7 @@ public class PlayerProfileFragment extends BaseFragment {
             int newViewId = View.generateViewId();
             linearLayout.setId(newViewId);
             CharacterProfileFragment characterProfileFragment = CharacterProfileFragment.newInstance(
-                    new CharacterAttribute(characterProfileDto), characterProfileVo);
+                    characterProfileDto, characterProfileVo);
             characterProfileFragmentList.add(characterProfileFragment);
             fragmentTransaction.add(newViewId, characterProfileFragment);
             //使用Spec定义子控件的位置和比重

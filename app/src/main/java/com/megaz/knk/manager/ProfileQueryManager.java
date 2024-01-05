@@ -7,6 +7,7 @@ import com.megaz.knk.KnkDatabase;
 import com.megaz.knk.R;
 import com.megaz.knk.client.RequestHelper;
 import com.megaz.knk.client.ResponseEntity;
+import com.megaz.knk.computation.CharacterAttribute;
 import com.megaz.knk.constant.ArtifactPositionEnum;
 import com.megaz.knk.constant.GenshinConstantMeta;
 import com.megaz.knk.dao.ArtifactDexDao;

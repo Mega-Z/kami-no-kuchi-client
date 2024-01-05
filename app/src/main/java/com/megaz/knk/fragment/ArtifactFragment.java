@@ -108,7 +108,7 @@ public class ArtifactFragment extends BaseFragment {
     @SuppressLint({"SetTextI18n", "DefaultLocale"})
     public void updateArtifactView(ArtifactEvaluationVo newArtifactEvaluationVo) {
         if(artifactProfileVo == null) {
-            imageNullArtifact.setImageBitmap(ImageResourceUtils.getArtifactPositionIcon(Objects.requireNonNull(getContext()), position));
+            imageNullArtifact.setImageBitmap(ImageResourceUtils.getArtifactPositionIcon(requireContext(), position));
             imageNullArtifact.setVisibility(View.VISIBLE);
             imageArtifact.setVisibility(View.INVISIBLE);
             textArtifactName.setVisibility(View.INVISIBLE);
@@ -121,7 +121,7 @@ public class ArtifactFragment extends BaseFragment {
         }
         imageNullArtifact.setVisibility(View.INVISIBLE);
         imageArtifact.setVisibility(View.VISIBLE);
-        imageArtifact.setImageBitmap(ImageResourceUtils.getIconBitmap(Objects.requireNonNull(getContext()), artifactProfileVo.getIcon()));
+        imageArtifact.setImageBitmap(ImageResourceUtils.getIconBitmap(requireContext(), artifactProfileVo.getIcon()));
         textArtifactName.setVisibility(View.VISIBLE);
         textArtifactName.setText(artifactProfileVo.getArtifactName());
         textArtifactLevel.setVisibility(View.VISIBLE);
@@ -138,7 +138,7 @@ public class ArtifactFragment extends BaseFragment {
         textMainAttribute.setText(mainAttribute.getDesc());
         textMainAttribute.setTextColor(mainAttributeColor);
         String mainAttributeValueString = mainAttribute.isPercent() ?
-                String.format("+%.1f", artifactProfileVo.getMainAttributeVal())+"%" :
+                String.format("+%.1f", artifactProfileVo.getMainAttributeVal() * 100)+"%" :
                 String.format("+%d", Math.round(artifactProfileVo.getMainAttributeVal()));
         textMainAttributeValue.setText(mainAttributeValueString);
         textMainAttributeValue.setTextColor(mainAttributeColor);
@@ -157,7 +157,7 @@ public class ArtifactFragment extends BaseFragment {
                 textSubAttributes.get(i).setText(subAttributeString+ DynamicStyleUtils.getCircledNum(subAttributesCnt.get(i)));
                 textSubAttributes.get(i).setTextColor(subAttributeColor);
                 String subAttributeValueString = subAttribute.isPercent() ?
-                        String.format("+%.1f", subAttributesVal.get(i))+"%" :
+                        String.format("+%.1f", subAttributesVal.get(i) * 100)+"%" :
                         String.format("+%d", Math.round(subAttributesVal.get(i)));
                 textSubAttributesValue.get(i).setText(subAttributeValueString);
                 textSubAttributesValue.get(i).setTextColor(subAttributeColor);

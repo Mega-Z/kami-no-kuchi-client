@@ -79,6 +79,7 @@
     <color name="number_dmg_dendro">#00ea52</color>
     <color name="number_overload">#ff809b</color>
     <color name="number_heal">#bcff37</color>
+    <color name="buffed_blue">#FF38FFFF</color>
     <color name="field_base">#00B8D4</color>
     <color name="field_up">#304FFE</color>
     <color name="field_resist">#AA00FF</color>
