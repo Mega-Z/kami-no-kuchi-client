@@ -1,6 +1,8 @@
 package com.megaz.knk.activity;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
@@ -46,7 +48,7 @@ public class LaunchActivity extends BaseActivity {
     private final float ICON_UPDATING_PROGRESS = 0.94f;
     private final int PAGE_SIZE = 50;
     private Handler iconUpdateHandler, progressHandler, metaUpdateHandler;
-    private TextView textViewUpdating, textLaunchTitle;
+    private TextView textViewUpdating, textLaunchTitle, textVersion;
     private LinearLayout layoutProgressbarContainer;
     private ElementProgressbarFragment elementProgressbar;
 
@@ -55,12 +57,19 @@ public class LaunchActivity extends BaseActivity {
         setContentView(R.layout.activity_launch);
     }
 
+    @SuppressLint("SetTextI18n")
     @Override
     protected void initView() {
         super.initView();
         textLaunchTitle = findViewById(R.id.text_launch_title);
         textLaunchTitle.setTypeface(typefaceFZFYKS);
         textViewUpdating = findViewById(R.id.text_updating);
+        textVersion = findViewById(R.id.text_version);
+        try {
+            textVersion.setText("Ver." + getPackageManager().getPackageInfo(getPackageName(), 0).versionName);
+        } catch (PackageManager.NameNotFoundException e) {
+            e.printStackTrace();
+        }
         layoutProgressbarContainer = findViewById(R.id.layout_progressbar_container);
         elementProgressbar = ElementProgressbarFragment.newInstance();
         getSupportFragmentManager().beginTransaction().add(R.id.layout_progressbar_container, elementProgressbar).commit();
