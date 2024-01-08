@@ -14,6 +14,7 @@ import com.megaz.knk.dao.CharacterDexDao;
 import com.megaz.knk.dao.CostumeDexDao;
 import com.megaz.knk.dao.FightEffectComputationDao;
 import com.megaz.knk.dao.ProfilePictureDao;
+import com.megaz.knk.dao.PromoteAttributeDao;
 import com.megaz.knk.dao.RefinementCurveDao;
 import com.megaz.knk.dao.TalentCurveDao;
 import com.megaz.knk.dao.WeaponDexDao;
@@ -25,6 +26,7 @@ import com.megaz.knk.entity.CharacterDex;
 import com.megaz.knk.entity.CostumeDex;
 import com.megaz.knk.entity.FightEffectComputation;
 import com.megaz.knk.entity.ProfilePicture;
+import com.megaz.knk.entity.PromoteAttribute;
 import com.megaz.knk.entity.RefinementCurve;
 import com.megaz.knk.entity.TalentCurve;
 import com.megaz.knk.entity.WeaponDex;
@@ -40,13 +42,15 @@ import com.megaz.knk.entity.WeaponDex;
         Buff.class,
         BuffEffectRelation.class,
         TalentCurve.class,
-        RefinementCurve.class
-}, version = 1,exportSchema = false)
+        RefinementCurve.class,
+        PromoteAttribute.class
+}, version = 2,exportSchema = false)
 public abstract class KnkDatabase extends RoomDatabase {
     private static KnkDatabase knkDatabaseInstance;
     public static synchronized KnkDatabase getKnkDatabase(Context context) {
         if(knkDatabaseInstance == null) {
-            knkDatabaseInstance = Room.databaseBuilder(context, KnkDatabase.class, "kami_no_kuchi").build();
+            knkDatabaseInstance = Room.databaseBuilder(context, KnkDatabase.class, "kami_no_kuchi")
+                    .fallbackToDestructiveMigration().build();
         }
         return knkDatabaseInstance;
     }
@@ -61,4 +65,5 @@ public abstract class KnkDatabase extends RoomDatabase {
     public abstract BuffEffectRelationDao getBuffEffectRelationDao();
     public abstract TalentCurveDao getTalentCurveDao();
     public abstract RefinementCurveDao getRefinementCurveDao();
+    public abstract PromoteAttributeDao getPromoteAttributeDao();
 }

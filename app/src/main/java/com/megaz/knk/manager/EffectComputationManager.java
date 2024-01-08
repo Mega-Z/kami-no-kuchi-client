@@ -21,19 +21,20 @@ import com.megaz.knk.constant.ArtifactPositionEnum;
 import com.megaz.knk.constant.AttributeEnum;
 import com.megaz.knk.constant.BuffRangeEnum;
 import com.megaz.knk.constant.BuffSourceEnum;
-import com.megaz.knk.constant.CharacterBaseAttribute;
+import com.megaz.knk.curve.CharacterBaseAttribute;
 import com.megaz.knk.constant.EffectBaseAttributeEnum;
 import com.megaz.knk.constant.EffectFieldEnum;
 import com.megaz.knk.constant.ElementEnum;
 import com.megaz.knk.constant.ElementReactionEnum;
 import com.megaz.knk.constant.FightEffectEnum;
 import com.megaz.knk.constant.GenshinConstantMeta;
-import com.megaz.knk.constant.WeaponBaseAttribute;
+import com.megaz.knk.curve.WeaponBaseAttribute;
 import com.megaz.knk.dao.ArtifactDexDao;
 import com.megaz.knk.dao.BuffDao;
 import com.megaz.knk.dao.BuffEffectRelationDao;
 import com.megaz.knk.dao.CharacterDexDao;
 import com.megaz.knk.dao.FightEffectComputationDao;
+import com.megaz.knk.dao.PromoteAttributeDao;
 import com.megaz.knk.dao.RefinementCurveDao;
 import com.megaz.knk.dao.TalentCurveDao;
 import com.megaz.knk.dao.WeaponDexDao;
@@ -45,6 +46,7 @@ import com.megaz.knk.entity.Buff;
 import com.megaz.knk.entity.BuffEffectRelation;
 import com.megaz.knk.entity.CharacterDex;
 import com.megaz.knk.entity.FightEffectComputation;
+import com.megaz.knk.entity.PromoteAttribute;
 import com.megaz.knk.entity.RefinementCurve;
 import com.megaz.knk.entity.TalentCurve;
 import com.megaz.knk.entity.WeaponDex;
@@ -52,8 +54,6 @@ import com.megaz.knk.exception.BuffNoFieldMatchedException;
 import com.megaz.knk.exception.MetaDataQueryException;
 import com.megaz.knk.vo.BuffVo;
 import com.megaz.knk.vo.EffectDetailVo;
-
-import org.w3c.dom.Attr;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -87,9 +87,9 @@ public class EffectComputationManager {
         baseCurveNames.put(AttributeEnum.BASE_HP, characterDex.getCurveBaseHp());
         baseCurveNames.put(AttributeEnum.BASE_DEF, characterDex.getCurveBaseDef());
         Map<AttributeEnum, Double> characterBaseAttributeMulti = CharacterBaseAttribute.getBaseAttributeMultiByLevel(characterProfileDto.getLevel(), baseCurveNames);
-        Map<AttributeEnum, Double> characterBaseAttributeAdd = CharacterBaseAttribute.getBaseAttributesByPhase(characterProfileDto.getPhase(), characterDex.getPromoteId());
+        Map<AttributeEnum, Double> characterBaseAttributeAdd = queryPromoteAttribute(characterDex.getPromoteId(), characterProfileDto.getPhase());
         Map<AttributeEnum, Double> weaponBaseAttributeMulti = WeaponBaseAttribute.getBaseAttributeMultiByLevel(weaponProfileDto.getLevel(), weaponDex.getCurveBaseAtk(), weaponDex.getCurveAttribute());
-        Map<AttributeEnum, Double> weaponBaseAttributeAdd = WeaponBaseAttribute.getBaseAttributesByPhase(weaponProfileDto.getPhase(), weaponDex.getPromoteId());
+        Map<AttributeEnum, Double> weaponBaseAttributeAdd = queryPromoteAttribute(weaponDex.getPromoteId(), weaponProfileDto.getPhase());
 
         // set base (white) attribute
         characterAttribute.setBaseAtk(
@@ -367,6 +367,18 @@ public class EffectComputationManager {
         return buffInputParamList;
     }
 
+    @WorkerThread
+    private Map<AttributeEnum, Double> queryPromoteAttribute(String promoteId, Integer phase) {
+        PromoteAttributeDao promoteAttributeDao = knkDatabase.getPromoteAttributeDao();
+
+        Map<AttributeEnum, Double> attributeMap = new HashMap<>();
+        List<PromoteAttribute> promoteAttributeList = promoteAttributeDao.selectByPromoteIdAndPhase(promoteId, phase);
+        for(PromoteAttribute promoteAttribute:promoteAttributeList) {
+            attributeMap.put(promoteAttribute.getAttribute(), promoteAttribute.getValue());
+        }
+        return attributeMap;
+    }
+
     private void fillBuffEffectInputParam(BuffEffect buffEffect, List<BuffInputParam> buffInputParamList) {
         int cursor = 0;
         if (buffEffect.getBasedAttribute() != null) {
@@ -412,6 +424,7 @@ public class EffectComputationManager {
                 fightEffect.getEffectId(), additionalBuffQueryCondition);
     }
 
+    @WorkerThread
     private FightEffect createFightEffect(List<FightEffectComputation> fightEffectComputations, CharacterAttribute characterAttribute) {
         TalentCurveDao talentCurveDao = knkDatabase.getTalentCurveDao();
         assert !fightEffectComputations.isEmpty();
@@ -506,6 +519,7 @@ public class EffectComputationManager {
         }
     }
 
+    @WorkerThread
     private List<BuffEffect> queryBuffByCondition(CharacterAttribute characterAttribute,
                                                   String effectId, BuffQueryCondition buffQueryCondition) {
         BuffDao buffDao = knkDatabase.getBuffDao();
@@ -609,6 +623,7 @@ public class EffectComputationManager {
         return new ArrayList<>(additionalAttributeSet);
     }
 
+    @WorkerThread
     private void fillBuffEffectCurveParam(BuffEffect buffEffect, Integer talentLevel, Integer refinementLevel) {
         TalentCurveDao talentCurveDao = knkDatabase.getTalentCurveDao();
         RefinementCurveDao refinementCurveDao = knkDatabase.getRefinementCurveDao();

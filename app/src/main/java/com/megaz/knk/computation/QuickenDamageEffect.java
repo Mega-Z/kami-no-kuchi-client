@@ -2,10 +2,9 @@ package com.megaz.knk.computation;
 
 import com.megaz.knk.constant.AttributeEnum;
 import com.megaz.knk.constant.EffectFieldEnum;
-import com.megaz.knk.constant.ElementCoefficient;
-import com.megaz.knk.constant.ElementEnum;
 import com.megaz.knk.constant.ElementReactionEnum;
 import com.megaz.knk.constant.FightEffectEnum;
+import com.megaz.knk.curve.ElementCoefficient;
 import com.megaz.knk.entity.FightEffectComputation;
 
 import java.util.Collections;

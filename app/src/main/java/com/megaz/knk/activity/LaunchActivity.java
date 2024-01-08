@@ -28,6 +28,7 @@ import com.megaz.knk.entity.CostumeDex;
 import com.megaz.knk.entity.FightEffectComputation;
 import com.megaz.knk.entity.MetaDataEntity;
 import com.megaz.knk.entity.ProfilePicture;
+import com.megaz.knk.entity.PromoteAttribute;
 import com.megaz.knk.entity.RefinementCurve;
 import com.megaz.knk.entity.TalentCurve;
 import com.megaz.knk.entity.WeaponDex;
@@ -184,6 +185,7 @@ public class LaunchActivity extends BaseActivity {
         daoMap.put("buff_effect_relation", knkDatabase.getBuffEffectRelationDao());
         daoMap.put("talent_curve", knkDatabase.getTalentCurveDao());
         daoMap.put("refinement_curve", knkDatabase.getRefinementCurveDao());
+        daoMap.put("promote_attribute", knkDatabase.getPromoteAttributeDao());
 
         Map<String, Class<? extends MetaDataEntity>> entityClassMap = new HashMap<>();
         entityClassMap.put("character_dex", CharacterDex.class);
@@ -197,6 +199,7 @@ public class LaunchActivity extends BaseActivity {
         entityClassMap.put("buff_effect_relation", BuffEffectRelation.class);
         entityClassMap.put("talent_curve", TalentCurve.class);
         entityClassMap.put("refinement_curve", RefinementCurve.class);
+        entityClassMap.put("promote_attribute", PromoteAttribute.class);
 
         for(MetaDataDao<?> metaDataDao:daoMap.values()) {
             metaDataDao.deleteAll();
