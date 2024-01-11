@@ -7,8 +7,10 @@ import android.util.Log;
 
 import com.megaz.knk.R;
 import com.megaz.knk.client.RequestHelper;
+import com.megaz.knk.client.ResponseEntity;
 import com.megaz.knk.constant.ArtifactPositionEnum;
 import com.megaz.knk.constant.ElementEnum;
+import com.megaz.knk.exception.RequestErrorException;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -16,39 +18,51 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class ImageResourceUtils {
 
+    private static final int RETRY = 2;
+    private static final int TIMEOUT = 3000;
+
     public static List<String> getIconResourceList(Context context){
+        Log.i("【资源更新】", "开始获取资源列表");
         String url = context.getString(R.string.server) + context.getString(R.string.api_get_icon_list);
-        return RequestHelper.getIconList(url);
+        try {
+            return RequestHelper.getIconList(url, RETRY, TIMEOUT);
+        } catch (RequestErrorException e) {
+            e.printStackTrace();
+            Log.e("【资源更新】", "资源列表获取失败");
+            throw e;
+        }
     }
 
-
-    public static boolean updateIconResource(Context context, List<String> iconNameList){
-        for(String iconName:iconNameList) {
-            String url = context.getString(R.string.server) + context.getString(R.string.api_get_icon) + "?iconName=" + iconName;
-            Path iconPath = Paths.get(context.getFilesDir().toURI()).resolve(context.getString(R.string.dir_icon)).resolve(iconName);
-            if(Files.exists(iconPath)) {
-                Log.d("【资源更新】", "已经存在："+iconName);
-                continue;
-            }
-            if(!Files.exists(iconPath.getParent())) {
-                try {
-                    Files.createDirectories(iconPath.getParent());
-                } catch (IOException e) {
-                    e.printStackTrace();
-                    return false;
-                }
-            }
-            if(!RequestHelper.getIconAndSave(url, iconPath, 3)){
-                Log.e("【资源更新】", "获取失败："+iconName);
-                return false;
-            }
-            Log.d("【资源更新】", "获取成功："+iconName);
+    public static void updateIconResource(Context context, String iconName){
+        String url = context.getString(R.string.server) + context.getString(R.string.api_get_icon) + "?iconName=" + iconName;
+        Path iconPath = Paths.get(context.getFilesDir().toURI()).resolve(context.getString(R.string.dir_icon)).resolve(iconName);
+        if(Files.exists(iconPath)) {
+            Log.d("【资源更新】", "已经存在："+iconName);
+            return;
         }
-        return true;
+        Log.d("【资源更新】", "开始获取："+iconName);
+        if(!Files.exists(iconPath.getParent())) {
+            try {
+                Files.createDirectories(iconPath.getParent());
+            } catch (IOException e) {
+                e.printStackTrace();
+                throw new RequestErrorException(e.getMessage());
+            }
+        }
+        try {
+            RequestHelper.getIconAndSave(url, iconPath, RETRY, TIMEOUT);
+            Log.d("【资源更新】", "获取成功："+iconName);
+        } catch (RequestErrorException e) {
+            e.printStackTrace();
+            Log.e("【资源更新】", "获取失败："+iconName);
+            throw e;
+        }
     }
 
     public static Bitmap getIconBitmap(Context context, String iconName) {

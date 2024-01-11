@@ -24,10 +24,8 @@ import com.megaz.knk.R;
 import com.megaz.knk.Utils;
 import com.megaz.knk.activity.BaseActivity;
 import com.megaz.knk.dto.PlayerProfileDto;
-import com.megaz.knk.exception.RequestErrorException;
+import com.megaz.knk.exception.ProfileRequestException;
 import com.megaz.knk.manager.ProfileQueryManager;
-
-import java.util.Objects;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -179,7 +177,7 @@ public class CharacterPageFragment extends BaseFragment {
             message.what = 0;
             message.obj = playerProfileDto;
             updateProfileHandler.sendMessage(message);
-        } catch (RequestErrorException e) {
+        } catch (ProfileRequestException e) {
             Message message = new Message();
             message.what = 1;
             message.obj = e.getMessage();

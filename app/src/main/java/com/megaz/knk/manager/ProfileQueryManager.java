@@ -7,7 +7,6 @@ import com.megaz.knk.KnkDatabase;
 import com.megaz.knk.R;
 import com.megaz.knk.client.RequestHelper;
 import com.megaz.knk.client.ResponseEntity;
-import com.megaz.knk.computation.CharacterAttribute;
 import com.megaz.knk.constant.ArtifactPositionEnum;
 import com.megaz.knk.constant.GenshinConstantMeta;
 import com.megaz.knk.dao.ArtifactDexDao;
@@ -25,12 +24,14 @@ import com.megaz.knk.entity.CostumeDex;
 import com.megaz.knk.entity.ProfilePicture;
 import com.megaz.knk.entity.WeaponDex;
 import com.megaz.knk.exception.MetaDataQueryException;
+import com.megaz.knk.exception.ProfileRequestException;
 import com.megaz.knk.exception.RequestErrorException;
 import com.megaz.knk.vo.ArtifactProfileVo;
 import com.megaz.knk.vo.CharacterProfileVo;
 import com.megaz.knk.vo.PlayerProfileVo;
 import com.megaz.knk.vo.WeaponProfileVo;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -56,31 +57,31 @@ public class ProfileQueryManager {
     }
 
     public PlayerProfileDto queryPlayerProfileDto(String uid) {
-        Log.i("【查询面板】","开始获取uid:"+uid+"的面板数据");
+        Log.i("【查询面板】", "开始获取uid:" + uid + "的面板数据");
         String url = context.getString(R.string.server) + context.getString(R.string.api_query) + "?uid=" + uid;
-        ResponseEntity<PlayerProfileDto> response = RequestHelper.requestSend(url, PlayerProfileDto.class, 3, 5000);
-        try{
+        try {
+            ResponseEntity<PlayerProfileDto> response = RequestHelper.requestSend(url, PlayerProfileDto.class, 3, 5000);
             checkResponse(response);
             PlayerProfileDto playerProfileDto = response.getBody();
-            Log.i("【查询面板】","uid:"+uid+"的面板数据获取成功");
+            Log.i("【查询面板】", "uid:" + uid + "的面板数据获取成功");
             return playerProfileDto;
-        } catch (RequestErrorException e) {
-            Log.e("【查询面板】","uid:"+uid+"的面板数据获取失败");
+        } catch (ProfileRequestException e) {
+            Log.e("【查询面板】", "uid:" + uid + "的面板数据获取失败");
             throw e;
         }
     }
 
     public PlayerProfileDto updatePlayerProfileDto(String uid) {
-        Log.i("【更新面板】","开始获取uid:"+uid+"的面板数据");
+        Log.i("【更新面板】", "开始获取uid:" + uid + "的面板数据");
         String url = context.getString(R.string.server) + context.getString(R.string.api_update) + "?uid=" + uid;
-        ResponseEntity<PlayerProfileDto> response = RequestHelper.requestSend(url, PlayerProfileDto.class, 3, 5000);
-        try{
+        try {
+            ResponseEntity<PlayerProfileDto> response = RequestHelper.requestSend(url, PlayerProfileDto.class, 3, 5000);
             checkResponse(response);
             PlayerProfileDto playerProfileDto = response.getBody();
-            Log.i("【更新面板】","uid:"+uid+"的面板数据获取成功");
+            Log.i("【更新面板】", "uid:" + uid + "的面板数据获取成功");
             return playerProfileDto;
-        } catch (RequestErrorException e) {
-            Log.e("【更新面板】","uid:"+uid+"的面板数据获取失败");
+        } catch (ProfileRequestException e) {
+            Log.e("【更新面板】", "uid:" + uid + "的面板数据获取失败");
             throw e;
         }
     }
@@ -96,26 +97,26 @@ public class ProfileQueryManager {
         playerProfileVo.setSign(playerProfileDto.getSign());
         if (playerProfileDto.getCostumeId() != null) { // 优先设置衣装头像
             List<CostumeDex> costumeData = costumeDexDao.selectByCostumeId(playerProfileDto.getCostumeId());
-            if(costumeData.size() != 1){
+            if (costumeData.size() != 1) {
                 throw new MetaDataQueryException("costume_dex");
             }
             playerProfileVo.setAvatarIcon(costumeData.get(0).getIconAvatar());
         } else if (playerProfileDto.getAvatarId() != null) {
             List<String> avatarIcons = characterDexDao.selectAvatarIconByLikelyCharacterId(playerProfileDto.getAvatarId());
-            if(avatarIcons.isEmpty()) {
+            if (avatarIcons.isEmpty()) {
                 throw new MetaDataQueryException("character_dex");
             }
             playerProfileVo.setAvatarIcon(avatarIcons.get(0));
         }
         if (playerProfileDto.getProfilePictureId() != null) { // 新版头像
             List<ProfilePicture> profilePictures = profilePictureDao.selectByProfilePictureId(playerProfileDto.getProfilePictureId());
-            if(profilePictures.size() != 1) {
+            if (profilePictures.size() != 1) {
                 throw new MetaDataQueryException("profile_picture");
             }
             playerProfileVo.setAvatarIcon(profilePictures.get(0).getIcon());
         }
         List<CharacterProfileVo> characterProfileVoList = new ArrayList<>();
-        for(CharacterProfileDto characterProfileDto : playerProfileDto.getCharacters()) {
+        for (CharacterProfileDto characterProfileDto : playerProfileDto.getCharacters()) {
             characterProfileVoList.add(convertCharacterProfileToVo(characterProfileDto));
         }
         playerProfileVo.setCharacters(characterProfileVoList);
@@ -129,15 +130,15 @@ public class ProfileQueryManager {
 
         CharacterProfileVo characterProfileVo = new CharacterProfileVo();
         List<CharacterDex> characterDataList = characterDexDao.selectByCharacterId(characterProfileDto.getCharacterId());
-        if(characterDataList.size() != 1) {
+        if (characterDataList.size() != 1) {
             throw new MetaDataQueryException("character_dex");
         }
         CharacterDex characterData = characterDataList.get(0);
         characterProfileVo.setCharacterName(characterData.getCharacterName());
         characterProfileVo.setUid(characterProfileDto.getUid());
-        if(characterProfileDto.getCostumeId() != null) {
+        if (characterProfileDto.getCostumeId() != null) {
             List<CostumeDex> costumeDataList = costumeDexDao.selectByCostumeId(characterProfileDto.getCostumeId());
-            if(costumeDataList.size() != 1) {
+            if (costumeDataList.size() != 1) {
                 throw new MetaDataQueryException("costume_dex");
             }
             characterProfileVo.setAvatarIcon(costumeDataList.get(0).getIconAvatar());
@@ -205,7 +206,7 @@ public class ProfileQueryManager {
         WeaponDexDao weaponDexDao = knkDatabase.getWeaponDexDao();
         WeaponProfileVo weaponProfileVo = new WeaponProfileVo();
         List<WeaponDex> weaponDataList = weaponDexDao.selectByWeaponId(weaponProfileDto.getWeaponId());
-        if(weaponDataList.size() != 1) {
+        if (weaponDataList.size() != 1) {
             throw new MetaDataQueryException("weapon_dex");
         }
         WeaponDex weaponData = weaponDataList.get(0);
@@ -227,7 +228,7 @@ public class ProfileQueryManager {
         ArtifactDexDao artifactDexDao = knkDatabase.getArtifactDexDao();
         ArtifactProfileVo artifactProfileVo = new ArtifactProfileVo();
         List<ArtifactDex> artifactDataList = artifactDexDao.selectBySetIdAndPosition(artifactProfileDto.getSetId(), artifactProfileDto.getPosition());
-        if(artifactDataList.size() != 1) {
+        if (artifactDataList.size() != 1) {
             throw new MetaDataQueryException("artifact_dex");
         }
         ArtifactDex artifactData = artifactDataList.get(0);
@@ -244,20 +245,20 @@ public class ProfileQueryManager {
     }
 
     private <T> void checkResponse(ResponseEntity<T> responseEntity) {
-        if(responseEntity == null) {
-            throw new RequestErrorException("网络错误，重试超限");
+        if (responseEntity == null) {
+            throw new ProfileRequestException("网络错误，重试超限");
         }
-        if(responseEntity.getCode() == 404) {
-            throw new RequestErrorException("uid不存在，米哈游说的");
+        if (responseEntity.getCode() == 404) {
+            throw new ProfileRequestException("uid不存在，米哈游说的");
         }
-        if(responseEntity.getCode() == 500) {
-            throw new RequestErrorException("服务器内部错误");
+        if (responseEntity.getCode() == 500) {
+            throw new ProfileRequestException("服务器内部错误");
         }
-        if(responseEntity.getCode() == 503) {
-            throw new RequestErrorException("数据源访问错误");
+        if (responseEntity.getCode() == 503) {
+            throw new ProfileRequestException("数据源访问错误");
         }
-        if(responseEntity.getCode() != 200) {
-            throw new RequestErrorException("未知错误，状态码："+responseEntity.getCode());
+        if (responseEntity.getCode() != 200) {
+            throw new ProfileRequestException("未知错误，状态码：" + responseEntity.getCode());
         }
     }
 }

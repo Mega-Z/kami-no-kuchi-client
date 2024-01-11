@@ -24,6 +24,7 @@ public class ElementProgressbarFragment extends Fragment {
     private LinearLayout layoutProgressbar;
     private ImageView imageProgressbar;
     private int width;
+    private float progress;
 
     public ElementProgressbarFragment() {
         // Required empty public constructor
@@ -57,7 +58,12 @@ public class ElementProgressbarFragment extends Fragment {
     public void setProgress(float progress) {
         progress = Math.max(0, progress);
         progress = Math.min(1, progress);
+        this.progress = progress;
         layoutProgressbar.setTranslationX(-1 * (1-progress) * width);
         imageProgressbar.setTranslationX((1-progress) * width);
+    }
+
+    public float getProgress() {
+        return progress;
     }
 }

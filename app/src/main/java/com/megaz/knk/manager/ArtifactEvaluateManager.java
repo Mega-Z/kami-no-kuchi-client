@@ -26,13 +26,13 @@ public class ArtifactEvaluateManager {
     private static final List<AttributeEnum> FLOWER_ATTRIBUTE_CHOICES = Collections.singletonList(AttributeEnum.HP_PLUS);
     private static final List<AttributeEnum> PLUME_ATTRIBUTE_CHOICES = Collections.singletonList(AttributeEnum.ATK_PLUS);
     private static final List<AttributeEnum> SANDS_ATTRIBUTE_CHOICES = Arrays.asList(
-            AttributeEnum.ATK, AttributeEnum.HP, AttributeEnum.DEF, AttributeEnum.MASTERY, AttributeEnum.RECHARGE);
+            AttributeEnum.ATK_PRCT, AttributeEnum.HP_PRCT, AttributeEnum.DEF_PRCT, AttributeEnum.MASTERY, AttributeEnum.RECHARGE);
     private static final List<AttributeEnum> GOBLET_ATTRIBUTE_CHOICES = Arrays.asList(
-            AttributeEnum.ATK, AttributeEnum.HP, AttributeEnum.DEF, AttributeEnum.MASTERY,
+            AttributeEnum.ATK_PRCT, AttributeEnum.HP_PRCT, AttributeEnum.DEF_PRCT, AttributeEnum.MASTERY,
             AttributeEnum.DMG_PHY, AttributeEnum.DMG_PYRO, AttributeEnum.DMG_ELECTRO, AttributeEnum.DMG_HYDRO,
             AttributeEnum.DMG_DENDRO, AttributeEnum.DMG_ANEMO, AttributeEnum.DMG_GEO, AttributeEnum.DMG_CRYO);
     private static final List<AttributeEnum> CIRCLET_ATTRIBUTE_CHOICES = Arrays.asList(
-            AttributeEnum.ATK, AttributeEnum.HP, AttributeEnum.DEF, AttributeEnum.MASTERY,
+            AttributeEnum.ATK_PRCT, AttributeEnum.HP_PRCT, AttributeEnum.DEF_PRCT, AttributeEnum.MASTERY,
             AttributeEnum.CRIT_RATE, AttributeEnum.CRIT_DMG, AttributeEnum.HEAL);
 
     private static final Map<ArtifactPositionEnum, List<AttributeEnum>> MAIN_ATTRIBUTE_CHOICES = new HashMap<>();
@@ -46,12 +46,12 @@ public class ArtifactEvaluateManager {
     }
 
     private static final List<AttributeEnum> SUB_ATTRIBUTE_CHOICES = Arrays.asList(
-            AttributeEnum.ATK, AttributeEnum.HP, AttributeEnum.DEF,
+            AttributeEnum.ATK_PRCT, AttributeEnum.HP_PRCT, AttributeEnum.DEF_PRCT,
             AttributeEnum.ATK_PLUS, AttributeEnum.HP_PLUS, AttributeEnum.DEF_PLUS,
             AttributeEnum.MASTERY, AttributeEnum.RECHARGE, AttributeEnum.CRIT_RATE, AttributeEnum.CRIT_DMG);
 
     private static final List<AttributeEnum> ATTRIBUTE_LIST = Arrays.asList(
-            AttributeEnum.ATK, AttributeEnum.HP, AttributeEnum.DEF,
+            AttributeEnum.ATK_PRCT, AttributeEnum.HP_PRCT, AttributeEnum.DEF_PRCT,
             AttributeEnum.ATK_PLUS, AttributeEnum.HP_PLUS, AttributeEnum.DEF_PLUS, AttributeEnum.HEAL,
             AttributeEnum.MASTERY, AttributeEnum.RECHARGE, AttributeEnum.CRIT_RATE, AttributeEnum.CRIT_DMG,
             AttributeEnum.DMG_PHY, AttributeEnum.DMG_PYRO, AttributeEnum.DMG_ELECTRO, AttributeEnum.DMG_HYDRO,
@@ -109,13 +109,13 @@ public class ArtifactEvaluateManager {
                 }
             } else if (attribute == AttributeEnum.ATK_PLUS) {
                 scorePerItem.put(attribute, attribute.getUnitValue() / characterProfileDto.getBaseAtk()
-                        / AttributeEnum.ATK.getUnitValue() * ITEM_SCORE_WEIGHT_100 * attributeWeight / 100);
+                        / AttributeEnum.ATK_PRCT.getUnitValue() * ITEM_SCORE_WEIGHT_100 * attributeWeight / 100);
             } else if (attribute == AttributeEnum.HP_PLUS) {
                 scorePerItem.put(attribute, attribute.getUnitValue() / characterProfileDto.getBaseHp()
-                        / AttributeEnum.HP.getUnitValue() * ITEM_SCORE_WEIGHT_100 * attributeWeight / 100);
+                        / AttributeEnum.HP_PRCT.getUnitValue() * ITEM_SCORE_WEIGHT_100 * attributeWeight / 100);
             } else if (attribute == AttributeEnum.DEF_PLUS) {
                 scorePerItem.put(attribute, attribute.getUnitValue() / characterProfileDto.getBaseDef()
-                        / AttributeEnum.DEF.getUnitValue() * ITEM_SCORE_WEIGHT_100 * attributeWeight / 100);
+                        / AttributeEnum.DEF_PRCT.getUnitValue() * ITEM_SCORE_WEIGHT_100 * attributeWeight / 100);
             } else {
                 scorePerItem.put(attribute, ITEM_SCORE_WEIGHT_100 * attributeWeight / 100);
             }

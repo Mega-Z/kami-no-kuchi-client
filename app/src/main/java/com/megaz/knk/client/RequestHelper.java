@@ -7,6 +7,7 @@ import androidx.annotation.RequiresApi;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
+import com.megaz.knk.exception.RequestErrorException;
 import com.megaz.knk.vo.PlayerProfileVo;
 
 import java.io.BufferedReader;
@@ -26,32 +27,8 @@ import java.util.List;
 public class RequestHelper {
 
     @SuppressWarnings("unchecked")
-    public static List<String> getIconList(String urlString) {
-        try {
-            URL url = new URL(urlString);
-            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-            connection.setRequestMethod("GET");
-            connection.connect();
-
-            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-            String inputLine;
-            StringBuilder resString = new StringBuilder();
-            while ((inputLine = bufferedReader.readLine()) != null) {
-                resString.append(inputLine);
-            }
-            Gson gson = new Gson();
-            List<String> iconList = gson.fromJson(resString.toString(), ArrayList.class);
-            return iconList;
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        return new ArrayList<>();
-    }
-
-    public static <T> ResponseEntity<T> requestSend(String urlString, Class<T> classOfResponse, int retry, int timeout) {
-        while(retry > 0) {
+    public static List<String> getIconList(String urlString, int retry, int timeout) {
+        while (retry > 0) {
             try {
                 URL url = new URL(urlString);
                 HttpURLConnection connection = (HttpURLConnection) url.openConnection();
@@ -59,7 +36,74 @@ public class RequestHelper {
                 connection.setConnectTimeout(timeout);
                 connection.connect();
 
-                if(connection.getResponseCode() == 200) {
+                if (connection.getResponseCode() == 200) {
+                    BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+                    String inputLine;
+                    StringBuilder resString = new StringBuilder();
+                    while ((inputLine = bufferedReader.readLine()) != null) {
+                        resString.append(inputLine);
+                    }
+                    Gson gson = new Gson();
+                    return gson.fromJson(resString.toString(), ArrayList.class);
+                }  else {
+                    throw new RequestErrorException(connection.getResponseMessage());
+                }
+
+            } catch (Exception e) {
+                e.printStackTrace();
+                if(retry > 1) {
+                    retry--;
+                } else {
+                    throw new RequestErrorException(e.getMessage());
+                }
+            }
+        }
+        throw new RequestErrorException("重试超限");
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.O)
+    public static void getIconAndSave(String urlString, Path path, int retry, int timeout) {
+        while (retry > 0) {
+            try {
+                URL url = new URL(urlString);
+                HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                connection.setRequestMethod("GET");
+                connection.setConnectTimeout(timeout);
+                connection.connect();
+
+                InputStream inputStream = connection.getInputStream();
+                OutputStream outputStream = new FileOutputStream(path.toFile());
+                byte[] buffer = new byte[1024];
+                int bytesRead;
+                while ((bytesRead = inputStream.read(buffer)) != -1) {
+                    outputStream.write(buffer, 0, bytesRead);
+                }
+                outputStream.close();
+                inputStream.close();
+                return;
+            } catch (IOException e) {
+                e.printStackTrace();
+                if(retry > 1) {
+                    retry--;
+                } else {
+                    throw new RequestErrorException(e.getMessage());
+                }
+            }
+        }
+        throw new RequestErrorException("重试超限");
+    }
+
+    public static <T> ResponseEntity<T> requestSend
+            (String urlString, Class<T> classOfResponse, int retry, int timeout)  {
+        while (retry > 0) {
+            try {
+                URL url = new URL(urlString);
+                HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                connection.setRequestMethod("GET");
+                connection.setConnectTimeout(timeout);
+                connection.connect();
+
+                if (connection.getResponseCode() == 200) {
                     BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
                     String inputLine;
                     StringBuilder resString = new StringBuilder();
@@ -73,16 +117,21 @@ public class RequestHelper {
                     return new ResponseEntity<>(connection.getResponseCode());
                 }
 
-            } catch (IOException e) {
+            } catch (Exception e) {
                 e.printStackTrace();
+                if(retry > 1) {
+                    retry--;
+                } else {
+                    throw new RequestErrorException(e.getMessage());
+                }
             }
-            retry--;
         }
-        return null;
+        throw new RequestErrorException("重试超限");
     }
 
-    public static <T> ResponseEntity<ArrayList<T>> requestSendForList(String urlString, Class<T> classOfResponse, int retry, int timeout) {
-        while(retry > 0) {
+    public static <T> ResponseEntity<ArrayList<T>> requestSendForList
+            (String urlString, Class<T> classOfResponse, int retry, int timeout) {
+        while (retry > 0) {
             try {
                 URL url = new URL(urlString);
                 HttpURLConnection connection = (HttpURLConnection) url.openConnection();
@@ -90,18 +139,20 @@ public class RequestHelper {
                 connection.setConnectTimeout(timeout);
                 connection.connect();
 
-                if(connection.getResponseCode() == 200) {
+                if (connection.getResponseCode() == 200) {
                     BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
                     String inputLine;
                     StringBuilder resString = new StringBuilder();
                     while ((inputLine = bufferedReader.readLine()) != null) {
                         resString.append(inputLine);
                     }
-                    Type type = new TypeToken<ArrayList<JsonObject>>(){}.getType();
+                    Type type = new TypeToken<ArrayList<JsonObject>>() {
+                    }.getType();
                     Gson gson = new Gson();
+
                     ArrayList<JsonObject> jsonObjectArrayList = gson.fromJson(resString.toString(), type);
                     ArrayList<T> body = new ArrayList<>();
-                    for(JsonObject jsonObject:jsonObjectArrayList) {
+                    for (JsonObject jsonObject : jsonObjectArrayList) {
                         body.add(gson.fromJson(jsonObject, classOfResponse));
                     }
                     return new ResponseEntity<>(connection.getResponseCode(), body);
@@ -109,40 +160,17 @@ public class RequestHelper {
                     return new ResponseEntity<>(connection.getResponseCode());
                 }
 
-            } catch (IOException e) {
+            } catch (Exception e) {
                 e.printStackTrace();
-            }
-            retry--;
-        }
-        return null;
-    }
-
-    @RequiresApi(api = Build.VERSION_CODES.O)
-    public static boolean getIconAndSave(String urlString, Path path, int retry) {
-        while(retry>0) {
-            try {
-                URL url = new URL(urlString);
-
-                HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-                connection.setRequestMethod("GET");
-                connection.connect();
-
-                InputStream inputStream = connection.getInputStream();
-                OutputStream outputStream = new FileOutputStream(path.toFile());
-                byte[] buffer = new byte[1024];
-                int bytesRead;
-                while ((bytesRead = inputStream.read(buffer)) != -1) {
-                    outputStream.write(buffer, 0, bytesRead);
+                if(retry > 1) {
+                    retry--;
+                } else {
+                    throw new RequestErrorException(e.getMessage());
                 }
-                outputStream.close();
-                inputStream.close();
-                return true;
-
-            } catch (IOException e) {
-                e.printStackTrace();
-                retry--;
             }
         }
-        return false;
+        throw new RequestErrorException("重试超限");
     }
+
+
 }

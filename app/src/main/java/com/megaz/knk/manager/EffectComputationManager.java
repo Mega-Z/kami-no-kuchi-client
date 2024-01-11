@@ -279,15 +279,15 @@ public class EffectComputationManager {
 
     @WorkerThread
     public void enableBuffEffect(FightEffect fightEffect, BuffEffect buffEffect, List<BuffInputParam> buffInputParamList) {
-        Set<AttributeEnum> attributeSet = buffEffect.getRelatedAttributeSet();
-        attributeSet.removeAll(fightEffect.getRelatedAttributeSet());
-        if (!attributeSet.isEmpty()) {
-            List<BuffEffect> additionalBuffEffectList = checkAdditionalAttributeAddBuffs(fightEffect,
-                    new ArrayList<>(attributeSet));
-            fightEffect.addAvailableBuffEffects(additionalBuffEffectList);
-        }
-
         if (buffEffect.getFromSelf()) {
+            // check additional related attributes
+            Set<AttributeEnum> attributeSet = buffEffect.getRelatedAttributeSet();
+            attributeSet.removeAll(fightEffect.getRelatedAttributeSet());
+            if (!attributeSet.isEmpty()) {
+                List<BuffEffect> additionalBuffEffectList = checkAdditionalAttributeAddBuffs(fightEffect,
+                        new ArrayList<>(attributeSet));
+                fightEffect.addAvailableBuffEffects(additionalBuffEffectList);
+            }
             fillBuffEffectCurveParam(buffEffect,
                     fightEffect.getCharacterAttribute().getTalentLevel().get(buffEffect.getSourceTalent()),
                     fightEffect.getCharacterAttribute().getWeaponRefinement());

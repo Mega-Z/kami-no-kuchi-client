@@ -6,17 +6,16 @@ import android.content.pm.PackageManager;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
+import android.util.Log;
 import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.WorkerThread;
 
+import com.google.common.collect.Lists;
 import com.megaz.knk.R;
-import com.megaz.knk.dao.ArtifactCriterionDao;
-import com.megaz.knk.dao.BuffDao;
-import com.megaz.knk.dao.BuffEffectRelationDao;
-import com.megaz.knk.dao.FightEffectComputationDao;
 import com.megaz.knk.dao.MetaDataDao;
 import com.megaz.knk.dto.MetaDatabaseInfoDto;
 import com.megaz.knk.entity.ArtifactCriterion;
@@ -32,9 +31,11 @@ import com.megaz.knk.entity.PromoteAttribute;
 import com.megaz.knk.entity.RefinementCurve;
 import com.megaz.knk.entity.TalentCurve;
 import com.megaz.knk.entity.WeaponDex;
+import com.megaz.knk.exception.RequestErrorException;
 import com.megaz.knk.fragment.ElementProgressbarFragment;
+import com.megaz.knk.fragment.UpdateExceptionFragment;
 import com.megaz.knk.utils.ImageResourceUtils;
-import com.megaz.knk.utils.RequestUtils;
+import com.megaz.knk.utils.MetaDataUtils;
 
 import java.lang.reflect.Array;
 import java.util.ArrayList;
@@ -42,16 +43,25 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
 
-public class LaunchActivity extends BaseActivity {
+public class LaunchActivity extends BaseActivity implements UpdateExceptionFragment.UpdateExceptionFragmentListener {
+    private final int ICON_SHARD_SIZE = 10;
     private final float ICON_UPDATING_PROGRESS = 0.94f;
     private final int PAGE_SIZE = 50;
-    private Handler iconUpdateHandler, progressHandler, metaUpdateHandler;
+    private Handler resourceUpdateHandler, progressHandler, testHandler;
+    private ThreadPoolExecutor threadPoolExecutor;
+
     private TextView textViewUpdating, textLaunchTitle, textVersion;
     private LinearLayout layoutProgressbarContainer;
     private ElementProgressbarFragment elementProgressbar;
+    private UpdateExceptionFragment updateExceptionFragment;
+
+
+    private Long updateStartTime;
 
     @Override
     protected void setContent() {
@@ -74,10 +84,15 @@ public class LaunchActivity extends BaseActivity {
         layoutProgressbarContainer = findViewById(R.id.layout_progressbar_container);
         elementProgressbar = ElementProgressbarFragment.newInstance();
         getSupportFragmentManager().beginTransaction().add(R.id.layout_progressbar_container, elementProgressbar).commit();
-        iconUpdateHandler = new Handler(Looper.myLooper()){
+    }
+
+    @Override
+    protected void setCallback() {
+        super.setCallback();
+        resourceUpdateHandler = new Handler(Looper.myLooper()) {
             @Override
             public void handleMessage(@NonNull Message msg) {
-                handleIconUpdateMessage(msg);
+                tryToUpdateResources();
             }
         };
         progressHandler = new Handler(Looper.myLooper()) {
@@ -86,23 +101,131 @@ public class LaunchActivity extends BaseActivity {
                 handleProgressMessage(msg);
             }
         };
-        metaUpdateHandler = new Handler(Looper.myLooper()){
-            @Override
-            public void handleMessage(@NonNull Message msg) {
-                handleMetaUpdateMessage(msg);
-            }
-        };
-        new Thread(this::checkAndUpdateIconResource).start();
+    }
 
+    @Override
+    protected void initialize() {
+        super.initialize();
+        threadPoolExecutor = (ThreadPoolExecutor) Executors.newFixedThreadPool(16);
+        updateStartTime = System.currentTimeMillis();
+        new Thread(() -> {
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            resourceUpdateHandler.sendMessage(new Message());
+        }).start();
+    }
+
+    private void tryToUpdateResources() {
+        elementProgressbar.setProgress(0f);
+        updateResources();
+    }
+
+    private void updateResources(){
+        CompletableFuture<List<String>> completableFutureGetIconList = CompletableFuture.supplyAsync(() -> {
+            try {
+                return ImageResourceUtils.getIconResourceList(getApplicationContext());
+            } catch (RequestErrorException e) {
+                e.printStackTrace();
+                Message progressMsg = new Message();
+                progressMsg.what = 2;
+                progressMsg.obj = e.getMessage();
+                progressHandler.sendMessage(progressMsg);
+                return null;
+            }
+        }, threadPoolExecutor);
+
+        CompletableFuture<Boolean> completableFutureGetIcons = completableFutureGetIconList.thenApplyAsync(result -> {
+            if(result == null) {
+                return false;
+            }
+            List<CompletableFuture<Boolean>> completableFutureGetIconShards = new ArrayList<>();
+            for(List<String> iconListShard: Lists.partition(result, ICON_SHARD_SIZE)) {
+                completableFutureGetIconShards.add(CompletableFuture.supplyAsync(()-> {
+                    try {
+                        checkAndUpdateIconResource(iconListShard, result.size());
+                        return true;
+                    } catch (RequestErrorException e) {
+                        e.printStackTrace();
+                        Message progressMsg = new Message();
+                        progressMsg.what = 2;
+                        progressMsg.obj = e.getMessage();
+                        progressHandler.sendMessage(progressMsg);
+                        return false;
+                    }
+                }, threadPoolExecutor));
+            }
+            boolean successFlag = true;
+            for(CompletableFuture<Boolean> completableFutureGetIconShard:completableFutureGetIconShards) {
+                if(!completableFutureGetIconShard.join()) {
+                    successFlag = false;
+                    break;
+                }
+            }
+            if(!successFlag) {
+                for(CompletableFuture<Boolean> completableFutureGetIconShard:completableFutureGetIconShards) {
+                    completableFutureGetIconShard.cancel(true);
+                }
+            }
+            return successFlag;
+        }, threadPoolExecutor);
+
+        CompletableFuture<Boolean> completableFutureUpdateMeta = completableFutureGetIcons.thenApplyAsync(result -> {
+            if(!result) {
+                return false;
+            }
+            try {
+                checkAndUpdateMetaData();
+                return true;
+            } catch (RuntimeException e) {
+                e.printStackTrace();
+                Message progressMsg = new Message();
+                progressMsg.what = 2;
+                progressMsg.obj = e.getMessage();
+                progressHandler.sendMessage(progressMsg);
+                return false;
+            }
+        }, threadPoolExecutor);
+
+        completableFutureUpdateMeta.thenAccept(result -> {
+            if(result) {
+                Message progressMsg = new Message();
+                progressMsg.what = 1;
+                progressHandler.sendMessage(progressMsg);
+            }
+        });
+    }
+
+    private void handleProgressMessage(Message msg) {
+        switch (msg.what) {
+            case 0: // add progress
+//                Log.d("【线程池状态】", "线程数量："+ threadPoolExecutor.getPoolSize());
+//                Log.d("【线程池状态】", "核心线程数量："+ threadPoolExecutor.getCorePoolSize());
+//                Log.d("【线程池状态】", "当前活动线程数："+ threadPoolExecutor.getActiveCount());
+//                Log.d("【线程池状态】", "已完成的任务数量："+ threadPoolExecutor.getCompletedTaskCount());
+//                Log.d("【线程池状态】", "已提交的任务总数："+ threadPoolExecutor.getTaskCount());
+//                Log.d("【线程池状态】", "等待任务总数：" + threadPoolExecutor.getQueue().size());
+                elementProgressbar.setProgress(elementProgressbar.getProgress() + (float) msg.obj);
+                break;
+            case 1: // finish
+                elementProgressbar.setProgress(1f);
+                finishLaunch();
+                break;
+            case 2: // error
+                System.out.println(msg.obj);
+                showExceptionDialog();
+                break;
+        }
     }
 
     private void finishLaunch() {
+        Log.d("完成更新耗时", System.currentTimeMillis()-updateStartTime+"ms");
         Intent intent = new Intent(getApplicationContext(), HomeActivity.class);
-        try{
+        try {
             Thread.sleep(500);
             textViewUpdating.setVisibility(View.INVISIBLE);
-            // layoutProgressbarContainer.setVisibility(View.INVISIBLE);
-            // Thread.sleep(500);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -110,66 +233,34 @@ public class LaunchActivity extends BaseActivity {
         finish();
     }
 
-
-    private void handleIconUpdateMessage(Message msg) {
-        switch (msg.what) {
-            case 0: // success
-                new Thread(this::checkAndUpdateMetaData).start();
-                break;
-            case 1: // fail
-                break;
+    private void showExceptionDialog() {
+        if(updateExceptionFragment == null) {
+            updateExceptionFragment = UpdateExceptionFragment.newInstance();
+            updateExceptionFragment.setCancelable(false);
         }
+        if(!updateExceptionFragment.isAdded())
+            updateExceptionFragment.show(getSupportFragmentManager(), "");
     }
 
-    private void handleMetaUpdateMessage(Message msg) {
-        switch (msg.what) {
-            case 0: // success
-                finishLaunch();
-                break;
-            case 1: // fail
-                break;
-        }
-    }
-
-    private void handleProgressMessage(Message msg) {
-        elementProgressbar.setProgress((float)msg.obj);
-    }
-
-    private void checkAndUpdateIconResource() {
-        List<String> iconList = ImageResourceUtils.getIconResourceList(getApplicationContext());
-
-        int partitionSize = Math.max(1, iconList.size() / 100);
-        AtomicInteger counter = new AtomicInteger(0);
-        List<List<String>> shardedIconLists = iconList.stream()
-                .collect(Collectors.groupingBy(it -> counter.getAndIncrement() / partitionSize))
-                .values()
-                .stream()
-                .map(ArrayList::new)
-                .collect(Collectors.toList());
-        for(int id=1;id<=shardedIconLists.size();id++) {
-            ImageResourceUtils.updateIconResource(getApplicationContext(), shardedIconLists.get(id-1));
+    @WorkerThread
+    private void checkAndUpdateIconResource(List<String> iconNameList, int iconNum) {
+        for(String iconName:iconNameList) {
+            ImageResourceUtils.updateIconResource(getApplicationContext(), iconName);
             Message progressMsg = new Message();
-            progressMsg.obj = (float)id/shardedIconLists.size()*ICON_UPDATING_PROGRESS;
+            progressMsg.what = 0;
+            progressMsg.obj = ICON_UPDATING_PROGRESS / iconNum;
             progressHandler.sendMessage(progressMsg);
         }
-        Message msg = new Message();
-        msg.what = 0;
-        iconUpdateHandler.handleMessage(msg);
     }
+
+    @WorkerThread
     @SuppressWarnings({"unchecked", "rawuse"})
     private void checkAndUpdateMetaData() {
-        MetaDatabaseInfoDto metaDatabaseInfo = RequestUtils.getMetaDatabaseInfo(getApplicationContext());
+        MetaDatabaseInfoDto metaDatabaseInfo = MetaDataUtils.getMetaDatabaseInfo(getApplicationContext());
         String latestVersion = metaDatabaseInfo.getVersion();
         String currentVersion = sharedPreferences.getString("meta_version", "");
 
-        if(currentVersion.equals(latestVersion)) {
-            Message progressMsg = new Message();
-            progressMsg.obj = 1f;
-            progressHandler.sendMessage(progressMsg);
-
-            Message msg = new Message();
-            msg.what = 0;
-            metaUpdateHandler.handleMessage(msg);
+        if (currentVersion.equals(latestVersion)) {
             return;
         }
 
@@ -201,35 +292,41 @@ public class LaunchActivity extends BaseActivity {
         entityClassMap.put("refinement_curve", RefinementCurve.class);
         entityClassMap.put("promote_attribute", PromoteAttribute.class);
 
-        for(MetaDataDao<?> metaDataDao:daoMap.values()) {
+        for (MetaDataDao<?> metaDataDao : daoMap.values()) {
             metaDataDao.deleteAll();
         }
 
         int tableNum = metaDatabaseInfo.getTableSize().size();
-        int tableCnt = 0;
-        for(Map.Entry<String, Long> entry:metaDatabaseInfo.getTableSize().entrySet()) {
+        for (Map.Entry<String, Long> entry : metaDatabaseInfo.getTableSize().entrySet()) {
             String tableName = entry.getKey();
             Long tableSize = entry.getValue();
-            for(int pageId=0;pageId <= tableSize / PAGE_SIZE;pageId++) {
+            for (int pageId = 0; pageId <= tableSize / PAGE_SIZE; pageId++) {
                 int offset = pageId * PAGE_SIZE;
-                ArrayList<? extends MetaDataEntity> metaDataEntities = new ArrayList<>(RequestUtils.pageQueryMetaData(
+                ArrayList<? extends MetaDataEntity> metaDataEntities = new ArrayList<>(MetaDataUtils.pageQueryMetaData(
                         getApplicationContext(), entityClassMap.get(tableName), tableName, offset, PAGE_SIZE));
-                if(!metaDataEntities.isEmpty()){
-                    if(!daoMap.containsKey(tableName)){
+                if (!metaDataEntities.isEmpty()) {
+                    if (!daoMap.containsKey(tableName)) {
                         break;
                     }
                     Objects.requireNonNull(daoMap.get(tableName)).batchInsert(
-                            metaDataEntities.toArray((MetaDataEntity[])Array.newInstance(Objects.requireNonNull(entityClassMap.get(tableName)),metaDataEntities.size())));
+                            metaDataEntities.toArray((MetaDataEntity[]) Array.newInstance(Objects.requireNonNull(entityClassMap.get(tableName)), metaDataEntities.size())));
                 }
             }
-            tableCnt++;
             Message progressMsg = new Message();
-            progressMsg.obj = ICON_UPDATING_PROGRESS + (1-ICON_UPDATING_PROGRESS) * tableCnt / tableNum;
+            progressMsg.what = 0;
+            progressMsg.obj = (1 - ICON_UPDATING_PROGRESS) / tableNum;
             progressHandler.sendMessage(progressMsg);
         }
         editor.putString("meta_version", latestVersion).commit();
-        Message msg = new Message();
-        msg.what = 0;
-        metaUpdateHandler.handleMessage(msg);
+    }
+
+    @Override
+    public void onRetryClicked() {
+        tryToUpdateResources();
+    }
+
+    @Override
+    public void onExitClicked() {
+        finish();
     }
 }

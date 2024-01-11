@@ -159,13 +159,13 @@ public class CharacterAttribute implements Serializable {
 
     public void addAttributeValue(AttributeEnum attribute, Double value) {
         switch (attribute) {
-            case ATK:
+            case ATK_PRCT:
                 plusAtk += baseAtk * value;
                 break;
-            case HP:
+            case HP_PRCT:
                 plusHp += baseHp * value;
                 break;
-            case DEF:
+            case DEF_PRCT:
                 plusDef += baseDef * value;
                 break;
             case ATK_PLUS:

@@ -1,4 +1,5 @@
 <resources>
+
     <string name="server">http://101.43.127.222:8080</string>
     <string name="api_get_database_info">/get-database-info</string>
     <string name="api_page_sync_database">/page-sync-database</string>
