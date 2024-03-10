@@ -1,10 +1,12 @@
 <resources>
 
-    <string name="server">http://101.43.127.222:8080</string>
+    <!--  <string name="server">http://10.14.56.217:8080</string> -->
+    <string name="server">http://47.96.9.248:8080</string>
     <string name="api_get_database_info">/get-database-info</string>
     <string name="api_page_sync_database">/page-sync-database</string>
     <string name="api_get_icon_list">/get-icon-list</string>
     <string name="api_get_icon">/get-icon</string>
+    <string name="api_get_icon_zip">/get-icon-zip</string>
     <string name="api_query">/query-profile</string>
     <string name="api_update">/update-profile</string>
     <string name="dir_icon">GenshinIcon</string>

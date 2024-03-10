@@ -10,7 +10,9 @@ import com.google.gson.reflect.TypeToken;
 import com.megaz.knk.exception.RequestErrorException;
 import com.megaz.knk.vo.PlayerProfileVo;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedReader;
+import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -23,6 +25,8 @@ import java.net.URL;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 public class RequestHelper {
 
@@ -48,7 +52,6 @@ public class RequestHelper {
                 }  else {
                     throw new RequestErrorException(connection.getResponseMessage());
                 }
-
             } catch (Exception e) {
                 e.printStackTrace();
                 if(retry > 1) {
@@ -61,7 +64,6 @@ public class RequestHelper {
         throw new RequestErrorException("重试超限");
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.O)
     public static void getIconAndSave(String urlString, Path path, int retry, int timeout) {
         while (retry > 0) {
             try {
@@ -79,6 +81,53 @@ public class RequestHelper {
                     outputStream.write(buffer, 0, bytesRead);
                 }
                 outputStream.close();
+                inputStream.close();
+                return;
+            } catch (IOException e) {
+                e.printStackTrace();
+                if(retry > 1) {
+                    retry--;
+                } else {
+                    throw new RequestErrorException(e.getMessage());
+                }
+            }
+        }
+        throw new RequestErrorException("重试超限");
+    }
+
+
+    public static void getIconZipAndSave(String urlString, Path iconDir, List<String> iconNameList, int retry, int timeout) {
+        while (retry > 0) {
+            try {
+                URL url = new URL(urlString);
+                HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                connection.setRequestMethod("POST");
+                connection.setRequestProperty("Content-Type", "application/json");
+                connection.setDoOutput(true);
+                connection.setDoInput(true);
+                connection.setConnectTimeout(timeout);
+                connection.connect();
+
+                String jsonStringIconNameList = new Gson().toJson(iconNameList);
+                DataOutputStream dataOutputStream = new DataOutputStream(connection.getOutputStream());
+                dataOutputStream.writeBytes(jsonStringIconNameList);
+                dataOutputStream.close();
+
+                InputStream inputStream = connection.getInputStream();
+                ZipInputStream zipInputStream = new ZipInputStream(inputStream);
+                ZipEntry zipEntry;
+                while((zipEntry = zipInputStream.getNextEntry()) != null) {
+                    String iconName = zipEntry.getName();
+                    OutputStream outputStream = new FileOutputStream(iconDir.resolve(iconName).toFile());
+                    byte[] buffer = new byte[1024];
+                    int bytesRead;
+                    while ((bytesRead = zipInputStream.read(buffer)) != -1) {
+                        outputStream.write(buffer, 0, bytesRead);
+                    }
+                    outputStream.close();
+                    zipInputStream.closeEntry();
+                }
+                zipInputStream.close();
                 inputStream.close();
                 return;
             } catch (IOException e) {
