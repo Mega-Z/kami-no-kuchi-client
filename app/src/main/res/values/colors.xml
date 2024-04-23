@@ -8,6 +8,7 @@
     <color name="black">#FF000000</color>`
     <color name="white">#FFFFFFFF</color>
     <color name="bg_transparent_white">#77FFFFFF</color>
+    <color name="bg_transparent_gray">#77777777</color>
     <color name="bg_transparent_black">#77000000</color>
     <color name="gray">#B3B3B3</color>
     <color name="gray_black">#2C2C2C</color>
@@ -90,8 +91,10 @@
     <color name="bg_buff_detail">#E0F7FA</color>
     <color name="bg_enabled_buff">#BB000000</color>
     <color name="bg_enabled_buff_pressed">#77000000</color>
+    <color name="bg_profile_history">#BB000000</color>
+    <color name="bg_profile_history_pressed">#77000000</color>
     <color name="bg_buff_browse">#E3F2FD</color>
     <color name="frame_buff_browse">#000E5E</color>
-    <color name="bg_enemy_attribute">#CC333333</color>
+    <color name="bg_dialog_gray">#CC333333</color>
     <color name="fragment_press_gray">#77777777</color>
 </resources>

@@ -139,8 +139,4 @@ public class HomeActivity extends BaseActivity {
             e.printStackTrace();
         }
     }
-
-    public void toUpdateProfile() {
-        characterPageFragment.toUpdateProfile();
-    }
 }

@@ -23,8 +23,10 @@ import android.widget.RelativeLayout;
 import com.megaz.knk.R;
 import com.megaz.knk.Utils;
 import com.megaz.knk.activity.BaseActivity;
+import com.megaz.knk.constant.ProfileRequestErrorEnum;
 import com.megaz.knk.dto.PlayerProfileDto;
 import com.megaz.knk.exception.ProfileRequestException;
+import com.megaz.knk.manager.LocalProfileManager;
 import com.megaz.knk.manager.ProfileQueryManager;
 
 /**
@@ -40,15 +42,17 @@ public class CharacterPageFragment extends BaseFragment {
 
     private RelativeLayout layoutMain;
     private LinearLayout layoutUid, layoutPaimon, layoutProfile;
-    private Button buttonQueryProfile;
+    private Button buttonLoadProfile, buttonUpdateProfile;
     private EditText editTextUid;
 
     private PaimonWaitingFragment paimonWaiting;
     private PlayerProfileFragment playerProfileFragment;
 
-    private Handler queryProfileHandler, updateProfileHandler;
+    private Handler profileLoadHandler; // 获取本地playerProfileDto成功时，更新playerProfileFragment
+    private Handler profileQueryHandler, profileUpdateHandler;
 
     private ProfileQueryManager profileQueryManager;
+    private LocalProfileManager localProfileManager;
 
 
     public CharacterPageFragment() {
@@ -67,11 +71,12 @@ public class CharacterPageFragment extends BaseFragment {
     }
 
     @Override
-    protected void initView(@NonNull View view){
+    protected void initView(@NonNull View view) {
         super.initView(view);
         layoutMain = view.findViewById(R.id.layout_main);
         layoutUid = view.findViewById(R.id.layout_uid);
-        buttonQueryProfile = view.findViewById(R.id.btn_query_profile);
+        buttonLoadProfile = view.findViewById(R.id.btn_load_profile);
+        buttonUpdateProfile = view.findViewById(R.id.btn_update_profile);
         editTextUid = view.findViewById(R.id.edtx_uid);
         editTextUid.setText(sharedPreferences.getString("uid", ""));
         layoutPaimon = view.findViewById(R.id.layout_paimon);
@@ -79,37 +84,80 @@ public class CharacterPageFragment extends BaseFragment {
         requireActivity().getSupportFragmentManager().beginTransaction().add(R.id.layout_paimon, paimonWaiting).commit();
         layoutProfile = view.findViewById(R.id.layout_profile);
         profileQueryManager = new ProfileQueryManager(getContext());
+        localProfileManager = LocalProfileManager.getInstance(getContext());
+        if (sharedPreferences.contains("uid")) {
+            doAnimationQueryStart();
+            flagQuerying = true;
+            new Thread(this::loadProfile).start();
+        }
     }
 
     @SuppressLint("ClickableViewAccessibility")
     @Override
     protected void setCallback(@NonNull View view) {
         editTextUid.setOnTouchListener(new BaseActivity.EditTextOnTouchListener((BaseActivity) getActivity()));
-        buttonQueryProfile.setOnClickListener(new QueryOnClickListener());
-        queryProfileHandler = new Handler(Looper.myLooper()){
+        buttonLoadProfile.setOnClickListener(new LoadOnClickListener());
+        buttonUpdateProfile.setOnClickListener(new UpdateOnClickListener());
+        profileLoadHandler = new Handler(Looper.myLooper()) {
             @Override
             public void handleMessage(@NonNull Message msg) {
-                handleQueryProfileMessage(msg);
+                super.handleMessage(msg);
+                handleProfileLoadMessage(msg);
             }
         };
-        updateProfileHandler = new Handler(Looper.myLooper()) {
+        profileQueryHandler = new Handler(Looper.myLooper()) {
             @Override
             public void handleMessage(@NonNull Message msg) {
-                handleUpdateProfileMessage(msg);
+                super.handleMessage(msg);
+                handleProfileQueryMessage(msg);
+            }
+        };
+        profileUpdateHandler = new Handler(Looper.myLooper()) {
+            @Override
+            public void handleMessage(@NonNull Message msg) {
+                super.handleMessage(msg);
+                handleProfileUpdateMessage(msg);
             }
         };
     }
 
-    private void handleQueryProfileMessage(Message msg) {
+    private void handleProfileLoadMessage(Message msg) {
         switch (msg.what) {
             case 0: // success
                 PlayerProfileDto playerProfileDto = (PlayerProfileDto) msg.obj;
-                if(playerProfileDto.getCharacterAvailable() != null && !playerProfileDto.getCharacterAvailable()){
-                    toast.setText("角色面板更新失败，请检查角色详情已开启");
+                if (playerProfileDto == null) {
+                    toast.setText("无本地数据，开始从服务端获取");
                     toast.show();
+                    new Thread(this::queryProfile).start();
+                } else {
+                    doAnimationQuerySuccess();
+                    refreshProfileView(playerProfileDto);
+                    flagQuerying = false;
                 }
+                break;
+            case 1:
+                toast.setText((String) msg.obj);
+                toast.show();
+                paimonWaiting.showError();
+                flagQuerying = false;
+                flagError = true;
+                break;
+        }
+    }
+
+    private void handleProfileQueryMessage(Message msg) {
+        switch (msg.what) {
+            case 0: // success
+                PlayerProfileDto playerProfileDto = (PlayerProfileDto) msg.obj;
+                if (playerProfileDto.getCharacterAvailable() != null && !playerProfileDto.getCharacterAvailable()) {
+                    toast.setText("角色面板更新失败，请检查角色详情已开启");
+                } else {
+                    toast.setText("角色面板查询完成");
+                }
+                toast.show();
                 doAnimationQuerySuccess();
                 refreshProfileView(playerProfileDto);
+                new Thread(() -> updateLocalProfile(playerProfileDto)).start();
                 flagQuerying = false;
                 break;
             case 1:
@@ -122,37 +170,46 @@ public class CharacterPageFragment extends BaseFragment {
         }
     }
 
-    private void handleUpdateProfileMessage(Message msg) {
+    private void handleProfileUpdateMessage(Message msg) {
         switch (msg.what) {
             case 0: // success
                 PlayerProfileDto playerProfileDto = (PlayerProfileDto) msg.obj;
-                if(playerProfileDto.getCharacterAvailable() != null && !playerProfileDto.getCharacterAvailable()){
+                if (playerProfileDto.getCharacterAvailable() != null && !playerProfileDto.getCharacterAvailable()) {
                     toast.setText("角色面板更新失败，请检查角色详情已开启");
-                }else{
+                } else {
                     toast.setText("角色面板更新完成");
                 }
                 toast.show();
-                playerProfileFragment.toUpdateProfileView(playerProfileDto);
+                doAnimationQuerySuccess();
+                refreshProfileView(playerProfileDto);
+                new Thread(() -> updateLocalProfile(playerProfileDto)).start();
+                flagQuerying = false;
                 break;
             case 1:
                 toast.setText((String) msg.obj);
                 toast.show();
-                playerProfileFragment.toUpdateProfileView(null);
+                paimonWaiting.showError();
+                flagQuerying = false;
+                flagError = true;
+                break;
+            case 2: // 数据源错误，转为query
+                toast.setText("数据源访问错误，尝试获取服务端数据");
+                toast.show();
+                new Thread(this::queryProfile).start();
                 break;
         }
     }
 
-    private class QueryOnClickListener implements View.OnClickListener{
+    private class LoadOnClickListener implements View.OnClickListener {
         private long lastClick = 0;
-
         @Override
         public void onClick(View v) {
-            if(System.currentTimeMillis() - lastClick < Long.parseLong(getString(R.string.click_cold_down_ms)) || flagQuerying) {
+            if (System.currentTimeMillis() - lastClick < Long.parseLong(getString(R.string.click_cold_down_ms)) || flagQuerying) {
                 return;
             }
             lastClick = System.currentTimeMillis();
             ((BaseActivity) requireActivity()).hideInputMethod();
-            if(!isValidUidInput()) {
+            if (!isValidUidInput()) {
                 toast.setText("uid格式错误");
                 toast.show();
                 return;
@@ -162,54 +219,99 @@ public class CharacterPageFragment extends BaseFragment {
             doAnimationQueryStart();
             flagQuerying = true;
             flagError = false;
-            new Thread(CharacterPageFragment.this::queryProfile).start();
+            new Thread(CharacterPageFragment.this::loadProfile).start();
         }
     }
 
-    public void toUpdateProfile() {
-        new Thread(this::updateProfile).start();
+    private class UpdateOnClickListener implements View.OnClickListener {
+        private long lastClick = 0;
+        @Override
+        public void onClick(View v) {
+            if (System.currentTimeMillis() - lastClick < Long.parseLong(getString(R.string.click_cold_down_ms)) || flagQuerying) {
+                return;
+            }
+            lastClick = System.currentTimeMillis();
+            ((BaseActivity) requireActivity()).hideInputMethod();
+            if (!isValidUidInput()) {
+                toast.setText("uid格式错误");
+                toast.show();
+                return;
+            }
+            editor.putString("uid", editTextUid.getText().toString());
+            editor.commit();
+            doAnimationQueryStart();
+            flagQuerying = true;
+            flagError = false;
+            new Thread(CharacterPageFragment.this::updateProfile).start();
+        }
     }
 
-    private void updateProfile() {
+    public void loadProfile() {
         try {
-            PlayerProfileDto playerProfileDto = profileQueryManager.updatePlayerProfileDto(editTextUid.getText().toString());
+            Thread.sleep(1000);
+            PlayerProfileDto playerProfileDto = localProfileManager.queryLocalProfile(editTextUid.getText().toString());
             Message message = new Message();
             message.what = 0;
             message.obj = playerProfileDto;
-            updateProfileHandler.sendMessage(message);
+            profileLoadHandler.sendMessage(message);
         } catch (ProfileRequestException e) {
             Message message = new Message();
             message.what = 1;
             message.obj = e.getMessage();
-            updateProfileHandler.sendMessage(message);
-        }
-    }
-
-    private void queryProfile() {
-        try {
-            Thread.sleep(500);
-            PlayerProfileDto playerProfileDto = profileQueryManager.queryPlayerProfileDto(editTextUid.getText().toString());
-            Message message = new Message();
-            message.what = 0;
-            message.obj = playerProfileDto;
-            queryProfileHandler.sendMessage(message);
-        } catch (RuntimeException e ) {
-            Message message = new Message();
-            message.what = 1;
-            message.obj = e.getMessage();
-            queryProfileHandler.sendMessage(message);
+            profileLoadHandler.sendMessage(message);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
     }
 
+    private void updateProfile() {
+        try {
+            Thread.sleep(1000);
+            PlayerProfileDto playerProfileDto = profileQueryManager.updatePlayerProfileDto(editTextUid.getText().toString());
+            Message message = new Message();
+            message.what = 0;
+            message.obj = playerProfileDto;
+            profileUpdateHandler.sendMessage(message);
+        } catch (ProfileRequestException e) {
+            Message message = new Message();
+            if(e.getType() == ProfileRequestErrorEnum.DATASOURCE_ERROR) {
+                message.what = 2;
+            } else {
+                message.what = 1;
+            }
+            message.obj = e.getMessage();
+            profileUpdateHandler.sendMessage(message);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void queryProfile() {
+        try {
+            PlayerProfileDto playerProfileDto = profileQueryManager.queryPlayerProfileDto(editTextUid.getText().toString());
+            Message message = new Message();
+            message.what = 0;
+            message.obj = playerProfileDto;
+            profileQueryHandler.sendMessage(message);
+        } catch (ProfileRequestException e) {
+            Message message = new Message();
+            message.what = 1;
+            message.obj = e.getMessage();
+            profileQueryHandler.sendMessage(message);
+        }
+    }
+
+    private void updateLocalProfile(PlayerProfileDto playerProfileDto) {
+        localProfileManager.updateLocalProfile(playerProfileDto);
+    }
+
     private void doAnimationQueryStart() {
-        if(flagError) {// 查询出错状态，不需要移动uid输入框
+        if (flagError) {// 查询出错状态，不需要移动uid输入框
             paimonWaiting.startWaiting();
             return;
         }
         int dyUid = 0;
-        if(flagProfileShowing){ // 查询成功状态
+        if (flagProfileShowing) { // 查询成功状态
             //dy = y1 - y0;
             //y0 = 20 + uid_h;
             //y1 = main_h  / 2 + (300 + uid_h) / 2 - 300 + 10
@@ -221,9 +323,9 @@ public class CharacterPageFragment extends BaseFragment {
         } else { // 查询未开始状态
             dyUid = -1 * getResources().getDimensionPixelOffset(R.dimen.dp_300) / 2;
         }
-        ObjectAnimator animatorPaimonFadeIn = ObjectAnimator.ofFloat(layoutPaimon,"alpha", 0f, 1f);
+        ObjectAnimator animatorPaimonFadeIn = ObjectAnimator.ofFloat(layoutPaimon, "alpha", 0f, 1f);
         animatorPaimonFadeIn.setDuration(100);
-        ObjectAnimator animatorUidMove = ObjectAnimator.ofFloat(layoutUid, "translationY",0, dyUid*3f/4,dyUid);
+        ObjectAnimator animatorUidMove = ObjectAnimator.ofFloat(layoutUid, "translationY", 0, dyUid * 3f / 4, dyUid);
         animatorUidMove.setDuration(400);
         animatorUidMove.start();
         animatorUidMove.addListener(new AnimatorListenerAdapter() {
@@ -234,7 +336,7 @@ public class CharacterPageFragment extends BaseFragment {
                 animatorPaimonFadeIn.start();
                 layoutPaimon.setVisibility(View.VISIBLE);
                 paimonWaiting.startWaiting();
-                if(flagProfileShowing) {
+                if (flagProfileShowing) {
                     flagProfileShowing = false;
                     layoutProfile.setVisibility(View.GONE);
                 }
@@ -243,12 +345,12 @@ public class CharacterPageFragment extends BaseFragment {
     }
 
     private void doAnimationQuerySuccess() {
-        ObjectAnimator animatorPaimonFadeOut = ObjectAnimator.ofFloat(layoutPaimon,"alpha", 1f, 0f);
+        ObjectAnimator animatorPaimonFadeOut = ObjectAnimator.ofFloat(layoutPaimon, "alpha", 1f, 0f);
         animatorPaimonFadeOut.setDuration(200);
         animatorPaimonFadeOut.start();
         int dyUid = layoutUid.getHeight() / 2 - layoutMain.getHeight() / 2
                 + getResources().getDimensionPixelOffset(R.dimen.dp_160); // 160 = 20/2 + 300/2
-        ObjectAnimator animatorUidMove = ObjectAnimator.ofFloat(layoutUid, "translationY",0, dyUid*3f/4,dyUid);
+        ObjectAnimator animatorUidMove = ObjectAnimator.ofFloat(layoutUid, "translationY", 0, dyUid * 3f / 4, dyUid);
         animatorUidMove.setDuration(400);
         animatorUidMove.start();
         ObjectAnimator animatorProfileFadeIn = ObjectAnimator.ofFloat(layoutProfile, "alpha", 0f, 1f);
@@ -267,7 +369,7 @@ public class CharacterPageFragment extends BaseFragment {
     }
 
     private void refreshProfileView(PlayerProfileDto playerProfileDto) {
-        if(playerProfileFragment == null) {
+        if (playerProfileFragment == null) {
             playerProfileFragment = PlayerProfileFragment.newInstance(playerProfileDto);
             requireActivity().getSupportFragmentManager().beginTransaction().add(R.id.layout_profile, playerProfileFragment).commit();
         } else {
@@ -279,6 +381,4 @@ public class CharacterPageFragment extends BaseFragment {
         String uidInput = editTextUid.getText().toString();
         return uidInput.length() == 9 && Utils.isNumeric(uidInput);
     }
-
-
 }

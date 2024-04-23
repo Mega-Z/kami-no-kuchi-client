@@ -90,7 +90,7 @@ public class CriterionFragment extends BaseFragment {
             textAttributeWeight.setTypeface(typefaceNum);
         }
 
-        imageElement.setImageBitmap(ImageResourceUtils.getElementIcon(Objects.requireNonNull(getContext()), element));
+        imageElement.setImageBitmap(ImageResourceUtils.getElementIcon(requireContext(), element));
         textCriterionName.setText(artifactEvaluationVo.getCriterionName());
         textScore.setText(String.format("%.1f", artifactEvaluationVo.getTotalScore()));
         textScore.setTextColor(getContext().getColor(

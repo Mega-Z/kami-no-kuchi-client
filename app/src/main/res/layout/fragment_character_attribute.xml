@@ -113,7 +113,7 @@
         </LinearLayout>
     </LinearLayout>
     <LinearLayout
-        android:id="@+id/layout_attribute_values"
+        android:id="@+id/layout_attribute_value"
         android:layout_width="@dimen/dp_90"
         android:layout_height="@dimen/dp_153"
         android:layout_gravity="bottom|end"
@@ -337,7 +337,7 @@
         </LinearLayout>
     </LinearLayout>
     <LinearLayout
-        android:id="@+id/layout_attr_keys"
+        android:id="@+id/layout_attribute_key"
         android:layout_width="@dimen/dp_90"
         android:layout_height="@dimen/dp_153"
         android:layout_gravity="bottom|right"
@@ -518,11 +518,11 @@
         </LinearLayout>
     </LinearLayout>
     <LinearLayout
-        android:id="@+id/layout_attr_history"
+        android:id="@+id/layout_attribute_baseline"
         android:layout_width="@dimen/dp_90"
         android:layout_height="@dimen/dp_153"
-        android:layout_gravity="bottom|left"
-        android:layout_marginLeft="@dimen/dp_10"
+        android:layout_gravity="bottom|start"
+        android:layout_marginStart="@dimen/dp_10"
         android:orientation="vertical"
         android:alpha="0">
         <LinearLayout
@@ -533,7 +533,7 @@
             android:gravity="center_vertical"
             android:paddingVertical="@dimen/dp_1">
             <TextView
-                android:id="@+id/tv_hp_history"
+                android:id="@+id/text_HP_baseline"
                 android:layout_width="@dimen/dp_45"
                 android:layout_height="wrap_content"
                 android:textSize="@dimen/sp_10"
@@ -549,7 +549,7 @@
             android:gravity="center_vertical"
             android:paddingVertical="@dimen/dp_1">
             <TextView
-                android:id="@+id/tv_atk_history"
+                android:id="@+id/text_ATK_baseline"
                 android:layout_width="@dimen/dp_45"
                 android:layout_height="wrap_content"
                 android:textSize="@dimen/sp_10"
@@ -565,7 +565,7 @@
             android:gravity="center_vertical"
             android:paddingVertical="@dimen/dp_1">
             <TextView
-                android:id="@+id/tv_def_history"
+                android:id="@+id/text_DEF_baseline"
                 android:layout_width="@dimen/dp_45"
                 android:layout_height="wrap_content"
                 android:textSize="@dimen/sp_10"
@@ -581,7 +581,7 @@
             android:gravity="center_vertical"
             android:paddingVertical="@dimen/dp_1">
             <TextView
-                android:id="@+id/tv_em_history"
+                android:id="@+id/text_mastery_baseline"
                 android:layout_width="@dimen/dp_45"
                 android:layout_height="wrap_content"
                 android:textSize="@dimen/sp_10"
@@ -597,7 +597,7 @@
             android:gravity="center_vertical"
             android:paddingVertical="@dimen/dp_1">
             <TextView
-                android:id="@+id/tv_cr_history"
+                android:id="@+id/text_crit_rate_baseline"
                 android:layout_width="@dimen/dp_45"
                 android:layout_height="wrap_content"
                 android:textSize="@dimen/sp_10"
@@ -613,7 +613,7 @@
             android:gravity="center_vertical"
             android:paddingVertical="@dimen/dp_1">
             <TextView
-                android:id="@+id/tv_cd_history"
+                android:id="@+id/text_crit_dmg_baseline"
                 android:layout_width="@dimen/dp_45"
                 android:layout_height="wrap_content"
                 android:textSize="@dimen/sp_10"
@@ -629,7 +629,7 @@
             android:gravity="center_vertical"
             android:paddingVertical="@dimen/dp_1">
             <TextView
-                android:id="@+id/tv_er_history"
+                android:id="@+id/text_recharge_baseline"
                 android:layout_width="@dimen/dp_45"
                 android:layout_height="wrap_content"
                 android:textSize="@dimen/sp_10"
@@ -645,7 +645,7 @@
             android:gravity="center_vertical"
             android:paddingVertical="@dimen/dp_1">
             <TextView
-                android:id="@+id/tv_dmg_history"
+                android:id="@+id/text_dmg_baseline"
                 android:layout_width="@dimen/dp_45"
                 android:layout_height="wrap_content"
                 android:textSize="@dimen/sp_10"
@@ -661,7 +661,7 @@
             android:gravity="center_vertical"
             android:paddingVertical="@dimen/dp_1">
             <TextView
-                android:id="@+id/tv_heal_history"
+                android:id="@+id/text_heal_baseline"
                 android:layout_width="@dimen/dp_45"
                 android:layout_height="wrap_content"
                 android:textSize="@dimen/sp_10"

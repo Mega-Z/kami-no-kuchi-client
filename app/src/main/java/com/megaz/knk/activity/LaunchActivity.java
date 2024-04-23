@@ -8,7 +8,6 @@ import android.os.Looper;
 import android.os.Message;
 import android.util.Log;
 import android.view.View;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -31,7 +30,7 @@ import com.megaz.knk.entity.PromoteAttribute;
 import com.megaz.knk.entity.RefinementCurve;
 import com.megaz.knk.entity.TalentCurve;
 import com.megaz.knk.entity.WeaponDex;
-import com.megaz.knk.exception.RequestErrorException;
+import com.megaz.knk.exception.RequestException;
 import com.megaz.knk.fragment.ElementProgressbarFragment;
 import com.megaz.knk.fragment.UpdateExceptionFragment;
 import com.megaz.knk.utils.ImageResourceUtils;
@@ -49,7 +48,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 
 public class LaunchActivity extends BaseActivity implements UpdateExceptionFragment.UpdateExceptionFragmentListener {
     private final int ICON_SHARD_SIZE = 20;
-    private final float ICON_UPDATING_PROGRESS = 0.94f;
+    private final float ICON_UPDATING_PROGRESS = 0.94f; // half geo
     private final int PAGE_SIZE = 50;
     private Handler resourceUpdateHandler, progressHandler;
     private ThreadPoolExecutor threadPoolExecutor;
@@ -126,7 +125,7 @@ public class LaunchActivity extends BaseActivity implements UpdateExceptionFragm
             try {
                 return ImageResourceUtils.checkMissingIcons(getApplicationContext(),
                         ImageResourceUtils.getIconResourceList(getApplicationContext()));
-            } catch (RequestErrorException e) {
+            } catch (RequestException e) {
                 e.printStackTrace();
                 Message progressMsg = new Message();
                 progressMsg.what = 2;
@@ -140,6 +139,7 @@ public class LaunchActivity extends BaseActivity implements UpdateExceptionFragm
             if (result == null) {
                 return false;
             } else if(result.isEmpty()) {
+                updateProgressAsync(ICON_UPDATING_PROGRESS);
                 return true;
             }
             List<CompletableFuture<Boolean>> completableFutureGetIconShards = new ArrayList<>();
@@ -150,7 +150,7 @@ public class LaunchActivity extends BaseActivity implements UpdateExceptionFragm
                         updateProgressAsync(
                                 ICON_UPDATING_PROGRESS * iconListShard.size() / result.size());
                         return true;
-                    } catch (RequestErrorException e) {
+                    } catch (RequestException e) {
                         e.printStackTrace();
                         Message progressMsg = new Message();
                         progressMsg.what = 2;

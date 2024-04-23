@@ -57,6 +57,17 @@
                                 android:layout_marginTop="@dimen/dp_18"
                                 android:background="@color/bg_transparent_white"/>
                             <TextView
+                                android:id="@+id/text_profile_title"
+                                android:layout_gravity="left"
+                                android:paddingStart="@dimen/dp_5"
+                                android:paddingEnd="@dimen/dp_10"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:textSize="@dimen/sp_12"
+                                android:textColor="@color/white"
+                                android:background="@color/element_text_anemo"
+                                android:text="@string/text_default_profile_title"/>
+                            <TextView
                                 android:id="@+id/text_character_name"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
@@ -188,6 +199,59 @@
             </FrameLayout>
 
         </ScrollView>
+
+        <ImageView
+            android:id="@+id/btn_character_menu"
+            android:layout_width="@dimen/dp_24"
+            android:layout_height="@dimen/dp_24"
+            android:layout_marginTop="@dimen/dp_22"
+            android:layout_marginStart="@dimen/dp_3"
+            android:src="@drawable/menu"
+            android:background="@drawable/bg_character_menu"/>
+
+        <LinearLayout
+            android:id="@+id/layout_character_menu"
+            android:layout_width="@dimen/dp_100"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/dp_20"
+            android:layout_marginStart="@dimen/dp_34"
+            android:orientation="vertical"
+            android:visibility="visible">
+            <TextView
+                android:id="@+id/btn_character_menu_history"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/dp_5"
+                android:gravity="center"
+                android:paddingVertical="@dimen/dp_4"
+                android:background="@drawable/bg_character_menu"
+                android:textColor="@color/white"
+                android:textSize="@dimen/sp_12"
+                android:text="历史面板"/>
+            <!--<TextView
+                android:id="@+id/btn_character_menu_virtual"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/dp_5"
+                android:gravity="center"
+                android:paddingVertical="@dimen/dp_4"
+                android:background="@drawable/bg_character_menu"
+                android:textColor="@color/white"
+                android:textSize="@dimen/sp_12"
+                android:text="虚构面板"/>-->
+            <TextView
+                android:id="@+id/btn_character_menu_reset"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/dp_5"
+                android:gravity="center"
+                android:paddingVertical="@dimen/dp_4"
+                android:background="@drawable/bg_character_menu"
+                android:textColor="@color/white"
+                android:textSize="@dimen/sp_12"
+                android:text="重置面板"/>
+
+        </LinearLayout>
 
     </FrameLayout>
 

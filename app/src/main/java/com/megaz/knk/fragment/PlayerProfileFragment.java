@@ -22,10 +22,9 @@ import androidx.fragment.app.FragmentTransaction;
 
 import com.megaz.knk.R;
 import com.megaz.knk.activity.HomeActivity;
-import com.megaz.knk.computation.CharacterAttribute;
 import com.megaz.knk.dto.CharacterProfileDto;
 import com.megaz.knk.dto.PlayerProfileDto;
-import com.megaz.knk.manager.ProfileQueryManager;
+import com.megaz.knk.manager.ProfileViewManager;
 import com.megaz.knk.utils.ImageResourceUtils;
 import com.megaz.knk.vo.CharacterProfileVo;
 import com.megaz.knk.vo.PlayerProfileVo;
@@ -42,18 +41,14 @@ public class PlayerProfileFragment extends BaseFragment {
 
     private PlayerProfileVo playerProfileVo;
     private PlayerProfileDto playerProfileDto;
-
-    private boolean flagUpdating;
-
-    private ObjectAnimator animatorUpdate;
     private TextView textPlayerName, textUid, textSignature;
-    private ImageView buttonUpdateProfile, imagePlayerAvatar;
-    private GridLayout layoutCharacterList;
+    private ImageView imagePlayerAvatar;
+    private LinearLayout layoutCharacterList;
 
     private Handler profileConvertHandler;
-    private ProfileQueryManager profileQueryManager;
+    private ProfileViewManager profileViewManager;
 
-    private List<CharacterProfileFragment> characterProfileFragmentList;
+    private List<CharacterProfileFolderFragment> characterProfileFolderFragmentList;
 
     public PlayerProfileFragment() {
     }
@@ -89,13 +84,9 @@ public class PlayerProfileFragment extends BaseFragment {
         textUid = view.findViewById(R.id.text_uid);
         textSignature = view.findViewById(R.id.text_sign);
         imagePlayerAvatar = view.findViewById(R.id.img_player_avatar);
-        buttonUpdateProfile = view.findViewById(R.id.btn_update);
-        buttonUpdateProfile.setOnClickListener(new UpdateOnClickListener());
         layoutCharacterList = view.findViewById(R.id.layout_character_list);
-        animatorUpdate = ObjectAnimator.ofFloat(buttonUpdateProfile, "rotation", 360f);
-        animatorUpdate.setDuration(1000);
-        animatorUpdate.setRepeatCount(ValueAnimator.INFINITE);
-        profileQueryManager = new ProfileQueryManager(getContext());
+        profileViewManager = ProfileViewManager.getInstance(getContext());
+        characterProfileFolderFragmentList = new ArrayList<>();
         new Thread(this::convertProfile).start();
     }
 
@@ -112,7 +103,7 @@ public class PlayerProfileFragment extends BaseFragment {
 
     private void convertProfile() {
         try{
-            PlayerProfileVo playerProfileVo = profileQueryManager.convertPlayerProfileToVo(playerProfileDto);
+            PlayerProfileVo playerProfileVo = profileViewManager.convertPlayerProfileToVo(playerProfileDto);
             Message msg = new Message();
             msg.what = 0;
             msg.obj = playerProfileVo;
@@ -138,26 +129,7 @@ public class PlayerProfileFragment extends BaseFragment {
         }
     }
 
-    private class UpdateOnClickListener implements View.OnClickListener {
-
-
-        private long lastClick = 0;
-
-        @Override
-        public void onClick(View v) {
-            if(System.currentTimeMillis() - lastClick < Long.parseLong(getString(R.string.click_cold_down_ms)) || flagUpdating) {
-                return;
-            }
-            lastClick = System.currentTimeMillis();
-            flagUpdating = true;
-            doAnimationStartUpdating();
-            ((HomeActivity) requireActivity()).toUpdateProfile();
-        }
-    }
-
     public void toUpdateProfileView(PlayerProfileDto playerProfileDto) {
-        flagUpdating = false;
-        doAnimationEndUpdating();
         if(playerProfileDto != null) {
             this.playerProfileDto = playerProfileDto;
         }
@@ -169,9 +141,6 @@ public class PlayerProfileFragment extends BaseFragment {
         if(this.playerProfileVo == null) {
             return;
         }
-        if(characterProfileFragmentList == null) {
-            characterProfileFragmentList = new ArrayList<>();
-        }
         textUid.setText(String.format("%s%s", getString(R.string.text_uid_prefix), playerProfileVo.getUid()));
         textPlayerName.setText(playerProfileVo.getNickname());
         textSignature.setText(playerProfileVo.getSign());
@@ -181,57 +150,18 @@ public class PlayerProfileFragment extends BaseFragment {
         // update character list
         layoutCharacterList.removeAllViews();
         FragmentTransaction fragmentTransaction = getChildFragmentManager().beginTransaction();
-        for(CharacterProfileFragment characterProfileFragment:characterProfileFragmentList) {
-            fragmentTransaction.remove(characterProfileFragment);
+        for(CharacterProfileFolderFragment characterProfileFolderFragment:characterProfileFolderFragmentList) {
+            fragmentTransaction.remove(characterProfileFolderFragment);
         }
-        characterProfileFragmentList.clear();
-        int idx = 0;
-        for(;idx<playerProfileVo.getCharacters().size();idx++){
-            CharacterProfileDto characterProfileDto = playerProfileDto.getCharacters().get(idx);
-            CharacterProfileVo characterProfileVo = playerProfileVo.getCharacters().get(idx);
-            LinearLayout linearLayout = new LinearLayout(getContext());
-            linearLayout.setBackgroundResource(R.drawable.bg_char_profile);
-            int newViewId = View.generateViewId();
-            linearLayout.setId(newViewId);
-            CharacterProfileFragment characterProfileFragment = CharacterProfileFragment.newInstance(
-                    characterProfileDto, characterProfileVo);
-            characterProfileFragmentList.add(characterProfileFragment);
-            fragmentTransaction.add(newViewId, characterProfileFragment);
-            //使用Spec定义子控件的位置和比重
-            GridLayout.Spec rowSpec = GridLayout.spec(idx / 2);
-            GridLayout.Spec columnSpec = GridLayout.spec(idx % 2, 1f);
-            //将Spec传入GridLayout.LayoutParams并设置宽高为0，必须设置宽高，否则视图异常
-            GridLayout.LayoutParams layoutParams = new GridLayout.LayoutParams(rowSpec, columnSpec);
-            layoutParams.height = getResources().getDimensionPixelOffset(R.dimen.dp_70);
-            layoutParams.width = 0;
-            layoutParams.setGravity(Gravity.CENTER_VERTICAL);
-            layoutParams.setMargins(getResources().getDimensionPixelOffset(R.dimen.dp_5),
-                    getResources().getDimensionPixelOffset(R.dimen.dp_5),
-                    getResources().getDimensionPixelOffset(R.dimen.dp_5),
-                    getResources().getDimensionPixelOffset(R.dimen.dp_5));
-            layoutCharacterList.addView(linearLayout, layoutParams);
+        characterProfileFolderFragmentList.clear();
+
+        for(int i=0;i<playerProfileVo.getCharacters().size();i++) {
+            CharacterProfileDto characterProfileDto = playerProfileDto.getCharacters().get(i);
+            CharacterProfileVo characterProfileVo = playerProfileVo.getCharacters().get(i);
+            CharacterProfileFolderFragment characterProfileFolderFragment =
+                    CharacterProfileFolderFragment.newInstance(characterProfileDto, characterProfileVo);
+            fragmentTransaction.add(layoutCharacterList.getId(), characterProfileFolderFragment);
         }
         fragmentTransaction.commit();
-        // 如果角色总数是奇数，再塞一个linearlayout
-        if(playerProfileVo.getCharacters().size() % 2 != 0){
-            LinearLayout linearLayout = new LinearLayout(getContext());
-            GridLayout.Spec rowSpec = GridLayout.spec(idx / 2);
-            GridLayout.Spec columnSpec = GridLayout.spec(idx % 2, 1f);
-            GridLayout.LayoutParams layoutParams = new GridLayout.LayoutParams(rowSpec, columnSpec);
-            layoutParams.height = getResources().getDimensionPixelOffset(R.dimen.dp_70);;
-            layoutParams.width = 0;
-            layoutCharacterList.addView(linearLayout, layoutParams);
-        }
-    }
-
-    private void doAnimationStartUpdating() {
-        buttonUpdateProfile.setImageResource(R.drawable.updating);
-        animatorUpdate.start();
-    }
-
-    private void doAnimationEndUpdating() {
-        animatorUpdate.cancel();
-        buttonUpdateProfile.setImageResource(R.drawable.update_profile);
-        buttonUpdateProfile.setRotation(0f);
     }
 }

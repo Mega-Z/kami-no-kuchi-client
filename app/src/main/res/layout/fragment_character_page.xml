@@ -14,7 +14,7 @@
         android:layout_height="@dimen/dp_50"
         android:orientation="horizontal"
         android:gravity="center_vertical"
-        android:layout_marginHorizontal="@dimen/dp_15">
+        android:layout_marginHorizontal="@dimen/dp_5">
         <EditText
             android:id="@+id/edtx_uid"
             android:layout_width="match_parent"
@@ -22,7 +22,6 @@
             android:gravity="center"
             android:layout_weight="1"
             android:paddingHorizontal="@dimen/dp_8"
-            android:layout_marginHorizontal="@dimen/dp_5"
             android:layout_marginVertical="@dimen/dp_2"
             android:background="@drawable/bg_uid_input"
             android:textSize="@dimen/sp_18"
@@ -30,16 +29,27 @@
             android:inputType="number"
             android:hint="@string/text_hint_uid_input"/>
         <Button
-            android:id="@+id/btn_query_profile"
+            android:id="@+id/btn_load_profile"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_weight="2"
-            android:layout_marginHorizontal="@dimen/dp_10"
-            android:textSize="@dimen/sp_20"
+            android:layout_height="wrap_content"
+            android:layout_weight="1.5"
+            android:layout_marginLeft="@dimen/dp_10"
+            android:textSize="@dimen/sp_16"
             android:textColor="@color/white"
             android:singleLine="true"
             android:background="@drawable/bg_btn_blue"
-            android:text="@string/btn_query_profile"/>
+            android:text="@string/btn_load_profile"/>
+        <Button
+            android:id="@+id/btn_update_profile"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1.5"
+            android:layout_marginLeft="@dimen/dp_5"
+            android:textSize="@dimen/sp_16"
+            android:textColor="@color/white"
+            android:singleLine="true"
+            android:background="@drawable/bg_btn_blue"
+            android:text="@string/btn_update_profile"/>
     </LinearLayout>
 
     <LinearLayout

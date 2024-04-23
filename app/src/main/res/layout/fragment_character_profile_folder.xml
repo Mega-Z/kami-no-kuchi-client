@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/bg_character_profile"
+    android:orientation="vertical"
+    android:layout_marginHorizontal="@dimen/dp_5"
+    android:layout_marginVertical="@dimen/dp_3"
+    android:padding="@dimen/dp_5"
+    tools:context=".fragment.CharacterProfileFolderFragment">
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="left"
+            android:gravity="left"
+            android:orientation="horizontal"
+            android:paddingVertical="@dimen/dp_0">
+
+            <ImageView
+                android:id="@+id/img_character_card"
+                android:layout_width="@dimen/dp_50"
+                android:layout_height="@dimen/dp_50"
+                android:layout_gravity="center_vertical"
+                android:scaleType="fitCenter"
+                android:src="@drawable/card">
+
+            </ImageView>
+            <!--
+            <com.megaz.kaminokuchi.CircleImageView
+                android:id="@+id/img_char_face"
+                android:layout_width="@dimen/dp_50"
+                android:layout_height="@dimen/dp_50"
+                android:background="@color/test_bg1"
+                android:layout_margin="@dimen/dp_10"
+                app:type="round"
+                app:round_Radius="@dimen/dp_5">
+            </com.megaz.kaminokuchi.CircleImageView>-->
+            <LinearLayout
+                android:layout_width="@dimen/dp_100"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/text_character_name"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:text="@string/text_default_character_name"
+                    android:textColor="@color/gray_black"
+                    android:textSize="@dimen/sp_16" />
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/text_character_level"
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent"
+                        android:text="@string/text_default_character_level"
+                        android:textColor="@color/gray_black"
+                        android:textSize="@dimen/sp_12" />
+
+                    <TextView
+                        android:id="@+id/text_character_cons"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/dp_16"
+                        android:paddingHorizontal="@dimen/dp_2"
+                        android:text="@string/text_default_character_cons"
+                        android:textColor="@color/gray_black"
+                        android:textSize="@dimen/sp_12" />
+                </LinearLayout>
+            </LinearLayout>
+        </LinearLayout>
+
+        <ImageView
+            android:id="@+id/img_is_new"
+            android:layout_width="@dimen/dp_40"
+            android:layout_height="@dimen/dp_20"
+            android:layout_gravity="top|right"
+            android:layout_marginRight="@dimen/dp_4"
+            android:src="@drawable/new_profile" />
+
+        <ImageView
+            android:id="@+id/img_folder_angle"
+            android:layout_width="@dimen/dp_30"
+            android:layout_height="@dimen/dp_30"
+            android:layout_gravity="bottom|right"
+            android:layout_marginRight="@dimen/dp_10"
+            android:rotation="90"
+            android:src="@drawable/angle_blue" />
+    </FrameLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <ImageView
+            android:id="@+id/img_loading"
+            android:layout_width="@dimen/dp_40"
+            android:layout_height="@dimen/dp_40"
+            android:layout_marginVertical="@dimen/dp_5"
+            android:layout_gravity="center"
+            android:src="@drawable/loading_blue"/>
+
+        <LinearLayout
+            android:id="@+id/layout_history_list"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+        </LinearLayout>
+
+    </LinearLayout>
+
+
+</LinearLayout>

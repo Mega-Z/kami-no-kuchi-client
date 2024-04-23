@@ -7,12 +7,9 @@ import android.util.Log;
 
 import com.megaz.knk.R;
 import com.megaz.knk.client.RequestHelper;
-import com.megaz.knk.client.ResponseEntity;
 import com.megaz.knk.constant.ArtifactPositionEnum;
 import com.megaz.knk.constant.ElementEnum;
-import com.megaz.knk.exception.RequestErrorException;
-
-import org.checkerframework.checker.units.qual.A;
+import com.megaz.knk.exception.RequestException;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -22,7 +19,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 public class ImageResourceUtils {
 
@@ -34,7 +30,7 @@ public class ImageResourceUtils {
         String url = context.getString(R.string.server) + context.getString(R.string.api_get_icon_list);
         try {
             return RequestHelper.getIconList(url, RETRY, TIMEOUT);
-        } catch (RequestErrorException e) {
+        } catch (RequestException e) {
             e.printStackTrace();
             Log.e("【资源更新】", "资源列表获取失败");
             throw e;
@@ -61,14 +57,14 @@ public class ImageResourceUtils {
                 Files.createDirectories(iconDir);
             } catch (IOException e) {
                 e.printStackTrace();
-                throw new RequestErrorException(e.getMessage());
+                throw new RequestException(e.getMessage());
             }
         }
 
         try {
             RequestHelper.getIconZipAndSave(url, iconDir, iconNameList, RETRY, TIMEOUT* iconNameList.size());
             Log.d("【资源更新】", "获取成功：" + iconNameList.toString());
-        } catch (RequestErrorException e) {
+        } catch (RequestException e) {
             e.printStackTrace();
             Log.e("【资源更新】", "获取失败：" + iconNameList.toString());
             throw e;
@@ -89,13 +85,13 @@ public class ImageResourceUtils {
                 Files.createDirectories(iconPath.getParent());
             } catch (IOException e) {
                 e.printStackTrace();
-                throw new RequestErrorException(e.getMessage());
+                throw new RequestException(e.getMessage());
             }
         }
         try {
             RequestHelper.getIconAndSave(url, iconPath, RETRY, TIMEOUT);
             Log.d("【资源更新】", "获取成功：" + iconName);
-        } catch (RequestErrorException e) {
+        } catch (RequestException e) {
             e.printStackTrace();
             Log.e("【资源更新】", "获取失败：" + iconName);
             throw e;

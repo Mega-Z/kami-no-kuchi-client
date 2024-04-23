@@ -2,29 +2,33 @@ package com.megaz.knk.fragment;
 
 import static android.content.Context.MODE_PRIVATE;
 
+import android.app.Dialog;
 import android.content.SharedPreferences;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.view.View;
-import android.view.inputmethod.InputMethodManager;
+import android.view.Window;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
+
+import com.megaz.knk.R;
 
 import java.text.SimpleDateFormat;
 import java.util.Objects;
 
 
-public class BaseFragment extends Fragment {
+public class BaseDialogFragment extends DialogFragment {
     protected Toast toast;
     protected SharedPreferences sharedPreferences;
     protected SharedPreferences.Editor editor;
     protected Typeface typefaceNZBZ, typefaceFZFYKS, typefaceNum;
     protected SimpleDateFormat simpleDateFormat;
 
-    public BaseFragment() {
+    public BaseDialogFragment() {
         // Required empty public constructor
     }
 
@@ -46,6 +50,9 @@ public class BaseFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
         initView(view);
         setCallback(view);
+        Objects.requireNonNull(getDialog()).requestWindowFeature(Window.FEATURE_NO_TITLE);
+        getDialog().getWindow().setBackgroundDrawableResource(R.color.transparent);
+        initialize(view);
     }
 
     protected void initView(@NonNull View view) {
@@ -53,6 +60,10 @@ public class BaseFragment extends Fragment {
     }
 
     protected void setCallback(@NonNull View view) {
+
+    }
+
+    protected void initialize(@NonNull View view) {
 
     }
 }

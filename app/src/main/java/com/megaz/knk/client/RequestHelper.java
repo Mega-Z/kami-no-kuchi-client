@@ -1,19 +1,12 @@
 package com.megaz.knk.client;
 
-import android.os.Build;
-
-import androidx.annotation.RequiresApi;
-
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
-import com.megaz.knk.exception.RequestErrorException;
-import com.megaz.knk.vo.PlayerProfileVo;
+import com.megaz.knk.exception.RequestException;
 
-import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
-import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -50,18 +43,18 @@ public class RequestHelper {
                     Gson gson = new Gson();
                     return gson.fromJson(resString.toString(), ArrayList.class);
                 }  else {
-                    throw new RequestErrorException(connection.getResponseMessage());
+                    throw new RequestException(connection.getResponseMessage());
                 }
             } catch (Exception e) {
                 e.printStackTrace();
                 if(retry > 1) {
                     retry--;
                 } else {
-                    throw new RequestErrorException(e.getMessage());
+                    throw new RequestException(e.getMessage());
                 }
             }
         }
-        throw new RequestErrorException("重试超限");
+        throw new RequestException("重试超限");
     }
 
     public static void getIconAndSave(String urlString, Path path, int retry, int timeout) {
@@ -88,11 +81,11 @@ public class RequestHelper {
                 if(retry > 1) {
                     retry--;
                 } else {
-                    throw new RequestErrorException(e.getMessage());
+                    throw new RequestException(e.getMessage());
                 }
             }
         }
-        throw new RequestErrorException("重试超限");
+        throw new RequestException("重试超限");
     }
 
 
@@ -135,11 +128,11 @@ public class RequestHelper {
                 if(retry > 1) {
                     retry--;
                 } else {
-                    throw new RequestErrorException(e.getMessage());
+                    throw new RequestException(e.getMessage());
                 }
             }
         }
-        throw new RequestErrorException("重试超限");
+        throw new RequestException("重试超限");
     }
 
     public static <T> ResponseEntity<T> requestSend
@@ -171,11 +164,11 @@ public class RequestHelper {
                 if(retry > 1) {
                     retry--;
                 } else {
-                    throw new RequestErrorException(e.getMessage());
+                    throw new RequestException(e.getMessage());
                 }
             }
         }
-        throw new RequestErrorException("重试超限");
+        throw new RequestException("重试超限");
     }
 
     public static <T> ResponseEntity<ArrayList<T>> requestSendForList
@@ -214,11 +207,11 @@ public class RequestHelper {
                 if(retry > 1) {
                     retry--;
                 } else {
-                    throw new RequestErrorException(e.getMessage());
+                    throw new RequestException(e.getMessage());
                 }
             }
         }
-        throw new RequestErrorException("重试超限");
+        throw new RequestException("重试超限");
     }
 
 

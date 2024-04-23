@@ -1,6 +1,6 @@
 <resources>
 
-    <!--  <string name="server">http://10.14.56.217:8080</string> -->
+    <!--  <string name="server">http://10.14.59.62:8080</string> -->
     <string name="server">http://47.96.9.248:8080</string>
     <string name="api_get_database_info">/get-database-info</string>
     <string name="api_page_sync_database">/page-sync-database</string>
@@ -16,14 +16,15 @@
     <string name="text_app_title_jp">カミノクチ</string>
     <string name="text_app_subtitle">Genshin Player Tools</string>
     <string name="text_icon_updating">正在更新资源…</string>
-    <string name="text_hint_uid_input">Please enter your uid</string>
+    <string name="text_hint_uid_input">请输入uid</string>
     <string name="text_uid_prefix">UID: </string>
     <string name="text_level_prefix">Lv.</string>\
     <string name="text_constellation_suffix">命</string>
     <string name="btn_to_page_query">查询面板</string>
     <string name="tips_chara_detail">Tips:\n\t·下划获取历史面板（如果有的话）\n\t·点击评分规则以更换某些角色的圣遗物评分规则\n\t·其他功能还在咕咕中……</string>
     <string name="megaz">—— by MegaZ</string>
-    <string name="btn_query_profile">GET</string>
+    <string name="btn_load_profile">本地读取</string>
+    <string name="btn_update_profile">更新面板</string>
     <string name="text_default_player_name">旅行者</string>
     <string name="text_character_list_title">角色列表</string>
     <string name="text_default_character_name">旅行者 </string>
@@ -31,6 +32,7 @@
     <string name="text_default_character_cons">0命</string>
     <string name="text_default_talent_level">Lv.10</string>
     <string name="text_default_date_change"><![CDATA[2022-12-15 00:00:00 -> 2022-12-15 00:00:00]]></string>
+    <string name="text_default_date">2022–12–15 00:00:00</string>
     <string name="text_default_weapon_name">异世旅者初心剑</string>
     <string name="text_default_weapon_level">Lv.90</string>
     <string name="text_default_refine">精炼1阶</string>
@@ -67,4 +69,8 @@
     <string name="previous">Previous</string>
     <string name="tips_of_buff_list">Tips:\n\t· 长按BUFF查看BUFF详情\n\t· 点按BUFF选择关闭BUFF</string>
     <string name="text_title_enemy_attribute">怪物目标参数配置</string>
+    <string name="text_default_profile_title">uid: 107372409</string>
+    <string name="text_no_history">暂无历史面板</string>
+    <string name="text_title_history_selection">参照历史面板选取</string>
+    <string name="text_title_history_prefix">参照面板：</string>
 </resources>

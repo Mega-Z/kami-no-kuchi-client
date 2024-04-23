@@ -7,7 +7,7 @@ import com.megaz.knk.R;
 import com.megaz.knk.client.RequestHelper;
 import com.megaz.knk.client.ResponseEntity;
 import com.megaz.knk.dto.MetaDatabaseInfoDto;
-import com.megaz.knk.exception.RequestErrorException;
+import com.megaz.knk.exception.RequestException;
 
 import java.util.ArrayList;
 
@@ -24,7 +24,7 @@ public class MetaDataUtils {
             MetaDatabaseInfoDto metaDatabaseInfoDto = response.getBody();
             Log.i("【更新元数据】","获取数据库信息成功");
             return metaDatabaseInfoDto;
-        } catch (RequestErrorException e) {
+        } catch (RequestException e) {
             e.printStackTrace();
             Log.e("【更新元数据】","同步元数据失败");
             throw e;
@@ -40,7 +40,7 @@ public class MetaDataUtils {
             ArrayList<T> pageData = response.getBody();
             Log.i("【更新元数据】","同步元数据成功");
             return pageData;
-        } catch (RequestErrorException e) {
+        } catch (RequestException e) {
             e.printStackTrace();
             Log.e("【更新元数据】","同步元数据失败");
             throw e;

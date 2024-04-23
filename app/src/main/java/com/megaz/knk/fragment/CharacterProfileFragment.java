@@ -100,9 +100,9 @@ public class CharacterProfileFragment extends Fragment {
         public boolean onTouch(View v, MotionEvent event) {
             // v.performClick();
             if(event.getAction()==MotionEvent.ACTION_DOWN || event.getAction()==MotionEvent.ACTION_MOVE){
-                v.setBackgroundResource(R.drawable.bg_char_profile_press);
+                v.setBackgroundResource(R.drawable.bg_character_profile_press);
             }else{
-                v.setBackgroundResource(R.drawable.bg_char_profile);
+                v.setBackgroundResource(R.drawable.bg_character_profile);
             }
             return false;
         }

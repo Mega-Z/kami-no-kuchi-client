@@ -2,7 +2,6 @@ package com.megaz.knk.activity;
 
 import android.animation.ValueAnimator;
 import android.annotation.SuppressLint;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ScrollView;
@@ -18,8 +17,9 @@ public abstract class ElasticScrollActivity extends BaseActivity{
     protected float SCROLL_THRESHOLD = 5;
     private float scrollY = 0f;
     private Float prevY;
-    private boolean scrollViewsLocked = false;
-    private boolean scrollEnabled = true;
+    private boolean lockingOtherScrollViews = false; // 锁住其它可滚动的view
+    private boolean scrolling = true; // 当其它可滚动的view归零时可以进行动态滚动
+    private boolean scrollEnabled = true; // 由外部因素决定动态滚动开启
     private ValueAnimator elasticScrollAnimator;
 
     @Override
@@ -50,7 +50,7 @@ public abstract class ElasticScrollActivity extends BaseActivity{
         @SuppressLint("ClickableViewAccessibility")
         @Override
         public boolean onTouch(View v, MotionEvent event) {
-            if(scrollViewsLocked){
+            if(lockingOtherScrollViews){
                 v.setScrollY(0);
                 return true;
             }
@@ -64,9 +64,9 @@ public abstract class ElasticScrollActivity extends BaseActivity{
         public void onScrollChange(View v, int scrollX, int scrollY, int oldScrollX, int oldScrollY) {
 
             if(scrollY == 0f){
-                scrollEnabled = true;
+                scrolling = true;
             } else {
-                scrollEnabled = false;
+                scrolling = false;
             }
             ElasticScrollActivity.this.scrollY = 0;
             ElasticScrollActivity.this.prevY = null;
@@ -77,7 +77,7 @@ public abstract class ElasticScrollActivity extends BaseActivity{
     public boolean dispatchTouchEvent(MotionEvent ev) {
 
         boolean flagEventConsumed = false;
-        if(scrollEnabled) {
+        if(scrolling && scrollEnabled) {
             if(ev.getAction() == MotionEvent.ACTION_DOWN) {
                 prevY = ev.getY();
                 if(elasticScrollAnimator != null) {
@@ -89,14 +89,12 @@ public abstract class ElasticScrollActivity extends BaseActivity{
             } else if (ev.getAction() == MotionEvent.ACTION_UP) {
                 flagEventConsumed = tryUpdateScrollY(ev);
                 if(scrollY > SCROLL_ELASTIC_POSITION) {
-                    elasticScrollAnimator = ValueAnimator.ofFloat(scrollY, SCROLL_MAX);
+                    startScrollingTo(SCROLL_MAX);
                 } else {
-                    elasticScrollAnimator = ValueAnimator.ofFloat(scrollY, 0);
+                    startScrollingTo(0);
                 }
-                elasticScrollAnimator.addUpdateListener(new ElasticScrollAnimatorUpdateListener());
-                elasticScrollAnimator.start();
                 if(scrollY == 0){
-                    scrollViewsLocked = false;
+                    lockingOtherScrollViews = false;
                 }
             } else {
                 scrollY = 0f;
@@ -105,7 +103,7 @@ public abstract class ElasticScrollActivity extends BaseActivity{
             scrollY = 0f;
         }
         if(scrollY > 0) {
-            scrollViewsLocked = true;
+            lockingOtherScrollViews = true;
         }
         if(flagEventConsumed){
             updateScrollStatus();
@@ -121,7 +119,7 @@ public abstract class ElasticScrollActivity extends BaseActivity{
             scrollY = (float) animation.getAnimatedValue();
             updateScrollStatus();
             if(scrollY == 0){
-                scrollViewsLocked = false;
+                lockingOtherScrollViews = false;
             }
         }
     }
@@ -158,4 +156,21 @@ public abstract class ElasticScrollActivity extends BaseActivity{
         return Math.round(scrollY);
     }
 
+    protected void enableScrolling() {
+        scrollEnabled = true;
+    }
+
+    protected void disableScrolling() {
+        scrollY = 0;
+        // updateScrollStatus();
+        scrollEnabled = false;
+        lockingOtherScrollViews = false;
+    }
+
+    protected void startScrollingTo(float dest) {
+        dest = Math.max(0, Math.min(1, dest));
+        elasticScrollAnimator = ValueAnimator.ofFloat(scrollY, dest * SCROLL_MAX);
+        elasticScrollAnimator.addUpdateListener(new ElasticScrollAnimatorUpdateListener());
+        elasticScrollAnimator.start();
+    }
 }

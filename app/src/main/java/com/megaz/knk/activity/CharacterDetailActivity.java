@@ -7,6 +7,8 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
+import android.view.MotionEvent;
+import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
@@ -26,14 +28,19 @@ import com.megaz.knk.fragment.ArtifactEvaluationFragment;
 import com.megaz.knk.fragment.CharacterAttributeFragment;
 import com.megaz.knk.fragment.ConstellationFragment;
 import com.megaz.knk.fragment.EffectComputationFragment;
+import com.megaz.knk.fragment.HistoryProfileSelectionFragment;
 import com.megaz.knk.fragment.TalentFragment;
 import com.megaz.knk.fragment.WeaponFragment;
 import com.megaz.knk.manager.EffectComputationManager;
+import com.megaz.knk.manager.ProfileViewManager;
 import com.megaz.knk.utils.DynamicStyleUtils;
 import com.megaz.knk.utils.ImageResourceUtils;
+import com.megaz.knk.utils.ProfileConvertUtils;
 import com.megaz.knk.vo.CharacterProfileVo;
 import com.megaz.knk.vo.ConstellationVo;
 import com.megaz.knk.vo.TalentVo;
+
+import java.util.Objects;
 
 public class CharacterDetailActivity extends ElasticScrollActivity {
 
@@ -41,15 +48,17 @@ public class CharacterDetailActivity extends ElasticScrollActivity {
     private float SCROLL_STEP_PROGRESS; // 划动动画的中间进度，武器信息缩回开始移动
     private float ART_SCALE_RATIO;
 
-    private CharacterAttribute characterBaseAttribute;
+    private CharacterAttribute characterBaseAttribute, characterAttributeBaseline;
     private CharacterProfileVo characterProfileVo;
-    private CharacterProfileDto characterProfileDto;
+    private CharacterProfileDto characterProfileDto, characterProfileDtoBaseline;
 
     private WeaponFragment weaponFragment;
     private CharacterAttributeFragment characterAttributeFragment;
     private ArtifactEvaluationFragment artifactEvaluationFragment;
     private EffectComputationFragment effectComputationFragment;
+    private HistoryProfileSelectionFragment historyProfileSelectionFragment;
 
+    private TextView textTitle;
     private FrameLayout layoutArt;
     private LinearLayout layoutConstellation;
     private LinearLayout layoutTalentA;
@@ -57,10 +66,14 @@ public class CharacterDetailActivity extends ElasticScrollActivity {
     private LinearLayout layoutTalentQ;
     private LinearLayout layoutWeapon;
     private ImageView imageCharacterArt;
+    private ImageView buttonCharacterMenu;
+    private TextView buttonCharacterMenuHistory, buttonCharacterMenuReset;
+    private LinearLayout layoutCharacterMenu;
 
     private Handler attributeCreateHandler;
 
     private EffectComputationManager effectComputationManager;
+    private ProfileViewManager profileViewManager;
 
     @Override
     protected void setContent() {
@@ -80,13 +93,20 @@ public class CharacterDetailActivity extends ElasticScrollActivity {
                 .setBackgroundColor(getColor(DynamicStyleUtils.getElementTextColor(characterProfileDto.getElement())));
         findViewById(R.id.text_title_fight_effect_computation)
                 .setBackgroundColor(getColor(DynamicStyleUtils.getElementTextColor(characterProfileDto.getElement())));
+        buttonCharacterMenu = findViewById(R.id.btn_character_menu);
+        layoutCharacterMenu = findViewById(R.id.layout_character_menu);
+        layoutCharacterMenu.setVisibility(View.GONE);
+        buttonCharacterMenuHistory = findViewById(R.id.btn_character_menu_history);
+        buttonCharacterMenuReset = findViewById(R.id.btn_character_menu_reset);
         initCharacterBaseInfo();
         initWeaponInfo();
         initCharacterAttributeFragment();
         initArtifactEvaluationFragment();
+        disableScrolling();
         // initEffectComputationFragment();
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     @Override
     protected void setCallback() {
         super.setCallback();
@@ -96,34 +116,98 @@ public class CharacterDetailActivity extends ElasticScrollActivity {
                 handleAttributeCreated(msg);
             }
         };
+        buttonCharacterMenu.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (layoutCharacterMenu.getVisibility() == View.GONE)
+                    layoutCharacterMenu.setVisibility(View.VISIBLE);
+                else layoutCharacterMenu.setVisibility(View.GONE);
+            }
+        });
+        buttonCharacterMenu.setOnTouchListener(new MenuOnTouchListener());
+        buttonCharacterMenuHistory.setOnClickListener(new MenuHistoryOnClickListener());
+        buttonCharacterMenuHistory.setOnTouchListener(new MenuOnTouchListener());
+        buttonCharacterMenuReset.setOnClickListener(new MenuResetOnClickListener());
+        buttonCharacterMenuReset.setOnTouchListener(new MenuOnTouchListener());
     }
 
     @Override
     protected void initialize() {
         super.initialize();
-        new Thread(this::createCharacterAttributeWithoutBuff).start();
+        new Thread(() -> createCharacterAttributeWithoutBuff(false)).start();
     }
 
-    private void createCharacterAttributeWithoutBuff() {
+    private static class MenuOnTouchListener implements View.OnTouchListener {
+
+        @SuppressLint("ClickableViewAccessibility")
+        @Override
+        public boolean onTouch(View v, MotionEvent event) {
+            // v.performClick();
+            if (event.getAction() == MotionEvent.ACTION_DOWN || event.getAction() == MotionEvent.ACTION_MOVE) {
+                v.setBackgroundResource(R.drawable.bg_character_menu_press);
+            } else {
+                v.setBackgroundResource(R.drawable.bg_character_menu);
+            }
+            return false;
+        }
+    }
+
+    private class MenuHistoryOnClickListener implements View.OnClickListener {
+        @Override
+        public void onClick(View view) {
+            historyProfileSelectionFragment = HistoryProfileSelectionFragment.newInstance(characterProfileDto);
+            historyProfileSelectionFragment.show(getSupportFragmentManager(), "");
+            layoutCharacterMenu.setVisibility(View.GONE);
+        }
+    }
+
+    private class MenuResetOnClickListener implements View.OnClickListener {
+        @Override
+        public void onClick(View view) {
+            characterProfileDtoBaseline = null;
+            characterAttributeBaseline = null;
+            startScrollingTo(0f);
+            disableScrolling();
+            setTitleNormal();
+            layoutCharacterMenu.setVisibility(View.GONE);
+        }
+    }
+
+    private void createCharacterAttributeWithoutBuff(boolean isBaseline) {
         try {
-            CharacterAttribute characterAttribute = effectComputationManager.createCharacterBaseAttribute(characterProfileDto);
+            CharacterAttribute characterAttribute;
             Message msg = new Message();
-            msg.what = 0;
+            if (!isBaseline) {
+                characterAttribute = effectComputationManager.createCharacterBaseAttribute(characterProfileDto);
+                msg.what = 0;
+            } else {
+                characterAttribute = effectComputationManager.createCharacterBaseAttribute(characterProfileDtoBaseline);
+                msg.what = 1;
+            }
             msg.obj = characterAttribute;
             attributeCreateHandler.sendMessage(msg);
         } catch (RuntimeException e) {
             e.printStackTrace();
             Message msg = new Message();
-            msg.what = 1;
+            msg.what = 2;
             attributeCreateHandler.sendMessage(msg);
         }
     }
 
     private void handleAttributeCreated(Message msg) {
         switch (msg.what) {
-            case 0:
+            case 0: // current attribute created
                 characterBaseAttribute = (CharacterAttribute) msg.obj;
                 initEffectComputationFragment();
+                characterAttributeFragment.setCharacterAttribute(characterBaseAttribute);
+                break;
+            case 1:
+                characterAttributeBaseline = (CharacterAttribute) msg.obj;
+                characterAttributeFragment.setCharacterAttributeBaseline(characterAttributeBaseline);
+                setTitleHistory();
+                enableScrolling();
+                startScrollingTo(1);
+                break;
         }
     }
 
@@ -187,7 +271,8 @@ public class CharacterDetailActivity extends ElasticScrollActivity {
         layoutTalentQParams.bottomMargin = getResources().getDimensionPixelOffset(R.dimen.dp_155) + getScrollY()
                 - Math.round(getResources().getDimensionPixelOffset(R.dimen.dp_90) * getScrollProgress());
         layoutTalentQ.setLayoutParams(layoutTalentQParams);
-
+        // attribute
+        characterAttributeFragment.setExtendProcess((getScrollProgress() - SCROLL_STEP_PROGRESS) / (1 - SCROLL_STEP_PROGRESS));
     }
 
     public void toShowFightEffectDetail(FightEffect fightEffect) {
@@ -201,6 +286,12 @@ public class CharacterDetailActivity extends ElasticScrollActivity {
 
     public void toUpdateEnemyAttribute(EnemyAttribute enemyAttribute) {
         effectComputationFragment.updateEnemyAttribute(enemyAttribute);
+    }
+
+    public void onHistorySelected(CharacterProfileDto characterProfileHistory) {
+        Objects.requireNonNull(historyProfileSelectionFragment.getDialog()).cancel();
+        characterProfileDtoBaseline = characterProfileHistory;
+        new Thread(() -> createCharacterAttributeWithoutBuff(true)).start();
     }
 
     @Override
@@ -226,6 +317,9 @@ public class CharacterDetailActivity extends ElasticScrollActivity {
     @SuppressLint("SetTextI18n")
     private void initCharacterBaseInfo() {
         FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
+        textTitle = findViewById(R.id.text_profile_title);
+        textTitle.setBackgroundColor(getColor(DynamicStyleUtils.getElementTextColor(characterProfileVo.getElement())));
+        setTitleNormal();
         // name&level
         TextView textName = findViewById(R.id.text_character_name);
         textName.setTypeface(typefaceNZBZ);
@@ -300,7 +394,7 @@ public class CharacterDetailActivity extends ElasticScrollActivity {
 
     private void initCharacterAttributeFragment() {
         FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
-        characterAttributeFragment = CharacterAttributeFragment.newInstance(characterProfileVo);
+        characterAttributeFragment = CharacterAttributeFragment.newInstance();
         fragmentTransaction.add(R.id.layout_attribute, characterAttributeFragment);
         fragmentTransaction.commit();
     }
@@ -318,4 +412,16 @@ public class CharacterDetailActivity extends ElasticScrollActivity {
         fragmentTransaction.add(R.id.layout_effect_computation, effectComputationFragment);
         fragmentTransaction.commit();
     }
+
+    @SuppressLint("SetTextI18n")
+    private void setTitleNormal() {
+        textTitle.setText(getString(R.string.text_uid_prefix) + characterProfileVo.getUid());
+    }
+
+    @SuppressLint("SetTextI18n")
+    private void setTitleHistory() {
+        textTitle.setText(getString(R.string.text_title_history_prefix) +
+                simpleDateFormat.format(characterProfileDtoBaseline.getUpdateTime()));
+    }
+
 }

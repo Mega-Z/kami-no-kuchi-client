@@ -20,6 +20,7 @@ import androidx.fragment.app.FragmentPagerAdapter;
 import com.megaz.knk.KnkDatabase;
 import com.megaz.knk.utils.ViewUtils;
 
+import java.text.SimpleDateFormat;
 import java.util.List;
 
 public abstract class BaseActivity extends AppCompatActivity {
@@ -30,6 +31,7 @@ public abstract class BaseActivity extends AppCompatActivity {
     protected SharedPreferences sharedPreferences;
     protected SharedPreferences.Editor editor;
     protected Typeface typefaceNZBZ, typefaceFZFYKS, typefaceNum;
+    protected SimpleDateFormat simpleDateFormat;
     private EditText focusedEditText;
 
     @Override
@@ -46,6 +48,7 @@ public abstract class BaseActivity extends AppCompatActivity {
         typefaceFZFYKS = Typeface.createFromAsset(getAssets(), "fonts/fzfyks.ttf");
         typefaceNum = Typeface.createFromAsset(getAssets(), "fonts/tttgbnumber.ttf");
         inputMethodManager = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+        simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         initView();
         setCallback();
         initialize();
