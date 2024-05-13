@@ -303,7 +303,9 @@ public class EffectComputationManager {
         List<BuffInputParam> buffInputParamList = new ArrayList<>();
         if (buffEffect.getFromSelf()) {
             switch (buffEffect.getBuffId()) {
+                // case "BC10000052-1":  // 神变·恶曜开眼不需要修改参数
                 case "BC10000073-5":  // 净善摄受明论
+                case "BC10000096-2": // 红死之宴
                 case "BW12416-1":
                 case "BW13416-1":
                 case "BW15416-1":  // 驭浪的海祇民
@@ -381,11 +383,13 @@ public class EffectComputationManager {
 
     private void fillBuffEffectInputParam(BuffEffect buffEffect, List<BuffInputParam> buffInputParamList) {
         int cursor = 0;
-        if (buffEffect.getBasedAttribute() != null) {
+        if (buffEffect.getBasedAttribute() != null &&
+                (!buffEffect.getFromSelf() || buffEffect.getBasedAttribute() == EffectBaseAttributeEnum.INPUT)) {
             buffEffect.setBasedAttributeValue(buffInputParamList.get(cursor).getInputValue());
             cursor++;
         }
-        if (buffEffect.getBasedAttributeSecond() != null) {
+        if (buffEffect.getBasedAttributeSecond() != null  &&
+                (!buffEffect.getFromSelf() || buffEffect.getBasedAttributeSecond() == EffectBaseAttributeEnum.INPUT)) {
             buffEffect.setBasedAttributeSecondValue(buffInputParamList.get(cursor).getInputValue());
             cursor++;
         }
@@ -394,22 +398,23 @@ public class EffectComputationManager {
                 buffEffect.setMaxValueBasedAttributeValue(buffEffect.getBasedAttributeValue());
             } else if (buffEffect.getMaxValueBasedAttribute() == buffEffect.getBasedAttributeSecond()) {
                 buffEffect.setMaxValueBasedAttributeValue(buffEffect.getBasedAttributeSecondValue());
-            } else {
+            } else if (!buffEffect.getFromSelf() || buffEffect.getMaxValueBasedAttribute() == EffectBaseAttributeEnum.INPUT) {
                 buffEffect.setMaxValueBasedAttributeValue(buffInputParamList.get(cursor).getInputValue());
                 cursor++;
             }
         }
         Integer talentLevel = null;
         Integer refinementLevel = null;
-        if (buffEffect.getMultiplierTalentCurve() != null) {
+        if (buffEffect.getMultiplierTalentCurve() != null && !buffEffect.getFromSelf()) {
             talentLevel = buffInputParamList.get(cursor).getInputValue().intValue();
+            fillBuffEffectCurveParam(buffEffect, talentLevel, refinementLevel);
             cursor++;
         }
-        if (buffEffect.getMultiplierRefinementCurve() != null ||
-                buffEffect.getMaxValueRefinementCurve() != null) {
+        if ((buffEffect.getMultiplierRefinementCurve() != null || buffEffect.getMaxValueRefinementCurve() != null)
+                && !buffEffect.getFromSelf()) {
             refinementLevel = buffInputParamList.get(cursor).getInputValue().intValue();
+            fillBuffEffectCurveParam(buffEffect, talentLevel, refinementLevel);
         }
-        fillBuffEffectCurveParam(buffEffect, talentLevel, refinementLevel);
     }
 
     private List<BuffEffect> checkAdditionalAttributeAddBuffs(FightEffect fightEffect, List<AttributeEnum> additionalAttributes) {

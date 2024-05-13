@@ -177,6 +177,9 @@ public class BuffEffect implements Serializable {
             case "BC10000073-5":  // 净善摄受明论
                 basedAttributeValue = characterAttribute.getMastery();
                 break;
+            case "BC10000096-2": // 红死之宴
+                basedAttributeValue = 145.;
+                break;
             case "BW12416-1":
             case "BW13416-1":
             case "BW15416-1":  // 驭浪的海祇民
