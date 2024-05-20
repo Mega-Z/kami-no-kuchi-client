@@ -7,11 +7,32 @@
     android:orientation="horizontal"
     android:paddingHorizontal="@dimen/dp_5">
     <LinearLayout
+        android:id="@+id/layout_effect_number_baseline"
+        android:layout_width="0dp"
+        android:layout_weight="1"
+        android:layout_height="match_parent"
+        android:visibility="gone"
+        android:orientation="horizontal">
+        <TextView
+            android:id="@+id/text_effect_number_baseline"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:textColor="@color/white"
+            android:layout_gravity="center"
+            android:gravity="center"
+            android:text="@string/text_effect_number_default"
+            android:textSize="@dimen/sp_16"/>
+        <View
+            android:layout_width="@dimen/dp_1"
+            android:layout_height="match_parent"
+            android:background="@drawable/bg_horizontal_div_gr"/>
+    </LinearLayout>
+    <LinearLayout
         android:layout_width="@dimen/dp_200"
         android:layout_height="match_parent"
         android:orientation="vertical"
-        android:gravity="center"
-        android:paddingEnd="@dimen/dp_5">
+        android:gravity="center">
         <TextView
             android:id="@+id/text_effect_desc"
             android:layout_width="wrap_content"
@@ -38,40 +59,21 @@
             android:textColor="@color/white"
             android:visibility="gone"/>
     </LinearLayout>
-    <View
-        android:layout_width="@dimen/dp_1"
-        android:layout_height="match_parent"
-        android:background="@drawable/bg_horizontal_div_gr"/>
     <LinearLayout
-        android:layout_width="match_parent"
+        android:id="@+id/layout_effect_number"
+        android:layout_width="0dp"
+        android:layout_weight="1"
         android:layout_height="match_parent"
         android:orientation="horizontal">
-        <TextView
-            android:id="@+id/text_effect_number_baseline"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:textColor="@color/white"
-            android:layout_gravity="center"
-            android:gravity="center"
-            android:text="@string/text_effect_number_default"
-            android:textSize="@dimen/sp_18"
-            android:visibility="gone"/>
-        <TextView
-            android:id="@+id/text_effect_arrow"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textColor="@color/white"
-            android:layout_gravity="center"
-            android:gravity="center"
-            android:text="@string/text_right_arrow"
-            android:textSize="@dimen/sp_12"
-            android:visibility="gone"/>
+        <View
+            android:layout_width="@dimen/dp_1"
+            android:layout_height="match_parent"
+            android:background="@drawable/bg_horizontal_div_gr"/>
         <TextView
             android:id="@+id/text_effect_number"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_width="0dp"
             android:layout_weight="1"
+            android:layout_height="wrap_content"
             android:textColor="@color/white"
             android:layout_gravity="center"
             android:gravity="center"

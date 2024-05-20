@@ -72,22 +72,21 @@ public class EffectComputationManager {
     }
 
     @SuppressLint("DefaultLocale")
-    public EffectDetailVo createFightEffectDetail(FightEffect fightEffect) {
+    public EffectDetailVo createFightEffectDetail(FightEffect fightEffect, boolean valueNull) {
         EffectDetailVo effectDetailVo = new EffectDetailVo();
         effectDetailVo.setCanCritical(fightEffect instanceof DirectDamageEffect);
         effectDetailVo.setEffectDesc(fightEffect.getEffectDesc());
+        effectDetailVo.setIsPercent(fightEffect.getPercent());
+        if(valueNull) {
+            effectDetailVo.setEffectValue(null);
+            effectDetailVo.setEffectValueCritical(null);
+            return effectDetailVo;
+        }
         if (fightEffect instanceof DirectDamageEffect) {
-            effectDetailVo.setEffectValue(String.format("%d/%d",
-                    (int) (((DirectDamageEffect) fightEffect).getCriticalValue().doubleValue()),
-                    (int) ((((DirectDamageEffect) fightEffect).getAverageValue().doubleValue()))));
+            effectDetailVo.setEffectValue(((DirectDamageEffect) fightEffect).getAverageValue());
+            effectDetailVo.setEffectValueCritical(((DirectDamageEffect) fightEffect).getCriticalValue());
         } else {
-            if (fightEffect.getPercent()) {
-                effectDetailVo.setEffectValue(String.format("%.2f", fightEffect.getValue() * 100) + "%");
-            } else if (fightEffect.getValue() > 1000) {
-                effectDetailVo.setEffectValue(String.format("%d", (int) (fightEffect.getValue().doubleValue())));
-            } else {
-                effectDetailVo.setEffectValue(String.format("%.2f", fightEffect.getValue()));
-            }
+            effectDetailVo.setEffectValue(fightEffect.getValue());
         }
         effectDetailVo.setFieldDetail(fightEffect.getFieldDetail());
         return effectDetailVo;

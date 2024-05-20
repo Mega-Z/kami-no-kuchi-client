@@ -46,6 +46,7 @@ public class BaseFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
         initView(view);
         setCallback(view);
+        initialize(view);
     }
 
     protected void initView(@NonNull View view) {
@@ -53,6 +54,10 @@ public class BaseFragment extends Fragment {
     }
 
     protected void setCallback(@NonNull View view) {
+
+    }
+
+    protected void initialize(@NonNull View view) {
 
     }
 }

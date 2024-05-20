@@ -24,6 +24,8 @@ import com.megaz.knk.constant.ElementEnum;
 import com.megaz.knk.constant.GenshinConstantMeta;
 import com.megaz.knk.manager.EffectComputationManager;
 
+import org.checkerframework.checker.units.qual.A;
+
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -38,11 +40,12 @@ import java.util.Objects;
  */
 public class EffectComputationFragment extends BaseFragment {
 
-    private CharacterAttribute characterAttribute;
+    private CharacterAttribute characterAttribute, characterAttributeBaseline;
+    private boolean comparing;
     private EnemyAttribute enemyAttribute;
-    private List<FightEffect> fightEffectList;
+    private List<FightEffect> fightEffectList, fightEffectListBaseline;
 
-    private Handler effectUpdateHandler;
+    private Handler effectQueryHandler;
     private EffectComputationManager effectComputationManager;
 
     private LinearLayout layoutEffects, layoutEnemyAttribute;
@@ -51,6 +54,7 @@ public class EffectComputationFragment extends BaseFragment {
     private Map<ElementEnum, TextView> textResist;
 
     private List<FightEffectFragment> fightEffectFragmentList;
+    private Map<String, FightEffectFragment> fightEffectFragmentMap;
 
 
     public EffectComputationFragment() {
@@ -104,7 +108,6 @@ public class EffectComputationFragment extends BaseFragment {
         }
         enemyAttribute = new EnemyAttribute();
         updateEnemyAttributeView();
-        new Thread(this::initFightEffects).start();
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -113,55 +116,122 @@ public class EffectComputationFragment extends BaseFragment {
         super.setCallback(view);
         layoutEnemyAttribute.setOnClickListener(new EnemyAttributeOnClickListener());
         layoutEnemyAttribute.setOnTouchListener(new EnemyAttributeOnTouchListener());
-        effectUpdateHandler = new Handler(Looper.myLooper()) {
+        effectQueryHandler = new Handler(Looper.myLooper()) {
             @Override
             public void handleMessage(@NonNull Message msg) {
-                handleEffectUpdate(msg);
+                handleEffectQuery(msg);
             }
         };
     }
 
-    private void initFightEffects() {
+    @Override
+    protected void initialize(@NonNull View view) {
+        super.initialize(view);
+        fightEffectList = new ArrayList<>();
+        fightEffectListBaseline = new ArrayList<>();
+        fightEffectFragmentMap = new HashMap<>();
+        comparing = false;
+        new Thread(() -> queryFightEffects(false)).start();
+    }
+
+    private void queryFightEffects(boolean baseline) {
         try {
-            List<FightEffect> fightEffectList = effectComputationManager.getFightEffectsByCharacterAttribute(characterAttribute);
             Message msg = new Message();
-            msg.what = 0;
+            List<FightEffect> fightEffectList;
+            if (!baseline) {
+                fightEffectList = effectComputationManager.getFightEffectsByCharacterAttribute(characterAttribute);
+                msg.what = 0;
+            } else {
+                fightEffectList = effectComputationManager.getFightEffectsByCharacterAttribute(characterAttributeBaseline);
+                msg.what = 2;
+            }
             msg.obj = fightEffectList;
-            effectUpdateHandler.sendMessage(msg);
+            effectQueryHandler.sendMessage(msg);
         } catch (RuntimeException e) {
             Message msg = new Message();
             msg.what = 1;
             msg.obj = e.getMessage();
             e.printStackTrace();
-            effectUpdateHandler.sendMessage(msg);
+            effectQueryHandler.sendMessage(msg);
         }
     }
 
-    private void handleEffectUpdate(Message msg) {
+    private void handleEffectQuery(Message msg) {
         switch (msg.what) {
             case 0:
                 fightEffectList = (List<FightEffect>) msg.obj;
-                updateEffectViews();
+                refreshEffectViews(false);
                 break;
+            case 1:
+                toast.setText((String) msg.obj);
+                toast.show();
+                break;
+            case 2:
+                fightEffectListBaseline = (List<FightEffect>) msg.obj;
+                refreshEffectViews(true);
+                break;
+
         }
     }
 
-    public void updateFightEffect(FightEffect fightEffect) {
-        for (int i = 0; i < fightEffectList.size(); i++) {
-            if (fightEffectList.get(i).getEffectId().equals(fightEffect.getEffectId())) {
-                fightEffectList.set(i, fightEffect);
+    public void updateByFightEffect(FightEffect fightEffect, boolean baseline) {
+        if (!baseline) {
+            for (int i = 0; i < fightEffectList.size(); i++) {
+                if (fightEffectList.get(i).getEffectId().equals(fightEffect.getEffectId())) {
+                    fightEffectList.set(i, fightEffect);
+                }
             }
+            FightEffectFragment fightEffectFragment = fightEffectFragmentMap.get(fightEffect.getEffectDesc());
+            assert fightEffectFragment != null;
+            fightEffectFragment.updateEffectView(fightEffect, fightEffectFragment.getFightEffectBaseline(), comparing);
+        } else {
+            for (int i = 0; i < fightEffectListBaseline.size(); i++) {
+                if (fightEffectListBaseline.get(i).getEffectId().equals(fightEffect.getEffectId())) {
+                    fightEffectListBaseline.set(i, fightEffect);
+                }
+            }
+            FightEffectFragment fightEffectFragment = fightEffectFragmentMap.get(fightEffect.getEffectDesc());
+            assert fightEffectFragment != null;
+            fightEffectFragment.updateEffectView(fightEffectFragment.getFightEffect(), fightEffect, comparing);
         }
-        updateEffectViews();
+
     }
 
     public void updateEnemyAttribute(EnemyAttribute enemyAttribute) {
         this.enemyAttribute = enemyAttribute;
         updateEnemyAttributeView();
-        for(FightEffect fightEffect:fightEffectList) {
+        for (FightEffect fightEffect : fightEffectList) {
             fightEffect.setEnemyAttribute(enemyAttribute);
+            FightEffectFragment fightEffectFragment = fightEffectFragmentMap.get(fightEffect.getEffectDesc());
+            assert fightEffectFragment != null;
+            fightEffectFragment.updateEffectView(fightEffect, fightEffectFragment.getFightEffectBaseline(), comparing);
         }
-        updateEffectViews();
+        for (FightEffect fightEffect : fightEffectListBaseline) {
+            fightEffect.setEnemyAttribute(enemyAttribute);
+            FightEffectFragment fightEffectFragment = fightEffectFragmentMap.get(fightEffect.getEffectDesc());
+            assert fightEffectFragment != null;
+            fightEffectFragment.updateEffectView(fightEffectFragment.getFightEffect(), fightEffect, comparing);
+        }
+    }
+
+    public void enableComparing(CharacterAttribute characterAttribute, CharacterAttribute characterAttributeBaseline) {
+        if (characterAttribute != null) {
+            clearEffectViews();
+            this.characterAttribute = characterAttribute;
+            new Thread(() -> queryFightEffects(false)).start();
+        }
+        this.characterAttributeBaseline = characterAttributeBaseline;
+        assert characterAttributeBaseline != null;
+        comparing = true;
+        new Thread(() -> queryFightEffects(true)).start();
+    }
+
+    public void disableComparing() {
+        comparing = false;
+        characterAttributeBaseline = null;
+        fightEffectListBaseline.clear();
+        clearEffectViews();
+        refreshEffectViews(false);
     }
 
     @SuppressLint({"DefaultLocale", "SetTextI18n"})
@@ -173,34 +243,61 @@ public class EffectComputationFragment extends BaseFragment {
         }
     }
 
-    private void updateEffectViews() {
-        if (fightEffectList.isEmpty()) {
-            return;
-        }
-        fightEffectList.sort(Comparator.comparing(FightEffect::getEffectId));
-        textNoEffect.setVisibility(View.GONE);
+    private void clearEffectViews() {
+        textNoEffect.setVisibility(View.VISIBLE);
         layoutEffects.removeAllViews();
         FragmentTransaction fragmentTransaction = getChildFragmentManager().beginTransaction();
-        for (FightEffectFragment fightEffectFragment:fightEffectFragmentList) {
+        for (FightEffectFragment fightEffectFragment : fightEffectFragmentMap.values()) {
             fragmentTransaction.remove(fightEffectFragment);
         }
-        fightEffectFragmentList.clear();
-        for (int i = 0; i < fightEffectList.size(); i++) {
-            View viewDividingLine = new View(getContext());
-            viewDividingLine.setBackgroundResource(R.drawable.bg_div_gr_black);
-            LinearLayout.LayoutParams lineParams = new LinearLayout.LayoutParams(
-                    ViewGroup.LayoutParams.MATCH_PARENT, getResources().getDimensionPixelOffset(R.dimen.dp_1));
-            viewDividingLine.setLayoutParams(lineParams);
-            layoutEffects.addView(viewDividingLine);
-            LinearLayout layoutContainer = new LinearLayout(getContext());
-            int id = View.generateViewId();
-            layoutContainer.setId(id);
-            FightEffectFragment fightEffectFragment = FightEffectFragment.newInstance(fightEffectList.get(i));
-            fightEffectFragmentList.add(fightEffectFragment);
-            fragmentTransaction.add(id, fightEffectFragment);
-            layoutEffects.addView(layoutContainer);
+        fightEffectFragmentMap.clear();
+    }
+
+    private void refreshEffectViews(boolean baseline) {
+        if (fightEffectList.isEmpty() && fightEffectListBaseline.isEmpty()) {
+            textNoEffect.setVisibility(View.VISIBLE);
+            return;
+        } else {
+            textNoEffect.setVisibility(View.GONE);
+        }
+        FragmentTransaction fragmentTransaction = getChildFragmentManager().beginTransaction();
+        fightEffectList.sort(Comparator.comparing(FightEffect::getEffectId));
+        for (FightEffect fightEffect : baseline ? fightEffectListBaseline : fightEffectList) {
+            if (fightEffectFragmentMap.containsKey(fightEffect.getEffectDesc())) {
+                assert comparing;
+                FightEffectFragment fightEffectFragment = fightEffectFragmentMap.get(fightEffect.getEffectDesc());
+                assert fightEffectFragment != null;
+                if (baseline)
+                    fightEffectFragment.updateEffectView(fightEffectFragment.getFightEffect(), fightEffect, true);
+                else
+                    fightEffectFragment.updateEffectView(fightEffect, fightEffectFragment.getFightEffectBaseline(), true);
+            } else {
+                layoutEffects.addView(getDividingLine());
+                LinearLayout layoutContainer = new LinearLayout(getContext());
+                int id = View.generateViewId();
+                layoutContainer.setId(id);
+                FightEffectFragment fightEffectFragment = baseline ?
+                        FightEffectFragment.newInstance(null, fightEffect, comparing)
+                        : FightEffectFragment.newInstance(fightEffect, null, comparing);
+                fightEffectFragmentMap.put(fightEffect.getEffectDesc(), fightEffectFragment);
+                fragmentTransaction.add(id, fightEffectFragment);
+                layoutEffects.addView(layoutContainer);
+            }
         }
         fragmentTransaction.commit();
+    }
+
+    private View getDividingLine() {
+        View viewDividingLine = new View(getContext());
+        viewDividingLine.setBackgroundResource(R.drawable.bg_div_gr_black);
+        LinearLayout.LayoutParams lineParams = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, getResources().getDimensionPixelOffset(R.dimen.dp_1));
+        viewDividingLine.setLayoutParams(lineParams);
+        return viewDividingLine;
+    }
+
+    @Deprecated
+    private void updateEffectViews() {
     }
 
     private class EnemyAttributeOnClickListener implements View.OnClickListener {
@@ -217,9 +314,9 @@ public class EffectComputationFragment extends BaseFragment {
         @SuppressLint("ClickableViewAccessibility")
         @Override
         public boolean onTouch(View v, MotionEvent event) {
-            if(event.getAction()==MotionEvent.ACTION_DOWN || event.getAction()==MotionEvent.ACTION_MOVE){
+            if (event.getAction() == MotionEvent.ACTION_DOWN || event.getAction() == MotionEvent.ACTION_MOVE) {
                 v.setBackgroundColor(requireContext().getColor(R.color.fragment_press_gray));
-            }else{
+            } else {
                 v.setBackgroundColor(requireContext().getColor(R.color.transparent));
             }
             return false;

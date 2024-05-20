@@ -68,10 +68,9 @@ public class CharacterDetailActivity extends ElasticScrollActivity {
     private TextView textTitle;
     private FrameLayout layoutArt;
     private LinearLayout layoutConstellation;
-    private LinearLayout layoutTalentA;
-    private LinearLayout layoutTalentE;
-    private LinearLayout layoutTalentQ;
+    private LinearLayout layoutTalentA, layoutTalentE, layoutTalentQ;
     private LinearLayout layoutWeapon;
+    private LinearLayout layoutArtifactEvaluation, layoutEffectComputation;
     private ImageView imageCharacterArt;
     private ImageView buttonCharacterMenu;
     private TextView buttonCharacterMenuHistory, buttonCharacterMenuVirtual, buttonCharacterMenuReset;
@@ -109,6 +108,8 @@ public class CharacterDetailActivity extends ElasticScrollActivity {
         buttonCharacterMenuHistory = findViewById(R.id.btn_character_menu_history);
         buttonCharacterMenuReset = findViewById(R.id.btn_character_menu_reset);
         buttonCharacterMenuVirtual = findViewById(R.id.btn_character_menu_virtual);
+        layoutArtifactEvaluation = findViewById(R.id.layout_artifact_evaluation);
+        layoutEffectComputation = findViewById(R.id.layout_effect_computation);
         initCharacterBaseInfo();
         initWeaponInfo();
         initCharacterAttributeFragment();
@@ -189,9 +190,9 @@ public class CharacterDetailActivity extends ElasticScrollActivity {
         public void onClick(View view) {
             characterProfileDtoHistory = null;
             fightStatusHistory = null;
+            resetInitialViews();
             startScrollingTo(0f);
             disableScrolling();
-            setTitleNormal();
             layoutCharacterMenu.setVisibility(View.GONE);
         }
     }
@@ -226,8 +227,7 @@ public class CharacterDetailActivity extends ElasticScrollActivity {
                 break;
             case 1:
                 fightStatusHistory = (FightStatus) msg.obj;
-                characterAttributeFragment.setCharacterAttributeBaseline(fightStatusHistory.getAttributeWithBuff());
-                setTitleHistory();
+                showHistoryViews();
                 enableScrolling();
                 startScrollingTo(1);
                 break;
@@ -298,13 +298,15 @@ public class CharacterDetailActivity extends ElasticScrollActivity {
         characterAttributeFragment.setExtendProcess((getScrollProgress() - SCROLL_STEP_PROGRESS) / (1 - SCROLL_STEP_PROGRESS));
     }
 
-    public void toShowFightEffectDetail(FightEffect fightEffect) {
+    public void toShowFightEffectDetail(FightEffect fightEffect, boolean baseline) {
         Intent intent = new Intent(getApplicationContext(), FightEffectDetailActivity.class);
         Bundle bundle = new Bundle();
         bundle.putSerializable("fightEffect", fightEffect);
-        bundle.putSerializable("characterAttribute", fightStatus.getAttributeBase());
         intent.putExtras(bundle);
-        startActivityForResult(intent, 1);
+        if(!baseline)
+            startActivityForResult(intent, 1);
+        else
+            startActivityForResult(intent, 2);
     }
 
     public void toUpdateEnemyAttribute(EnemyAttribute enemyAttribute) {
@@ -324,7 +326,13 @@ public class CharacterDetailActivity extends ElasticScrollActivity {
             if (resultCode == RESULT_OK) {
                 assert data != null;
                 FightEffect fightEffect = (FightEffect) data.getExtras().getSerializable("fightEffect");
-                effectComputationFragment.updateFightEffect(fightEffect);
+                effectComputationFragment.updateByFightEffect(fightEffect, false);
+            }
+        } else if (requestCode == 2) {
+            if (resultCode == RESULT_OK) {
+                assert data != null;
+                FightEffect fightEffect = (FightEffect) data.getExtras().getSerializable("fightEffect");
+                effectComputationFragment.updateByFightEffect(fightEffect, true);
             }
         }
     }
@@ -434,6 +442,23 @@ public class CharacterDetailActivity extends ElasticScrollActivity {
         effectComputationFragment = EffectComputationFragment.newInstance(fightStatus.getAttributeBase());
         fragmentTransaction.add(R.id.layout_effect_computation, effectComputationFragment);
         fragmentTransaction.commit();
+    }
+
+    private void resetInitialViews() {
+        setTitleNormal();
+        if(status == CharacterDetailActivityStatusEnum.HISTORY) {
+            characterAttributeFragment.setCharacterAttributeBaseline(null);
+            effectComputationFragment.disableComparing();
+        }
+        status = CharacterDetailActivityStatusEnum.INITIAL;
+    }
+
+    private void showHistoryViews() {
+        assert characterProfileDtoHistory != null && fightStatusHistory != null;
+        setTitleHistory();
+        characterAttributeFragment.setCharacterAttributeBaseline(fightStatusHistory.getAttributeWithBuff());
+        effectComputationFragment.enableComparing(null, fightStatusHistory.getAttributeBase());
+        status = CharacterDetailActivityStatusEnum.HISTORY;
     }
 
     @SuppressLint("SetTextI18n")

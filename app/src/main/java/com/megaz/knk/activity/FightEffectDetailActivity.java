@@ -37,8 +37,6 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 public class FightEffectDetailActivity extends BaseActivity{
-
-    private CharacterAttribute characterAttribute;
     private FightEffect fightEffect;
     private BuffVo buffVoToEnable, buffVoToDisable, buffVoToModify;
 
@@ -62,7 +60,6 @@ public class FightEffectDetailActivity extends BaseActivity{
     @Override
     protected void setContent() {
         setContentView(R.layout.activity_fight_effect_detail);
-        characterAttribute = (CharacterAttribute) getIntent().getExtras().getSerializable("characterAttribute");
         fightEffect = (FightEffect) getIntent().getExtras().getSerializable("fightEffect");
         effectComputationManager = new EffectComputationManager(getApplicationContext());
         buffManager = new BuffManager(getApplicationContext());
@@ -80,10 +77,10 @@ public class FightEffectDetailActivity extends BaseActivity{
         textEffectNumber.setTextColor(getColor(DynamicStyleUtils.getFightEffectColor(fightEffect, R.color.element_text_null)));
         textCritOrNot = findViewById(R.id.text_crit_or_not);
         layoutRoot = findViewById(R.id.layout_root);
-        layoutRoot.setBackgroundColor(getColor(DynamicStyleUtils.getElementBackgroundColor(characterAttribute.getElement())));
+        layoutRoot.setBackgroundColor(getColor(DynamicStyleUtils.getElementBackgroundColor(fightEffect.getAttributeBase().getElement())));
         layoutEnabledBuffs = findViewById(R.id.layout_enabled_buffs);
         viewEnabledBuffs = findViewById(R.id.view_enabled_buffs);
-        viewEnabledBuffs.setBackgroundResource(DynamicStyleUtils.getElementBackgroundFrame(characterAttribute.getElement()));
+        viewEnabledBuffs.setBackgroundResource(DynamicStyleUtils.getElementBackgroundFrame(fightEffect.getAttributeBase().getElement()));
         buttonBuffAdd = findViewById(R.id.btn_buff_add);
 
         layoutFieldBase = findViewById(R.id.layout_field_base);
@@ -289,15 +286,16 @@ public class FightEffectDetailActivity extends BaseActivity{
             attributeWithBuffFragment.updateViewByFightEffect(fightEffect);
         }
 
-        EffectDetailVo effectDetailVo = effectComputationManager.createFightEffectDetail(fightEffect);
+        EffectDetailVo effectDetailVo = effectComputationManager.createFightEffectDetail(fightEffect, false);
 
         textEffectDesc.setText(effectDetailVo.getEffectDesc());
         if(effectDetailVo.getCanCritical()) {
             textCritOrNot.setVisibility(View.VISIBLE);
+            textEffectNumber.setText(effectDetailVo.getNumberWithCritical());
         } else {
             textCritOrNot.setVisibility(View.GONE);
+            textEffectNumber.setText(effectDetailVo.getNumber());
         }
-        textEffectNumber.setText(effectDetailVo.getEffectValue());
 
         if(effectDetailVo.getFieldDetail().containsKey(EffectFieldEnum.BASE)) {
             layoutFieldBase.setVisibility(View.VISIBLE);

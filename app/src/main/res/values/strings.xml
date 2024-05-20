@@ -62,7 +62,6 @@
     <string name="text_effect_desc_default">奥义·梦想真说梦想一心满愿力重击伤害</string>
     <string name="text_crit_or_not">（暴击伤害/平均伤害）</string>
     <string name="text_effect_number_default">131072/65536</string>
-    <string name="text_right_arrow"><![CDATA[->]]></string>
     <string name="text_average">（平均伤害）</string>
     <string name="title_activity_fight_effect_detail">FightEffectDetailActivity</string>
     <!-- Strings used for fragments for navigation -->
