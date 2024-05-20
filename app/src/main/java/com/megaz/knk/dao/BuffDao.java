@@ -40,6 +40,21 @@ public interface BuffDao extends MetaDataDao<Buff> {
                                                  ElementReactionEnum elementReaction);
 
     @Query("SELECT * FROM buff WHERE source_type='CHARACTER' AND source_id=:sourceId " +
+            "AND buff_range = 'STATIC'" +
+            "AND (phase < -1 * :phase OR phase >= 0 AND phase <= :phase ) " +
+            "AND (constellation < -1 * :constellation OR constellation >= 0 AND constellation <= :constellation) ")
+    List<Buff> selectStaticCharacterBuffByCondition(String sourceId, Integer phase, Integer constellation);
+
+    @Query("SELECT * FROM buff WHERE source_type='WEAPON' AND source_id=:sourceId " +
+            "AND buff_range = 'STATIC'")
+    List<Buff> selectStaticWeaponBuffByCondition(String sourceId);
+
+    @Query("SELECT * FROM buff WHERE source_type='ARTIFACT_SET' AND source_id=:sourceId " +
+            "AND buff_range = 'STATIC'" +
+            "AND (artifact_num <= :artifactNum ) ")
+    List<Buff> selectStaticArtifactBuffByCondition(String sourceId, Integer artifactNum);
+
+    @Query("SELECT * FROM buff WHERE source_type='CHARACTER' AND source_id=:sourceId " +
             "AND buff_range IN ('CHARACTER', 'STATIC') " +
             "AND (phase < -1 * :phase OR phase >= 0 AND phase <= :phase ) " +
             "AND (constellation < -1 * :constellation OR constellation >= 0 AND constellation <= :constellation) " +

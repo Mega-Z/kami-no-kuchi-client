@@ -37,6 +37,20 @@ public class DynamicStyleUtils {
             default: return R.color.white;
         }
     }
+
+    public static int getElementAvatarBackgroundColor(ElementEnum element) {
+        switch (element){
+            case PYRO: return R.color.element_avatar_bg_pyro;
+            case HYDRO: return R.color.element_avatar_bg_hydro;
+            case CRYO: return R.color.element_avatar_bg_cryo;
+            case ELECTRO: return R.color.element_avatar_bg_electro;
+            case ANEMO: return R.color.element_avatar_bg_anemo;
+            case GEO: return R.color.element_avatar_bg_geo;
+            case DENDRO: return R.color.element_avatar_bg_dendro;
+            default: return R.color.white;
+        }
+    }
+
     public static int getElementBackgroundFrame(ElementEnum element) {
         switch (element){
             case PYRO: return R.drawable.frame_element_pyro;
@@ -189,5 +203,20 @@ public class DynamicStyleUtils {
                 return R.color.cons_6;
         }
         return R.color.cons_0;
+    }
+
+    public static int getQualityBackground(int star) {
+        switch (star) {
+            case 5:
+                return R.drawable.bg_star_5;
+            case 4:
+                return R.drawable.bg_star_4;
+            case 3:
+                return R.drawable.bg_star_3;
+            case 2:
+                return R.drawable.bg_star_2;
+            default:
+                return R.drawable.bg_star_1;
+        }
     }
 }

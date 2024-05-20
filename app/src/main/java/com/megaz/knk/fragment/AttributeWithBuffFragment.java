@@ -16,18 +16,12 @@ import com.megaz.knk.R;
 import com.megaz.knk.computation.CharacterAttribute;
 import com.megaz.knk.computation.DamageEffect;
 import com.megaz.knk.computation.FightEffect;
-import com.megaz.knk.constant.AttributeEnum;
 import com.megaz.knk.constant.ElementEnum;
-import com.megaz.knk.constant.GenshinConstantMeta;
 import com.megaz.knk.constant.ShownAttributeEnum;
 import com.megaz.knk.utils.ImageResourceUtils;
-import com.megaz.knk.vo.CharacterProfileVo;
-
-import org.w3c.dom.Text;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -73,14 +67,14 @@ public class AttributeWithBuffFragment extends BaseFragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         initAttributeKeys(view);
-        setAttributeValues(textBaseAttribute, fightEffect.getCharacterAttribute());
-        setAttributeValues(textAttributeWithBuff, fightEffect.getCharacterAttributeWithBuffs());
+        setAttributeValues(textBaseAttribute, fightEffect.getAttributeBase());
+        setAttributeValues(textAttributeWithBuff, fightEffect.getAttributeWithBuff());
     }
 
     public void updateViewByFightEffect(FightEffect fightEffect) {
         this.fightEffect = fightEffect;
-        setAttributeValues(textBaseAttribute, fightEffect.getCharacterAttribute());
-        setAttributeValues(textAttributeWithBuff, fightEffect.getCharacterAttributeWithBuffs());
+        setAttributeValues(textBaseAttribute, fightEffect.getAttributeBase());
+        setAttributeValues(textAttributeWithBuff, fightEffect.getAttributeWithBuff());
     }
 
     @Override

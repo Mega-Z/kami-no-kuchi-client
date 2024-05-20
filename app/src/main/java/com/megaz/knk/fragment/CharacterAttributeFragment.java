@@ -142,7 +142,6 @@ public class CharacterAttributeFragment extends BaseFragment {
 
     public void setExtendProcess(float process) {
         process = Math.min(1, Math.max(0, process));
-        Log.e("process", process+"");
         if (process >= SWITCH_THRESHOLD) {
             showAttributeComparison();
             layoutAttributeBaseline.setAlpha((process - SWITCH_THRESHOLD) / (1 - SWITCH_THRESHOLD));

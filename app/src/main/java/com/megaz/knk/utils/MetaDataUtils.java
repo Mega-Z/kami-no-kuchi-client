@@ -3,13 +3,26 @@ package com.megaz.knk.utils;
 import android.content.Context;
 import android.util.Log;
 
+import androidx.annotation.WorkerThread;
+
 import com.megaz.knk.R;
 import com.megaz.knk.client.RequestHelper;
 import com.megaz.knk.client.ResponseEntity;
+import com.megaz.knk.constant.AttributeEnum;
+import com.megaz.knk.dao.CharacterDexDao;
+import com.megaz.knk.dao.PromoteAttributeDao;
+import com.megaz.knk.dao.WeaponDexDao;
 import com.megaz.knk.dto.MetaDatabaseInfoDto;
+import com.megaz.knk.entity.CharacterDex;
+import com.megaz.knk.entity.PromoteAttribute;
+import com.megaz.knk.entity.WeaponDex;
+import com.megaz.knk.exception.MetaDataQueryException;
 import com.megaz.knk.exception.RequestException;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class MetaDataUtils {
 
@@ -46,4 +59,35 @@ public class MetaDataUtils {
             throw e;
         }
     }
+
+    @WorkerThread
+    public static CharacterDex queryCharacterDex(CharacterDexDao characterDexDao, String characterId) {
+        List<CharacterDex> characterDexList = characterDexDao.selectByCharacterId(characterId);
+        if (characterDexList.size() != 1) {
+            throw new MetaDataQueryException("character_dex");
+        }
+        return characterDexList.get(0);
+    }
+
+    @WorkerThread
+    public static WeaponDex queryWeaponDex(WeaponDexDao weaponDexDao, String weaponId) {
+        List<WeaponDex> weaponDexList = weaponDexDao.selectByWeaponId(weaponId);
+        if (weaponDexList.size() != 1) {
+            throw new MetaDataQueryException("weapon_dex");
+        }
+        return weaponDexList.get(0);
+    }
+
+    @WorkerThread
+    public static Map<AttributeEnum, Double> queryPromoteAttribute(PromoteAttributeDao promoteAttributeDao, String promoteId, Integer phase) {
+        Map<AttributeEnum, Double> attributeMap = new HashMap<>();
+        List<PromoteAttribute> promoteAttributeList = promoteAttributeDao.selectByPromoteIdAndPhase(promoteId, phase);
+        for(PromoteAttribute promoteAttribute:promoteAttributeList) {
+            attributeMap.put(promoteAttribute.getAttribute(), promoteAttribute.getValue());
+        }
+        return attributeMap;
+    }
+
+
+
 }

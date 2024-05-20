@@ -71,6 +71,13 @@
     <color name="element_bg_geo">#FFEFD7</color>
     <color name="element_bg_dendro">#F0FFD6</color>
     <color name="element_bg_null">#f3ebe8</color>
+    <color name="element_avatar_bg_pyro">#C46545</color>
+    <color name="element_avatar_bg_hydro">#3B72BA</color>
+    <color name="element_avatar_bg_electro">#8B5ABA</color>
+    <color name="element_avatar_bg_cryo">#6ACBDB</color>
+    <color name="element_avatar_bg_anemo">#3CB3B4</color>
+    <color name="element_avatar_bg_geo">#B69043</color>
+    <color name="element_avatar_bg_dendro">#78AA3E</color>
     <color name="number_dmg_pyro">#ff9b00</color>
     <color name="number_dmg_hydro">#33ccff</color>
     <color name="number_dmg_cryo">#99ffff</color>

@@ -13,6 +13,7 @@ public class WeaponProfileVo implements Serializable {
     private String weaponIcon;
     private Integer level;
     private Integer refineRank;
+    private Integer star;
     private Double baseAtk;
     private AttributeEnum attribute;
     private Double attributeVal;

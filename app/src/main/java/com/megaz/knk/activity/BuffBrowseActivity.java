@@ -14,6 +14,7 @@ import com.megaz.knk.computation.FightEffect;
 import com.megaz.knk.constant.BuffSourceEnum;
 import com.megaz.knk.constant.GenshinConstantMeta;
 import com.megaz.knk.fragment.BuffFolderFragment;
+import com.megaz.knk.manager.BuffManager;
 import com.megaz.knk.manager.EffectComputationManager;
 import com.megaz.knk.vo.BuffVo;
 
@@ -28,6 +29,7 @@ public class BuffBrowseActivity extends BaseActivity {
     private FightEffect fightEffect;
 
     private EffectComputationManager effectComputationManager;
+    private BuffManager buffManager;
     private Handler buffVoCreateHandler;
 
     private Map<BuffSourceEnum, BuffFolderFragment> buffFolderFragments;
@@ -40,6 +42,7 @@ public class BuffBrowseActivity extends BaseActivity {
         setContentView(R.layout.activity_buff_browse);
         fightEffect = (FightEffect) getIntent().getExtras().getSerializable("fightEffect");
         effectComputationManager = new EffectComputationManager(getApplicationContext());
+        buffManager = new BuffManager(getApplicationContext());
         buffFolderFragments = new HashMap<>();
     }
 
@@ -75,7 +78,7 @@ public class BuffBrowseActivity extends BaseActivity {
             List<BuffEffect> availableBuffEffectList = new ArrayList<>(fightEffect.getAvailableBuffEffects().values());
             availableBuffEffectList.removeAll(fightEffect.getEnabledBuffEffects());
             List<BuffVo> buffVoList = availableBuffEffectList.stream()
-                    .map(buffEffect -> effectComputationManager.createBuffVo(buffEffect)).collect(Collectors.toList());
+                    .map(buffEffect -> buffManager.createBuffVo(buffEffect, false)).collect(Collectors.toList());
             Message msg = new Message();
             msg.what = 0;
             msg.obj = buffVoList;

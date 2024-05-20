@@ -6,7 +6,6 @@ import com.megaz.knk.constant.ElementReactionEnum;
 import com.megaz.knk.constant.FightEffectEnum;
 import com.megaz.knk.entity.FightEffectComputation;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -19,8 +18,8 @@ import lombok.Getter;
 public abstract class DamageEffect extends FightEffect{
     protected ElementEnum element;
     protected ElementReactionEnum reaction;
-    private Set<BuffEffect> resistFieldBuffEffects;
-    private Set<BuffEffect> reactionFieldBuffEffects;
+    private final Set<BuffEffect> resistFieldBuffEffects;
+    private final Set<BuffEffect> reactionFieldBuffEffects;
     private Double baseResist = 0.1;
 
     public DamageEffect(FightEffectComputation fightEffectComputation, CharacterAttribute characterAttribute) {
@@ -83,7 +82,6 @@ public abstract class DamageEffect extends FightEffect{
     @Override
     public void disableBuffEffect(BuffEffect buffEffect) {
         assert availableBuffEffects.containsKey(buffEffect.getBuffId());
-        buffEffect.disableBuff();
         characterAttributeWithBuffs = null;
         if(buffEffect.getEffectType() == FightEffectEnum.RESIST_DOWN &&
                 (buffEffect.getElement() == element || buffEffect.getElement() == null)) {

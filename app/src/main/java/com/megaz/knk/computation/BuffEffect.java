@@ -38,7 +38,6 @@ public class BuffEffect implements Serializable {
     private Boolean forced;
     private Boolean fromSelf;
     private BuffStageEnum stage;
-    private Boolean enabled;
     private Boolean defaultEnabled;
     // constant
     private Double multiplierConstant;
@@ -82,7 +81,6 @@ public class BuffEffect implements Serializable {
         percent = buff.getPercent();
         sourceTalent = buff.getSourceTalent();
         specialInput = buff.getSpecialInput();
-        enabled = false;
         defaultEnabled = buff.getDefaultEnabled();
         multiplierConstant = buff.getMultiplierConstant();
         addendConstant = buff.getAddendConstant();
@@ -120,9 +118,6 @@ public class BuffEffect implements Serializable {
 
     public Double getValue() {
         checkParam();
-        if (!enabled) {
-            return 0.;
-        }
         Double addend = addendConstant;
         Double multiplier = multiplierConstant;
         if (basedAttribute != null) {
@@ -152,12 +147,7 @@ public class BuffEffect implements Serializable {
         return Math.min(maxValue, addend + multiplier);
     }
 
-    public void enableBuff() {
-        enabled = true;
-    }
-
-    public void disableBuff() {
-        enabled = false;
+    public void resetParam() {
         maxValueBasedAttributeValue = null;
         basedAttributeValue = null;
         basedAttributeSecondValue = null;
@@ -167,9 +157,9 @@ public class BuffEffect implements Serializable {
     }
 
     public void fillDefaultInputParam(CharacterAttribute characterAttribute) {
-        if(basedAttributeValue != null) {
-            return;
-        }
+//        if(basedAttributeValue != null) {
+//            return;
+//        }
         switch (buffId) {
             case "BC10000052-1":  // 神变·恶曜开眼
                 basedAttributeValue = 90.;

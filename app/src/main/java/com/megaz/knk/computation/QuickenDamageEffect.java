@@ -11,7 +11,7 @@ import java.util.Collections;
 import java.util.Map;
 
 public class QuickenDamageEffect extends DirectDamageEffect{
-    private Integer applyCount;
+    private final Integer applyCount;
     public QuickenDamageEffect(FightEffectComputation fightEffectComputation, CharacterAttribute characterAttribute,
                                ElementReactionEnum reaction, Integer applyCount) {
         super(fightEffectComputation, characterAttribute);

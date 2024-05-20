@@ -22,6 +22,7 @@ import com.megaz.knk.computation.FightEffect;
 import com.megaz.knk.constant.EffectFieldEnum;
 import com.megaz.knk.fragment.AttributeWithBuffFragment;
 import com.megaz.knk.fragment.EnabledBuffFragment;
+import com.megaz.knk.manager.BuffManager;
 import com.megaz.knk.manager.EffectComputationManager;
 import com.megaz.knk.utils.DynamicStyleUtils;
 import com.megaz.knk.vo.BuffVo;
@@ -42,6 +43,7 @@ public class FightEffectDetailActivity extends BaseActivity{
     private BuffVo buffVoToEnable, buffVoToDisable, buffVoToModify;
 
     private EffectComputationManager effectComputationManager;
+    private BuffManager buffManager;
     private Handler buffVoCreateHandler, fightEffectUpdateHandler;
 
     private TextView textEffectDesc, textEffectNumber, textCritOrNot,
@@ -63,6 +65,7 @@ public class FightEffectDetailActivity extends BaseActivity{
         characterAttribute = (CharacterAttribute) getIntent().getExtras().getSerializable("characterAttribute");
         fightEffect = (FightEffect) getIntent().getExtras().getSerializable("fightEffect");
         effectComputationManager = new EffectComputationManager(getApplicationContext());
+        buffManager = new BuffManager(getApplicationContext());
         buffFragmentMap = new HashMap<>();
         buffVoMap = new HashMap<>();
     }
@@ -242,7 +245,7 @@ public class FightEffectDetailActivity extends BaseActivity{
         try {
             List<BuffEffect> enabledBuffEffectList = fightEffect.getEnabledBuffEffects();
             List<BuffVo> buffVoList = enabledBuffEffectList.stream()
-                    .map(buffEffect -> effectComputationManager.createBuffVo(buffEffect)).collect(Collectors.toList());
+                    .map(buffEffect -> buffManager.createBuffVo(buffEffect, true)).collect(Collectors.toList());
             Message msg = new Message();
             msg.what = 0;
             msg.obj = buffVoList;

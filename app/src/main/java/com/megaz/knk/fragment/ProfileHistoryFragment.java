@@ -65,9 +65,10 @@ public abstract class ProfileHistoryFragment extends BaseFragment {
         ((TextView) view.findViewById(R.id.text_character_level)).setText(getString(R.string.text_level_prefix) + characterProfileVo.getLevel());
         ((ImageView) view.findViewById(R.id.img_weapon)).setImageBitmap(
                 ImageResourceUtils.getIconBitmap(requireContext(), characterProfileVo.getWeapon().getWeaponIcon()));
+        ((ImageView) view.findViewById(R.id.img_weapon)).setBackgroundResource(DynamicStyleUtils.getQualityBackground(characterProfileVo.getWeapon().getStar()));
         ((TextView) view.findViewById(R.id.text_weapon_level)).setText(getString(R.string.text_level_prefix) + characterProfileVo.getWeapon().getLevel());
         ((TextView) view.findViewById(R.id.text_weapon_level)).setTypeface(typefaceNum);
-        ((TextView) view.findViewById(R.id.text_weapon_refine)).setText(getString(R.string.text_refine_prefix) + characterProfileVo.getWeapon().getRefineRank() + getString(R.string.text_refine_suffix));
+        ((TextView) view.findViewById(R.id.text_weapon_refine)).setText(getString(R.string.text_refine, characterProfileVo.getWeapon().getRefineRank()));
         List<ArtifactEvaluationVo> artifactEvaluationVoList = characterProfileVo.getEvaluations();
         if(artifactEvaluationVoList != null && !artifactEvaluationVoList.isEmpty()) {
             ArtifactEvaluationVo artifactEvaluationVo = artifactEvaluationVoList.get(0);

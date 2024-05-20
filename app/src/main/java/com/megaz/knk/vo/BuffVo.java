@@ -20,7 +20,6 @@ public class BuffVo implements Serializable {
     private Integer constellation;
     private String icon;
     private Boolean forced;
-    private Boolean enabled;
     private String effectText;
     private Boolean percent;
     private Double effectValue;

@@ -15,10 +15,10 @@ import java.util.Objects;
 import java.util.Set;
 
 public class DirectDamageEffect extends DamageEffect {
-    private DamageLabelEnum label;
-    private Set<BuffEffect> damageUpFieldBuffEffects;
-    private Set<BuffEffect> criticalFieldBuffEffects;
-    private Set<BuffEffect> defenceFieldBuffEffects;
+    private final DamageLabelEnum label;
+    private final Set<BuffEffect> damageUpFieldBuffEffects;
+    private final Set<BuffEffect> criticalFieldBuffEffects;
+    private final Set<BuffEffect> defenceFieldBuffEffects;
     private Integer targetLevel = 91;
 
     public DirectDamageEffect(FightEffectComputation fightEffectComputation, CharacterAttribute characterAttribute) {
@@ -104,7 +104,6 @@ public class DirectDamageEffect extends DamageEffect {
     @Override
     public void disableBuffEffect(BuffEffect buffEffect) {
         assert availableBuffEffects.containsKey(buffEffect.getBuffId());
-        buffEffect.disableBuff();
         characterAttributeWithBuffs = null;
         if (buffEffect.getEffectType() == FightEffectEnum.DAMAGE_UP && buffEffect.getIncreasedAttribute() == null &&
                 (buffEffect.getIncreasedDamageLabel() == label || buffEffect.getIncreasedDamageLabel() == null)) {

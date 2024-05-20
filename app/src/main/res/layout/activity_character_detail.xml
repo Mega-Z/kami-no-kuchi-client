@@ -228,7 +228,7 @@
                 android:textColor="@color/white"
                 android:textSize="@dimen/sp_12"
                 android:text="历史面板"/>
-            <!--<TextView
+            <TextView
                 android:id="@+id/btn_character_menu_virtual"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -238,7 +238,7 @@
                 android:background="@drawable/bg_character_menu"
                 android:textColor="@color/white"
                 android:textSize="@dimen/sp_12"
-                android:text="虚构面板"/>-->
+                android:text="虚构面板"/>
             <TextView
                 android:id="@+id/btn_character_menu_reset"
                 android:layout_width="match_parent"

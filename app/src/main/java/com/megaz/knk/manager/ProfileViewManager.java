@@ -183,6 +183,7 @@ public class ProfileViewManager {
         }
         weaponProfileVo.setLevel(weaponProfileDto.getLevel());
         weaponProfileVo.setRefineRank(weaponProfileDto.getRefineRank());
+        weaponProfileVo.setStar(weaponData.getStar());
         weaponProfileVo.setBaseAtk(weaponProfileDto.getBaseAtk());
         weaponProfileVo.setAttribute(weaponProfileDto.getAttribute());
         weaponProfileVo.setAttributeVal(weaponProfileDto.getAttributeVal());

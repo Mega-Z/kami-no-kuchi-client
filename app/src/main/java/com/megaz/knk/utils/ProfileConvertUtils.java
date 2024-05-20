@@ -2,6 +2,7 @@ package com.megaz.knk.utils;
 
 import com.megaz.knk.constant.ArtifactPositionEnum;
 import com.megaz.knk.constant.ElementEnum;
+import com.megaz.knk.constant.GenshinConstantMeta;
 import com.megaz.knk.dto.ArtifactProfileDto;
 import com.megaz.knk.dto.CharacterProfileDto;
 import com.megaz.knk.dto.PlayerProfileDto;
@@ -11,6 +12,8 @@ import com.megaz.knk.entity.CharacterDex;
 import com.megaz.knk.entity.CharacterProfile;
 import com.megaz.knk.entity.PlayerProfile;
 import com.megaz.knk.vo.WeaponProfileVo;
+
+import org.checkerframework.checker.units.qual.C;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -285,8 +288,64 @@ public class ProfileConvertUtils {
                         characterProfile2.getArtifacts().get(ArtifactPositionEnum.CIRCLET));
     }
 
+    public static CharacterProfileDto copyCharacterProfile(CharacterProfileDto source) {
+        CharacterProfileDto target = new CharacterProfileDto();
+        target.setUid(source.getUid());
+        target.setCharacterId(source.getCharacterId());
+        target.setCostumeId(source.getCostumeId());
+        target.setElement(source.getElement());
+        target.setLevel(source.getLevel());
+        target.setPhase(source.getPhase());
+        target.setFetter(source.getFetter());
+        target.setConstellation(source.getConstellation());
+        target.setNewData(false);
+        target.setBaseHp(source.getBaseHp());
+        target.setPlusHp(source.getPlusHp());
+        target.setBaseAtk(source.getBaseAtk());
+        target.setPlusAtk(source.getPlusAtk());
+        target.setBaseDef(source.getBaseDef());
+        target.setPlusDef(source.getPlusDef());
+        target.setMastery(source.getMastery());
+        target.setCritRate(source.getCritRate());
+        target.setCritDmg(source.getCritDmg());
+        target.setRecharge(source.getRecharge());
+        Map<ElementEnum, Double> dmgUpMap = new HashMap<>();
+        for(ElementEnum element:GenshinConstantMeta.ELEMENT_LIST) {
+            dmgUpMap.put(element, source.getDmgUp().get(element));
+        }
+        target.setDmgUp(dmgUpMap);
+        target.setHealUp(source.getHealUp());
+
+        target.setTalentABaseLevel(source.getTalentABaseLevel());
+        target.setTalentEBaseLevel(source.getTalentEBaseLevel());
+        target.setTalentQBaseLevel(source.getTalentQBaseLevel());
+        target.setTalentAPlusLevel(source.getTalentAPlusLevel());
+        target.setTalentEPlusLevel(source.getTalentEPlusLevel());
+        target.setTalentQPlusLevel(source.getTalentQPlusLevel());
+
+        WeaponProfileDto weaponProfileDto = new WeaponProfileDto();
+        weaponProfileDto.setWeaponId(source.getWeapon().getWeaponId());
+        weaponProfileDto.setLevel(source.getWeapon().getLevel());
+        weaponProfileDto.setRefineRank(source.getWeapon().getRefineRank());
+        weaponProfileDto.setBaseAtk(source.getWeapon().getBaseAtk());
+        weaponProfileDto.setAttribute(source.getWeapon().getAttribute());
+        weaponProfileDto.setAttributeVal(source.getWeapon().getAttributeVal());
+        weaponProfileDto.setPhase(source.getWeapon().getPhase());
+        target.setWeapon(weaponProfileDto);
+
+        Map<ArtifactPositionEnum, ArtifactProfileDto> artifactProfileDtoMap = new HashMap<>();
+        for (ArtifactPositionEnum position : GenshinConstantMeta.ARTIFACT_POSITION_LIST) {
+            if (source.getArtifacts().containsKey(position)) {
+                artifactProfileDtoMap.put(position, source.getArtifacts().get(position));
+            }
+        }
+        target.setArtifacts(artifactProfileDtoMap);
+
+        return target;
+    }
+
     public static boolean isSameArtifactInstance(ArtifactProfileDto artifact1, ArtifactProfileDto artifact2) {
-        if(artifact1 == null && artifact2 == null) {
+        if (artifact1 == null && artifact2 == null) {
             return true;
         } else if (artifact1 != null && artifact2 != null) {
             return Objects.equals(artifact1.getArtifactInstanceId(), artifact2.getArtifactInstanceId());
@@ -294,4 +353,35 @@ public class ProfileConvertUtils {
             return false;
         }
     }
+
+    public static boolean isPromotingLevel(int level) {
+        return level == 20 || level == 40 || level == 50 || level == 60 || level == 70 || level == 80;
+    }
+
+    public static int getPhaseByLevel(int level, boolean promote) {
+        int phase = 0;
+        if (level > 20) phase++;
+        if (level > 40) phase++;
+        if (level > 50) phase++;
+        if (level > 60) phase++;
+        if (level > 70) phase++;
+        if (level > 80) phase++;
+        if (isPromotingLevel(level) && promote) phase++;
+        return phase;
+    }
+
+    public static boolean isPromoted(int level, int phase) {
+        if (isPromotingLevel(level)) {
+            int lowerPhase = 0;
+            if (level > 20) lowerPhase++;
+            if (level > 40) lowerPhase++;
+            if (level > 50) lowerPhase++;
+            if (level > 60) lowerPhase++;
+            if (level > 70) lowerPhase++;
+            return phase > lowerPhase;
+        } else {
+            return false;
+        }
+    }
+
 }
