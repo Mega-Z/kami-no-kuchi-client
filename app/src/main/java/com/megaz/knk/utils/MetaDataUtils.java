@@ -6,13 +6,17 @@ import android.util.Log;
 import androidx.annotation.WorkerThread;
 
 import com.megaz.knk.R;
+import com.megaz.knk.bo.ArtifactKey;
 import com.megaz.knk.client.RequestHelper;
 import com.megaz.knk.client.ResponseEntity;
+import com.megaz.knk.constant.ArtifactPositionEnum;
 import com.megaz.knk.constant.AttributeEnum;
+import com.megaz.knk.dao.ArtifactDexDao;
 import com.megaz.knk.dao.CharacterDexDao;
 import com.megaz.knk.dao.PromoteAttributeDao;
 import com.megaz.knk.dao.WeaponDexDao;
 import com.megaz.knk.dto.MetaDatabaseInfoDto;
+import com.megaz.knk.entity.ArtifactDex;
 import com.megaz.knk.entity.CharacterDex;
 import com.megaz.knk.entity.PromoteAttribute;
 import com.megaz.knk.entity.WeaponDex;
@@ -87,7 +91,5 @@ public class MetaDataUtils {
         }
         return attributeMap;
     }
-
-
 
 }

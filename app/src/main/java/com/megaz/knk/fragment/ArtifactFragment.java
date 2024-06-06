@@ -76,7 +76,7 @@ public class ArtifactFragment extends BaseFragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         initArtifactView(view);
-        updateArtifactView(null);
+        updateArtifactView(artifactEvaluationVo, artifactProfileVo);
     }
 
     private void initArtifactView(View view) {
@@ -106,7 +106,8 @@ public class ArtifactFragment extends BaseFragment {
     }
 
     @SuppressLint({"SetTextI18n", "DefaultLocale"})
-    public void updateArtifactView(ArtifactEvaluationVo newArtifactEvaluationVo) {
+    public void updateArtifactView(ArtifactEvaluationVo newArtifactEvaluationVo, ArtifactProfileVo newArtifactProfileVo) {
+        artifactProfileVo = newArtifactProfileVo;
         if(artifactProfileVo == null) {
             imageNullArtifact.setImageBitmap(ImageResourceUtils.getArtifactPositionIcon(requireContext(), position));
             imageNullArtifact.setVisibility(View.VISIBLE);
@@ -116,9 +117,7 @@ public class ArtifactFragment extends BaseFragment {
             textArtifactScore.setVisibility(View.INVISIBLE);
             return;
         }
-        if(newArtifactEvaluationVo != null) {
-            artifactEvaluationVo = newArtifactEvaluationVo;
-        }
+        artifactEvaluationVo = newArtifactEvaluationVo;
         imageNullArtifact.setVisibility(View.INVISIBLE);
         imageArtifact.setVisibility(View.VISIBLE);
         imageArtifact.setImageBitmap(ImageResourceUtils.getIconBitmap(requireContext(), artifactProfileVo.getIcon()));
@@ -127,7 +126,8 @@ public class ArtifactFragment extends BaseFragment {
         textArtifactLevel.setVisibility(View.VISIBLE);
         textArtifactLevel.setText(getString(R.string.text_artifact_level_prefix)+artifactProfileVo.getLevel());
         textArtifactScore.setVisibility(View.VISIBLE);
-        Double score = artifactEvaluationVo.getArtifactsScore().get(position);
+        Double score = artifactEvaluationVo != null ?
+                Objects.requireNonNull(artifactEvaluationVo.getArtifactsScore().get(position)) : 0.;
         String rank = DynamicStyleUtils.getRank(Objects.requireNonNull(score));
         textArtifactScore.setText(String.format("%.1f-%s", score, rank));
         textArtifactScore.setTextColor(getResources().getColor(DynamicStyleUtils.getRankColor(rank), getContext().getTheme()));

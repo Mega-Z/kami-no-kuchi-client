@@ -1,15 +1,15 @@
 package com.megaz.knk.manager;
 
 import android.content.Context;
-import android.util.Log;
+
+import androidx.annotation.WorkerThread;
 
 import com.megaz.knk.KnkDatabase;
-import com.megaz.knk.R;
 import com.megaz.knk.bo.ArtifactKey;
-import com.megaz.knk.client.RequestHelper;
-import com.megaz.knk.client.ResponseEntity;
+import com.megaz.knk.computation.CharacterOverview;
 import com.megaz.knk.constant.ArtifactPositionEnum;
 import com.megaz.knk.constant.GenshinConstantMeta;
+import com.megaz.knk.constant.SourceTalentEnum;
 import com.megaz.knk.dao.ArtifactDexDao;
 import com.megaz.knk.dao.CharacterDexDao;
 import com.megaz.knk.dao.CostumeDexDao;
@@ -25,13 +25,13 @@ import com.megaz.knk.entity.CostumeDex;
 import com.megaz.knk.entity.ProfilePicture;
 import com.megaz.knk.entity.WeaponDex;
 import com.megaz.knk.exception.MetaDataQueryException;
-import com.megaz.knk.exception.ProfileRequestException;
+import com.megaz.knk.utils.ProfileConvertUtils;
 import com.megaz.knk.vo.ArtifactProfileVo;
 import com.megaz.knk.vo.CharacterProfileVo;
+import com.megaz.knk.vo.ConstellationVo;
 import com.megaz.knk.vo.PlayerProfileVo;
+import com.megaz.knk.vo.TalentVo;
 import com.megaz.knk.vo.WeaponProfileVo;
-
-import org.checkerframework.checker.units.qual.A;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -65,9 +65,9 @@ public class ProfileViewManager {
         artifactDexBuffer = new HashMap<>();
     }
 
+    @WorkerThread
     public PlayerProfileVo convertPlayerProfileToVo(PlayerProfileDto playerProfileDto) {
         CharacterDexDao characterDexDao = knkDatabase.getCharacterDexDao();
-        CostumeDexDao costumeDexDao = knkDatabase.getCostumeDexDao();
         ProfilePictureDao profilePictureDao = knkDatabase.getProfilePictureDao();
 
         PlayerProfileVo playerProfileVo = new PlayerProfileVo();
@@ -75,11 +75,8 @@ public class ProfileViewManager {
         playerProfileVo.setNickname(playerProfileDto.getNickname());
         playerProfileVo.setSign(playerProfileDto.getSign());
         if (playerProfileDto.getCostumeId() != null) { // 优先设置衣装头像
-            List<CostumeDex> costumeData = costumeDexDao.selectByCostumeId(playerProfileDto.getCostumeId());
-            if (costumeData.size() != 1) {
-                throw new MetaDataQueryException("costume_dex");
-            }
-            playerProfileVo.setAvatarIcon(costumeData.get(0).getIconAvatar());
+            CostumeDex costumeData = getCostumeDex(playerProfileDto.getCostumeId());
+            playerProfileVo.setAvatarIcon(costumeData.getIconAvatar());
         } else if (playerProfileDto.getAvatarId() != null) {
             List<String> avatarIcons = characterDexDao.selectAvatarIconByLikelyCharacterId(playerProfileDto.getAvatarId());
             if (avatarIcons.isEmpty()) {
@@ -103,6 +100,53 @@ public class ProfileViewManager {
         return playerProfileVo;
     }
 
+    @WorkerThread
+    public CharacterProfileVo convertCharacterProfileToVo(CharacterOverview characterOverview, Map<ArtifactPositionEnum, ArtifactProfileDto> artifacts) {
+        CharacterProfileVo characterProfileVo = new CharacterProfileVo();
+        CharacterDex characterData = getCharacterDex(characterOverview.getCharacterId());
+        characterProfileVo.setCharacterName(characterData.getCharacterName());
+        characterProfileVo.setUid("");
+        characterProfileVo.setAvatarIcon(characterData.getIconAvatar());
+        characterProfileVo.setArtIcon(characterData.getIconArt());
+        characterProfileVo.setCardIcon(characterData.getIconCard());
+        characterProfileVo.setElement(characterData.getElement());
+        characterProfileVo.setLevel(characterOverview.getLevel());
+
+        characterProfileVo.setTalentAIcon(characterData.getIconTalentA());
+        characterProfileVo.setTalentEIcon(characterData.getIconTalentE());
+        characterProfileVo.setTalentQIcon(characterData.getIconTalentQ());
+        characterProfileVo.setTalentABaseLevel(characterOverview.getTalentLevel().get(SourceTalentEnum.A));
+        characterProfileVo.setTalentEBaseLevel(characterOverview.getTalentLevel().get(SourceTalentEnum.E));
+        characterProfileVo.setTalentQBaseLevel(characterOverview.getTalentLevel().get(SourceTalentEnum.Q));
+        characterProfileVo.setTalentAPlusLevel(characterOverview.getTalentLevelPlus().get(SourceTalentEnum.A));
+        characterProfileVo.setTalentEPlusLevel(characterOverview.getTalentLevelPlus().get(SourceTalentEnum.E));
+        characterProfileVo.setTalentQPlusLevel(characterOverview.getTalentLevelPlus().get(SourceTalentEnum.Q));
+
+        characterProfileVo.setConsIcons(Arrays.asList(
+                characterData.getIconCons1(),
+                characterData.getIconCons2(),
+                characterData.getIconCons3(),
+                characterData.getIconCons4(),
+                characterData.getIconCons5(),
+                characterData.getIconCons6()
+        ));
+        characterProfileVo.setConstellation(characterOverview.getConstellation());
+
+        characterProfileVo.setWeapon(convertWeaponProfileToVo(characterOverview));
+
+        Map<ArtifactPositionEnum, ArtifactProfileVo> artifactProfileVoMap = new HashMap<>();
+
+        for (ArtifactPositionEnum position : GenshinConstantMeta.ARTIFACT_POSITION_LIST) {
+            if (artifacts.containsKey(position)) {
+                artifactProfileVoMap.put(position, convertArtifactProfileToVo(Objects.requireNonNull(artifacts.get(position))));
+            }
+        }
+        characterProfileVo.setArtifacts(artifactProfileVoMap);
+        characterProfileVo.setEvaluations(artifactEvaluateManager.evaluateArtifacts(characterOverview, artifacts));
+        return characterProfileVo;
+    }
+
+    @WorkerThread
     public CharacterProfileVo convertCharacterProfileToVo(CharacterProfileDto characterProfileDto) {
         CharacterProfileVo characterProfileVo = new CharacterProfileVo();
         CharacterDex characterData = getCharacterDex(characterProfileDto.getCharacterId());
@@ -125,18 +169,18 @@ public class ProfileViewManager {
         characterProfileVo.setNewData(characterProfileDto.getNewData());
         characterProfileVo.setUpdateTime(characterProfileDto.getUpdateTime());
 
-        characterProfileVo.setBaseHp(characterProfileDto.getBaseHp());
-        characterProfileVo.setPlusHp(characterProfileDto.getPlusHp());
-        characterProfileVo.setBaseAtk(characterProfileDto.getBaseAtk());
-        characterProfileVo.setPlusAtk(characterProfileDto.getPlusAtk());
-        characterProfileVo.setBaseDef(characterProfileDto.getBaseDef());
-        characterProfileVo.setPlusDef(characterProfileDto.getPlusDef());
-        characterProfileVo.setMastery(characterProfileDto.getMastery());
-        characterProfileVo.setCritRate(characterProfileDto.getCritRate());
-        characterProfileVo.setCritDmg(characterProfileDto.getCritDmg());
-        characterProfileVo.setRecharge(characterProfileDto.getRecharge());
-        characterProfileVo.setDmgUp(characterProfileDto.getDmgUp());
-        characterProfileVo.setHealUp(characterProfileDto.getHealUp());
+//        characterProfileVo.setBaseHp(characterProfileDto.getBaseHp());
+//        characterProfileVo.setPlusHp(characterProfileDto.getPlusHp());
+//        characterProfileVo.setBaseAtk(characterProfileDto.getBaseAtk());
+//        characterProfileVo.setPlusAtk(characterProfileDto.getPlusAtk());
+//        characterProfileVo.setBaseDef(characterProfileDto.getBaseDef());
+//        characterProfileVo.setPlusDef(characterProfileDto.getPlusDef());
+//        characterProfileVo.setMastery(characterProfileDto.getMastery());
+//        characterProfileVo.setCritRate(characterProfileDto.getCritRate());
+//        characterProfileVo.setCritDmg(characterProfileDto.getCritDmg());
+//        characterProfileVo.setRecharge(characterProfileDto.getRecharge());
+//        characterProfileVo.setDmgUp(characterProfileDto.getDmgUp());
+//        characterProfileVo.setHealUp(characterProfileDto.getHealUp());
 
         characterProfileVo.setTalentAIcon(characterData.getIconTalentA());
         characterProfileVo.setTalentEIcon(characterData.getIconTalentE());
@@ -168,8 +212,56 @@ public class ProfileViewManager {
             }
         }
         characterProfileVo.setArtifacts(artifactProfileVoMap);
-        characterProfileVo.setEvaluations(artifactEvaluateManager.evaluateArtifacts(characterProfileDto));
+        characterProfileVo.setEvaluations(artifactEvaluateManager.evaluateArtifacts(
+                ProfileConvertUtils.extractCharacterOverview(characterProfileDto),
+                characterProfileDto.getArtifacts()));
         return characterProfileVo;
+    }
+
+    public ConstellationVo getConstellationVoFromCharacterProfileVo(CharacterProfileVo characterProfileVo, int cons) {
+        ConstellationVo constellationVo = new ConstellationVo();
+        constellationVo.setElement(characterProfileVo.getElement());
+        constellationVo.setActive(characterProfileVo.getConstellation() >= cons);
+        constellationVo.setIcon(characterProfileVo.getConsIcons().get(cons - 1));
+        return constellationVo;
+    }
+
+    public TalentVo getTalentVoFromCharacterProfileVo(CharacterProfileVo characterProfileVo, SourceTalentEnum talent) {
+        TalentVo talentVo = new TalentVo();
+        talentVo.setElement(characterProfileVo.getElement());
+        switch (talent) {
+            case A:
+                talentVo.setIcon(characterProfileVo.getTalentAIcon());
+                talentVo.setBaseLevel(characterProfileVo.getTalentABaseLevel());
+                talentVo.setPlusLevel(characterProfileVo.getTalentAPlusLevel());
+                break;
+            case E:
+                talentVo.setIcon(characterProfileVo.getTalentEIcon());
+                talentVo.setBaseLevel(characterProfileVo.getTalentEBaseLevel());
+                talentVo.setPlusLevel(characterProfileVo.getTalentEPlusLevel());
+                break;
+            case Q:
+                talentVo.setIcon(characterProfileVo.getTalentQIcon());
+                talentVo.setBaseLevel(characterProfileVo.getTalentQBaseLevel());
+                talentVo.setPlusLevel(characterProfileVo.getTalentQPlusLevel());
+                break;
+        }
+        return talentVo;
+    }
+
+    private WeaponProfileVo convertWeaponProfileToVo(CharacterOverview characterOverview) {
+        WeaponProfileVo weaponProfileVo = new WeaponProfileVo();
+        WeaponDex weaponData = getWeaponDex(characterOverview.getWeaponId());
+        weaponProfileVo.setWeaponName(weaponData.getWeaponName());
+        if (characterOverview.getWeaponPhase() >= 2) {
+            weaponProfileVo.setWeaponIcon(weaponData.getIconAwaken());
+        } else {
+            weaponProfileVo.setWeaponIcon(weaponData.getIconInitial());
+        }
+        weaponProfileVo.setLevel(characterOverview.getWeaponLevel());
+        weaponProfileVo.setRefineRank(characterOverview.getWeaponRefinement());
+        weaponProfileVo.setStar(weaponData.getStar());
+        return weaponProfileVo;
     }
 
     private WeaponProfileVo convertWeaponProfileToVo(WeaponProfileDto weaponProfileDto) {
@@ -184,9 +276,6 @@ public class ProfileViewManager {
         weaponProfileVo.setLevel(weaponProfileDto.getLevel());
         weaponProfileVo.setRefineRank(weaponProfileDto.getRefineRank());
         weaponProfileVo.setStar(weaponData.getStar());
-        weaponProfileVo.setBaseAtk(weaponProfileDto.getBaseAtk());
-        weaponProfileVo.setAttribute(weaponProfileDto.getAttribute());
-        weaponProfileVo.setAttributeVal(weaponProfileDto.getAttributeVal());
         return weaponProfileVo;
     }
 

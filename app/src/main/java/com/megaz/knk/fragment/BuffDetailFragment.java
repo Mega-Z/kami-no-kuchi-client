@@ -36,7 +36,7 @@ import java.util.Objects;
  * Use the {@link BuffDetailFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class BuffDetailFragment extends DialogFragment {
+public class BuffDetailFragment extends BaseDialogFragment {
     private BuffVo buffVo;
 
     private TextView textBuffTitle, textBuffEffect, textBuffNumber, textBuffDesc;
@@ -111,8 +111,8 @@ public class BuffDetailFragment extends DialogFragment {
         buffParamInputFragmentList = new ArrayList<>();
         setParamInput();
 
-        Objects.requireNonNull(getDialog()).requestWindowFeature(Window.FEATURE_NO_TITLE);
-        getDialog().getWindow().setBackgroundDrawableResource(R.color.transparent);
+//        Objects.requireNonNull(getDialog()).requestWindowFeature(Window.FEATURE_NO_TITLE);
+//        getDialog().getWindow().setBackgroundDrawableResource(R.color.transparent);
     }
 
     private class ModifyOnClickListener implements View.OnClickListener{

@@ -16,6 +16,12 @@
         android:usesCleartextTraffic="true"
         android:windowSoftInputMode="adjustResize">
         <activity
+            android:name=".activity.VirtualCharacterBrowseActivity"
+            android:exported="false" />
+        <activity
+            android:name=".activity.VirtualWeaponBrowseActivity"
+            android:exported="false" />
+        <activity
             android:name=".activity.BuffBrowseActivity"
             android:exported="false" />
         <activity

@@ -83,6 +83,7 @@ public class DynamicStyleUtils {
     }
 
     public static int getAttributeColor(AttributeEnum attributeEnum, ArtifactEvaluationVo artifactEvaluationVo) {
+        if(artifactEvaluationVo == null) return getWeightColor(50);
         Integer weight = artifactEvaluationVo.getAttributeWeight().get(attributeEnum.getLabel());
         assert  weight != null;
         return getWeightColor(weight);

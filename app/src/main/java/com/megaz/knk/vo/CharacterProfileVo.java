@@ -2,6 +2,8 @@ package com.megaz.knk.vo;
 
 import com.megaz.knk.constant.ArtifactPositionEnum;
 import com.megaz.knk.constant.ElementEnum;
+import com.megaz.knk.constant.SourceTalentEnum;
+
 import lombok.Getter;
 import lombok.Setter;
 
@@ -23,6 +25,7 @@ public class CharacterProfileVo implements Serializable {
     private Integer fetter;
     private Boolean newData;
     private Date updateTime;
+    /***
     // attributes
     private Double baseHp;
     private Double plusHp;
@@ -43,7 +46,7 @@ public class CharacterProfileVo implements Serializable {
     private Double dmgCryo;
     private Double dmgPhy;
     private Map<ElementEnum, Double> dmgUp;
-    private Double healUp;
+    private Double healUp;***/
     // talents
     private String talentAIcon;
     private String talentEIcon;

@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import lombok.Getter;
 
@@ -91,7 +92,10 @@ public class FightEffect extends FightStatus {
     }
 
     public List<BuffEffect> getEnabledBuffEffects() {
-        List<BuffEffect> buffEffectList = super.getEnabledBuffEffects();
+        List<BuffEffect> buffEffectList = super.getEnabledBuffEffects()
+                .stream().filter(b -> getBuffQueryCondition().getAddedAttributes().contains(b.getIncreasedAttribute()))
+                .collect(Collectors.toList());
+        // List<BuffEffect> buffEffectList = super.getEnabledBuffEffects();
         buffEffectList.addAll(baseFieldAddendBuffEffects);
         buffEffectList.addAll(baseFieldMultiplierBuffEffects);
         return buffEffectList;
@@ -137,6 +141,7 @@ public class FightEffect extends FightStatus {
         // 填充除属性增加之外已启用BUFF的参数
         for (BuffEffect buffEffect : getEnabledBuffEffects()) {
             if (buffEffect.getFromSelf()) {
+
                 buffEffect.fillDefaultInputParam(getAttributeWithBuff());
                 buffEffect.fillSelfAttributeParam(getAttributeWithBuff());
             }

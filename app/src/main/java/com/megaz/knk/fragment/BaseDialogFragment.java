@@ -43,6 +43,7 @@ public class BaseDialogFragment extends DialogFragment {
         typefaceFZFYKS = Typeface.createFromAsset(requireActivity().getAssets(), "fonts/fzfyks.ttf");
         typefaceNum = Typeface.createFromAsset(requireActivity().getAssets(), "fonts/tttgbnumber.ttf");
         simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+//        Objects.requireNonNull(getDialog()).requestWindowFeature(Window.FEATURE_NO_TITLE);
     }
 
     @Override
@@ -50,13 +51,11 @@ public class BaseDialogFragment extends DialogFragment {
         super.onViewCreated(view, savedInstanceState);
         initView(view);
         setCallback(view);
-        Objects.requireNonNull(getDialog()).requestWindowFeature(Window.FEATURE_NO_TITLE);
-        getDialog().getWindow().setBackgroundDrawableResource(R.color.transparent);
         initialize(view);
     }
 
     protected void initView(@NonNull View view) {
-
+        Objects.requireNonNull(getDialog()).getWindow().setBackgroundDrawableResource(R.color.transparent);
     }
 
     protected void setCallback(@NonNull View view) {

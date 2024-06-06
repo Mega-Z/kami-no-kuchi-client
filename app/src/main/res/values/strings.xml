@@ -29,7 +29,7 @@
     <string name="btn_update_profile">更新面板</string>
     <string name="text_default_player_name">旅行者</string>
     <string name="text_character_list_title">角色列表</string>
-    <string name="text_default_character_name">旅行者 </string>
+    <string name="text_default_character_name">旅行者之荧 </string>
     <string name="text_default_character_level">Lv.90</string>
     <string name="text_default_character_cons">0命</string>
     <string name="text_default_talent_level">Lv.10</string>
@@ -48,7 +48,8 @@
     <string name="text_artifact_level_prefix">+</string>
     <string name="text_default_artifact_name">异世旅者的祝圣秘宝</string>
     <string name="text_default_weight">\??</string>
-    <string name="text_criterion_name_prefix">评分规则：</string>
+    <string name="text_criterion_name">评分规则：%s</string>
+    <string name="text_criterion_name_empty">评分规则：暂无</string>
     <string name="text_wish_slogan">信仰概率，摒弃玄学</string>
     <string name="text_target_up_num">目标限定五星数量：</string>
     <string name="text_consumed">卡池已垫抽数：</string>
@@ -61,6 +62,7 @@
     <string name="text_no_effect_data">该角色暂无实战评估数据</string>
     <string name="text_effect_desc_default">奥义·梦想真说梦想一心满愿力重击伤害</string>
     <string name="text_crit_or_not">（暴击伤害/平均伤害）</string>
+    <string name="text_effect_unavailable">NaN</string>
     <string name="text_effect_number_default">131072/65536</string>
     <string name="text_average">（平均伤害）</string>
     <string name="title_activity_fight_effect_detail">FightEffectDetailActivity</string>
@@ -75,7 +77,9 @@
     <string name="text_no_history">暂无历史面板</string>
     <string name="text_title_history_selection">参照历史面板选取</string>
     <string name="text_title_virtual_config">虚构面板配置</string>
-    <string name="text_title_history_prefix">参照面板：</string>
+    <string name="text_title_history">参照面板：%s</string>
+    <string name="text_title_virtual">虚构面板：%s</string>
     <string name="text_promote_true">已突破</string>
     <string name="text_promote_false">未突破</string>
+    <string name="text_weapon_not_match">!类型不匹配!</string>
 </resources>

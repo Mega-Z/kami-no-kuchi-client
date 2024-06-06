@@ -157,9 +157,6 @@ public class BuffEffect implements Serializable {
     }
 
     public void fillDefaultInputParam(CharacterAttribute characterAttribute) {
-//        if(basedAttributeValue != null) {
-//            return;
-//        }
         switch (buffId) {
             case "BC10000052-1":  // 神变·恶曜开眼
                 basedAttributeValue = 90.;
@@ -169,6 +166,12 @@ public class BuffEffect implements Serializable {
                 break;
             case "BC10000096-2": // 红死之宴
                 basedAttributeValue = 145.;
+                break;
+            case "BC10000095-4": // 细致入微的诊疗
+                basedAttributeValue = 10000.;
+                break;
+            case "BC10000098-6": // 「铭记泪，生命与仁爱」
+                basedAttributeValue = 100.;
                 break;
             case "BW12416-1":
             case "BW13416-1":

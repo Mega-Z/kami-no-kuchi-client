@@ -20,10 +20,15 @@ import lombok.Setter;
 
 @Getter
 public class CharacterAttribute implements Serializable {
-    private final String characterId;
+    @Setter
+    private String characterId;
+    @Setter
     private ElementEnum element;
+    @Setter
     private Integer level;
+    @Setter
     private Integer phase;
+    @Setter
     private Integer constellation;
     @Setter
     private Double baseHp;
@@ -38,15 +43,51 @@ public class CharacterAttribute implements Serializable {
     private Double critRate;
     private Double critDmg;
     private Double recharge;
-    private Map<ElementEnum, Double> dmgUp;
+    private final Map<ElementEnum, Double> dmgUp;
     private Double healUp;
     private Double healedUp;
     private Double shieldStrength;
+    @Setter
     private Map<SourceTalentEnum, Integer> talentLevel;
+    @Setter
     private String weaponId;
+    @Setter
     private Integer weaponRefinement;
+    @Setter
     private Map<String, Integer> artifactSetCount;
+    @Setter
+    private Double weaponBaseAtk;
+    @Setter
+    private AttributeEnum weaponAttribute;
+    @Setter
+    private Double weaponAttributeValue;
 
+    public CharacterAttribute() {
+        baseHp = 0.;
+        plusHp = 0.;
+        baseAtk = 0.;
+        plusAtk = 0.;
+        baseDef = 0.;
+        plusDef = 0.;
+        recharge = 1.;
+        mastery = 0.;
+        critRate = 0.05;
+        critDmg = 0.5;
+        dmgUp = new HashMap<>();
+        weaponBaseAtk = 0.;
+        weaponAttribute = null;
+        weaponAttributeValue = 0.;
+        for(ElementEnum element:GenshinConstantMeta.ELEMENT_LIST) {
+            dmgUp.put(element, 0.);
+        }
+        healUp = 0.;
+        healedUp = 0.;
+        shieldStrength = 0.;
+        talentLevel = new HashMap<>();
+        artifactSetCount = new HashMap<>();
+    }
+
+    @Deprecated
     public CharacterAttribute(CharacterProfileDto characterProfileDto) {
         characterId = characterProfileDto.getCharacterId();
         element = characterProfileDto.getElement();
@@ -107,6 +148,9 @@ public class CharacterAttribute implements Serializable {
         mastery = another.getMastery();
         critRate = another.getCritRate();
         critDmg = another.getCritDmg();
+        weaponBaseAtk = another.getWeaponBaseAtk();
+        weaponAttribute = another.getWeaponAttribute();
+        weaponAttributeValue = another.getWeaponAttributeValue();
         dmgUp = new HashMap<>();
         for(ElementEnum element:GenshinConstantMeta.ELEMENT_LIST) {
             dmgUp.put(element, another.getDmgUp().get(element));

@@ -54,7 +54,7 @@ import com.megaz.knk.entity.WeaponDex;
         PlayerProfile.class,
         CharacterProfile.class,
         ArtifactInstance.class
-}, version = 3,exportSchema = false)
+}, version = 5,exportSchema = false)
 @TypeConverters(DateConverter.class)
 public abstract class KnkDatabase extends RoomDatabase {
     private static KnkDatabase knkDatabaseInstance;

@@ -14,6 +14,7 @@
     <color name="gray_black">#2C2C2C</color>
     <color name="gray_white">#dddddd</color>
     <color name="light_blue">#FF4FC3F7</color>
+    <color name="red">#FFE80049</color>
     <color name="attr_green">#FF90E800</color>
     <color name="attr_red">#FFE80049</color>
     <color name="talent_blue">#FF38FFFF</color>
@@ -100,8 +101,10 @@
     <color name="bg_enabled_buff_pressed">#77000000</color>
     <color name="bg_profile_history">#BB000000</color>
     <color name="bg_profile_history_pressed">#77000000</color>
-    <color name="bg_buff_browse">#E3F2FD</color>
-    <color name="frame_buff_browse">#000E5E</color>
+    <color name="bg_style_1">#E3F2FD</color>
+    <color name="frame_style_1">#000E5E</color>
+    <color name="bg_style_2">#FFECDE</color>
+    <color name="frame_style_2">#5E1B00</color>
     <color name="bg_dialog_gray">#CC333333</color>
     <color name="fragment_press_gray">#77777777</color>
 </resources>

@@ -23,9 +23,10 @@ import java.util.Objects;
  * Use the {@link ConstellationFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class ConstellationFragment extends Fragment {
-
+public class ConstellationFragment extends BaseFragment {
     private ConstellationVo constellationVo;
+
+    private ImageView imageConsIcon, imageConsFrame;
 
     public ConstellationFragment() {
         // Required empty public constructor
@@ -55,12 +56,18 @@ public class ConstellationFragment extends Fragment {
     }
 
     @Override
-    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
-        ImageView imageConsIcon = view.findViewById(R.id.img_cons_icon);
-        imageConsIcon.setImageBitmap(ImageResourceUtils.getIconBitmap(Objects.requireNonNull(getContext()), constellationVo.getIcon()));
-        ImageView imageConsFrame = view.findViewById(R.id.img_cons_frame);
-        Bitmap bitmapFrame = ImageResourceUtils.getFrameByElement(Objects.requireNonNull(getContext()), constellationVo.getElement());
+    protected void initView(@NonNull View view) {
+        super.initView(view);
+        requireContext();
+        imageConsIcon = view.findViewById(R.id.img_cons_icon);
+        imageConsFrame = view.findViewById(R.id.img_cons_frame);
+        updateViews(constellationVo);
+    }
+
+    public void updateViews(@NonNull ConstellationVo constellationVo) {
+        this.constellationVo = constellationVo;
+        imageConsIcon.setImageBitmap(ImageResourceUtils.getIconBitmap(requireContext(), constellationVo.getIcon()));
+        Bitmap bitmapFrame = ImageResourceUtils.getFrameByElement(requireContext(), constellationVo.getElement());
         imageConsFrame.setImageBitmap(bitmapFrame);
         if(constellationVo.getActive()) {
             imageConsIcon.setAlpha(1f);
@@ -69,6 +76,5 @@ public class ConstellationFragment extends Fragment {
             imageConsIcon.setAlpha(0.5f);
             imageConsFrame.setAlpha(0.5f);
         }
-
     }
 }

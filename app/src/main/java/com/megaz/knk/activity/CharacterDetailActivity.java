@@ -17,14 +17,18 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.WorkerThread;
 import androidx.fragment.app.FragmentTransaction;
 
 import com.megaz.knk.R;
 import com.megaz.knk.computation.CharacterAttribute;
+import com.megaz.knk.computation.CharacterOverview;
 import com.megaz.knk.computation.EnemyAttribute;
 import com.megaz.knk.computation.FightEffect;
 import com.megaz.knk.computation.FightStatus;
 import com.megaz.knk.constant.CharacterDetailActivityStatusEnum;
+import com.megaz.knk.constant.ElementEnum;
+import com.megaz.knk.constant.SourceTalentEnum;
 import com.megaz.knk.dto.CharacterProfileDto;
 import com.megaz.knk.fragment.ArtifactEvaluationFragment;
 import com.megaz.knk.fragment.CharacterAttributeFragment;
@@ -44,6 +48,10 @@ import com.megaz.knk.vo.CharacterProfileVo;
 import com.megaz.knk.vo.ConstellationVo;
 import com.megaz.knk.vo.TalentVo;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 public class CharacterDetailActivity extends ElasticScrollActivity {
@@ -53,12 +61,15 @@ public class CharacterDetailActivity extends ElasticScrollActivity {
     private float ART_SCALE_RATIO;
     private CharacterDetailActivityStatusEnum status;
 
-//    private CharacterAttribute characterBaseAttribute, characterAttributeHistory, characterAttributeVirtual;
+    //    private CharacterAttribute characterBaseAttribute, characterAttributeHistory, characterAttributeVirtual;
     private FightStatus fightStatus, fightStatusHistory, fightStatusVirtual;
+    private CharacterOverview characterOverview, characterOverviewHistory, characterOverviewVirtual;
     private CharacterProfileVo characterProfileVo, characterProfileVoVirtual;
-    private CharacterProfileDto characterProfileDto, characterProfileDtoHistory, characterProfileDtoVirtual;
+    private CharacterProfileDto characterProfileDto, characterProfileDtoHistory;
 
     private WeaponFragment weaponFragment;
+    private Map<SourceTalentEnum, TalentFragment> talentFragmentMap;
+    private List<ConstellationFragment> constellationFragmentList;
     private CharacterAttributeFragment characterAttributeFragment;
     private ArtifactEvaluationFragment artifactEvaluationFragment;
     private EffectComputationFragment effectComputationFragment;
@@ -71,12 +82,13 @@ public class CharacterDetailActivity extends ElasticScrollActivity {
     private LinearLayout layoutTalentA, layoutTalentE, layoutTalentQ;
     private LinearLayout layoutWeapon;
     private LinearLayout layoutArtifactEvaluation, layoutEffectComputation;
-    private ImageView imageCharacterArt;
+    private ImageView imageCharacterArt, imageBg;
+    private TextView textName, textLevel;
     private ImageView buttonCharacterMenu;
     private TextView buttonCharacterMenuHistory, buttonCharacterMenuVirtual, buttonCharacterMenuReset;
     private LinearLayout layoutCharacterMenu;
 
-    private Handler statusCreateHandler;
+    private Handler statusCreateHandler, profileVoCreateHandler;
 
     private EffectComputationManager effectComputationManager;
     private CharacterAttributeManager characterAttributeManager;
@@ -88,6 +100,7 @@ public class CharacterDetailActivity extends ElasticScrollActivity {
         setContentView(R.layout.activity_character_detail);
         effectComputationManager = new EffectComputationManager(getApplicationContext());
         characterAttributeManager = new CharacterAttributeManager(getApplicationContext());
+        profileViewManager = ProfileViewManager.getInstance(getApplicationContext());
     }
 
     @Override
@@ -95,13 +108,10 @@ public class CharacterDetailActivity extends ElasticScrollActivity {
         super.initView();
         characterProfileDto = (CharacterProfileDto) getIntent().getExtras().getSerializable("characterProfileDto");
         characterProfileVo = (CharacterProfileVo) getIntent().getExtras().getSerializable("characterProfileVo");
+        characterOverview = ProfileConvertUtils.extractCharacterOverview(characterProfileDto);
         status = CharacterDetailActivityStatusEnum.INITIAL;
         initConstants();
         layoutArt = findViewById(R.id.layout_art);
-        findViewById(R.id.text_title_artifact_evaluation)
-                .setBackgroundColor(getColor(DynamicStyleUtils.getElementTextColor(characterProfileDto.getElement())));
-        findViewById(R.id.text_title_fight_effect_computation)
-                .setBackgroundColor(getColor(DynamicStyleUtils.getElementTextColor(characterProfileDto.getElement())));
         buttonCharacterMenu = findViewById(R.id.btn_character_menu);
         layoutCharacterMenu = findViewById(R.id.layout_character_menu);
         layoutCharacterMenu.setVisibility(View.GONE);
@@ -110,10 +120,11 @@ public class CharacterDetailActivity extends ElasticScrollActivity {
         buttonCharacterMenuVirtual = findViewById(R.id.btn_character_menu_virtual);
         layoutArtifactEvaluation = findViewById(R.id.layout_artifact_evaluation);
         layoutEffectComputation = findViewById(R.id.layout_effect_computation);
-        initCharacterBaseInfo();
-        initWeaponInfo();
+        initCharacterBaseInfoViews();
+        // updateCharacterBaseInfoByVo(characterProfileVo);
         initCharacterAttributeFragment();
         initArtifactEvaluationFragment();
+        setElementStyles(characterProfileVo.getElement());
         disableScrolling();
         // initEffectComputationFragment();
     }
@@ -126,6 +137,12 @@ public class CharacterDetailActivity extends ElasticScrollActivity {
             @Override
             public void handleMessage(@NonNull Message msg) {
                 handleStatusCreated(msg);
+            }
+        };
+        profileVoCreateHandler = new Handler(Looper.myLooper()) {
+            @Override
+            public void handleMessage(@NonNull Message msg) {
+                handleProfileVoCreated(msg);
             }
         };
         buttonCharacterMenu.setOnClickListener(new View.OnClickListener() {
@@ -148,8 +165,9 @@ public class CharacterDetailActivity extends ElasticScrollActivity {
     @Override
     protected void initialize() {
         super.initialize();
-        new Thread(() -> createCharacterAttributeWithoutBuff(false)).start();
+        new Thread(() -> createFightStatusFromProfile(false)).start();
     }
+
 
     private static class MenuOnTouchListener implements View.OnTouchListener {
 
@@ -169,6 +187,10 @@ public class CharacterDetailActivity extends ElasticScrollActivity {
     private class MenuHistoryOnClickListener implements View.OnClickListener {
         @Override
         public void onClick(View view) {
+            if (status == CharacterDetailActivityStatusEnum.VIRTUAL ||
+                    status == CharacterDetailActivityStatusEnum.SUBSTITUTION) {
+                resetInitialViews();
+            }
             historyProfileSelectionFragment = HistoryProfileSelectionFragment.newInstance(characterProfileDto);
             historyProfileSelectionFragment.show(getSupportFragmentManager(), "");
             layoutCharacterMenu.setVisibility(View.GONE);
@@ -178,8 +200,16 @@ public class CharacterDetailActivity extends ElasticScrollActivity {
     private class MenuVirtualOnClickListener implements View.OnClickListener {
         @Override
         public void onClick(View view) {
-            CharacterProfileDto copy = ProfileConvertUtils.copyCharacterProfile(characterProfileDto);
-            virtualProfileConfigFragment = VirtualProfileConfigFragment.newInstance(copy);
+            if (status == CharacterDetailActivityStatusEnum.HISTORY) {
+                resetInitialViews();
+            }
+            if (status == CharacterDetailActivityStatusEnum.INITIAL)
+                virtualProfileConfigFragment = VirtualProfileConfigFragment.newInstance(
+                        characterOverview.copy());
+            else if (status == CharacterDetailActivityStatusEnum.VIRTUAL ||
+                    status == CharacterDetailActivityStatusEnum.SUBSTITUTION)
+                virtualProfileConfigFragment = VirtualProfileConfigFragment.newInstance(
+                        characterOverviewVirtual.copy());
             virtualProfileConfigFragment.show(getSupportFragmentManager(), "");
             layoutCharacterMenu.setVisibility(View.GONE);
         }
@@ -190,30 +220,73 @@ public class CharacterDetailActivity extends ElasticScrollActivity {
         public void onClick(View view) {
             characterProfileDtoHistory = null;
             fightStatusHistory = null;
+            characterOverviewVirtual = null;
+            fightStatusVirtual = null;
             resetInitialViews();
-            startScrollingTo(0f);
-            disableScrolling();
             layoutCharacterMenu.setVisibility(View.GONE);
         }
     }
 
-    private void createCharacterAttributeWithoutBuff(boolean isBaseline) {
+    @WorkerThread
+    private void createVirtualVo() {
+        Message msg = new Message();
+        try {
+            assert characterOverviewVirtual != null;
+            msg.obj = profileViewManager.convertCharacterProfileToVo(characterOverviewVirtual, characterProfileDto.getArtifacts());
+            msg.what = 1;
+            profileVoCreateHandler.sendMessage(msg);
+        } catch (RuntimeException e) {
+            e.printStackTrace();
+            msg.what = -1;
+            profileVoCreateHandler.sendMessage(msg);
+        }
+    }
+
+    private void handleProfileVoCreated(Message msg) {
+        switch (msg.what) {
+            case 1:
+                characterProfileVoVirtual = (CharacterProfileVo) msg.obj;
+                new Thread(this::createFightStatusFromVirtualOverview).start();
+                break;
+        }
+    }
+
+    @WorkerThread
+    private void createFightStatusFromProfile(boolean isHistory) {
+        Message msg = new Message();
         try {
             CharacterAttribute characterAttribute;
-            Message msg = new Message();
-            if (!isBaseline) {
-                characterAttribute = characterAttributeManager.createCharacterBaseAttribute(characterProfileDto);
+            if (!isHistory) {
+                characterAttribute = characterAttributeManager.createCharacterBaseAttribute(
+                        characterOverview, characterProfileDto.getArtifacts());
                 msg.what = 0;
             } else {
-                characterAttribute = characterAttributeManager.createCharacterBaseAttribute(characterProfileDtoHistory);
+                characterAttribute = characterAttributeManager.createCharacterBaseAttribute(
+                        characterOverviewHistory, characterProfileDtoHistory.getArtifacts());
                 msg.what = 1;
             }
             msg.obj = characterAttributeManager.getFightStatusByCharacterAttribute(characterAttribute);
             statusCreateHandler.sendMessage(msg);
         } catch (RuntimeException e) {
             e.printStackTrace();
+            msg.what = -1;
+            statusCreateHandler.sendMessage(msg);
+        }
+    }
+
+    @WorkerThread
+    private void createFightStatusFromVirtualOverview() {
+        try {
             Message msg = new Message();
+            CharacterAttribute characterAttribute = characterAttributeManager.createCharacterBaseAttribute(
+                    characterOverviewVirtual, characterProfileDto.getArtifacts());
+            msg.obj = characterAttributeManager.getFightStatusByCharacterAttribute(characterAttribute);
             msg.what = 2;
+            statusCreateHandler.sendMessage(msg);
+        } catch (RuntimeException e) {
+            e.printStackTrace();
+            Message msg = new Message();
+            msg.what = -1;
             statusCreateHandler.sendMessage(msg);
         }
     }
@@ -222,14 +295,15 @@ public class CharacterDetailActivity extends ElasticScrollActivity {
         switch (msg.what) {
             case 0: // current attribute created
                 fightStatus = (FightStatus) msg.obj;
-                initEffectComputationFragment();
-                characterAttributeFragment.setCharacterAttribute(fightStatus.getAttributeWithBuff());
+                initializeViews();
                 break;
-            case 1:
+            case 1: // history status created
                 fightStatusHistory = (FightStatus) msg.obj;
                 showHistoryViews();
-                enableScrolling();
-                startScrollingTo(1);
+                break;
+            case 2: // virtual status created
+                fightStatusVirtual = (FightStatus) msg.obj;
+                showVirtualViews();
                 break;
         }
     }
@@ -303,7 +377,7 @@ public class CharacterDetailActivity extends ElasticScrollActivity {
         Bundle bundle = new Bundle();
         bundle.putSerializable("fightEffect", fightEffect);
         intent.putExtras(bundle);
-        if(!baseline)
+        if (!baseline)
             startActivityForResult(intent, 1);
         else
             startActivityForResult(intent, 2);
@@ -313,10 +387,22 @@ public class CharacterDetailActivity extends ElasticScrollActivity {
         effectComputationFragment.updateEnemyAttribute(enemyAttribute);
     }
 
-    public void onHistorySelected(CharacterProfileDto characterProfileHistory) {
+    public void onHistorySelected(CharacterProfileDto characterProfileDtoHistory) {
         Objects.requireNonNull(historyProfileSelectionFragment.getDialog()).cancel();
-        characterProfileDtoHistory = characterProfileHistory;
-        new Thread(() -> createCharacterAttributeWithoutBuff(true)).start();
+        this.characterProfileDtoHistory = characterProfileDtoHistory;
+        characterOverviewHistory = ProfileConvertUtils.extractCharacterOverview(characterProfileDtoHistory);
+        new Thread(() -> createFightStatusFromProfile(true)).start();
+    }
+
+    public void onVirtualConfigSet(CharacterOverview characterOverviewVirtual) {
+        if (((status == CharacterDetailActivityStatusEnum.INITIAL &&
+                characterOverviewVirtual.equals(characterOverview))) ||
+                ((status == CharacterDetailActivityStatusEnum.VIRTUAL ||
+                        status == CharacterDetailActivityStatusEnum.SUBSTITUTION) &&
+                        characterOverviewVirtual.equals(this.characterOverviewVirtual)))
+            return;
+        this.characterOverviewVirtual = characterOverviewVirtual;
+        new Thread(this::createVirtualVo).start();
     }
 
     @Override
@@ -344,83 +430,87 @@ public class CharacterDetailActivity extends ElasticScrollActivity {
         TALENT_WIDTH = getResources().getDimensionPixelOffset(R.dimen.dp_50);
     }
 
-
-    @SuppressLint("SetTextI18n")
-    private void initCharacterBaseInfo() {
+    private void initCharacterBaseInfoViews() {
         FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
         textTitle = findViewById(R.id.text_profile_title);
         textTitle.setBackgroundColor(getColor(DynamicStyleUtils.getElementTextColor(characterProfileVo.getElement())));
         setTitleNormal();
         // name&level
-        TextView textName = findViewById(R.id.text_character_name);
+        textName = findViewById(R.id.text_character_name);
         textName.setTypeface(typefaceNZBZ);
-        textName.setText(" " + characterProfileVo.getCharacterName() + " ");
-        textName.setTextColor(getColor(DynamicStyleUtils.getElementTextColor(characterProfileVo.getElement())));
-        TextView textLevel = findViewById(R.id.text_character_level);
-        textLevel.setTypeface(typefaceNum);
-        textLevel.setText(getString(R.string.text_level_prefix) + characterProfileVo.getLevel());
-        textLevel.setBackgroundColor(getColor(DynamicStyleUtils.getElementTextColor(characterProfileVo.getElement())));
-        // art
+        textLevel = findViewById(R.id.text_character_level);
+        textLevel.setTypeface(typefaceNum);// art
         imageCharacterArt = findViewById(R.id.img_character_art);
-        Bitmap bitmapArt = ImageResourceUtils.getIconBitmap(getApplicationContext(), characterProfileVo.getArtIcon());
-        Bitmap bitmapArtScaled = Bitmap.createScaledBitmap(bitmapArt,
-                ART_HEIGHT * bitmapArt.getWidth() / bitmapArt.getHeight(), ART_HEIGHT, true);
-        imageCharacterArt.setImageBitmap(bitmapArtScaled);
         imageCharacterArt.setTranslationX((ART_OFFSET_X));
         // bg
-        ImageView imageBg = findViewById(R.id.img_element_bg);
-        imageBg.setBackgroundColor(getColor(DynamicStyleUtils.getElementBackgroundColor(characterProfileVo.getElement())));
-//        imageBg.setImageBitmap(ImageResourceUtils.getBackgroundByElement(getApplicationContext(), characterProfileVo.getElement()));
+        imageBg = findViewById(R.id.img_element_bg);
+
         // constellation
+        constellationFragmentList = new ArrayList<>();
         for (int c = 1; c <= 6; c++) {
-            ConstellationVo constellationVo = new ConstellationVo();
-            constellationVo.setElement(characterProfileVo.getElement());
-            constellationVo.setActive(characterProfileVo.getConstellation() >= c);
-            constellationVo.setIcon(characterProfileVo.getConsIcons().get(c - 1));
-            ConstellationFragment constellationFragment = ConstellationFragment.newInstance(constellationVo);
+            ConstellationFragment constellationFragment = ConstellationFragment.newInstance(
+                    profileViewManager.getConstellationVoFromCharacterProfileVo(characterProfileVo, c));
             fragmentTransaction.add(R.id.layout_constellation, constellationFragment);
+            constellationFragmentList.add(constellationFragment);
         }
         layoutConstellation = findViewById(R.id.layout_constellation);
         // talents
-        TalentVo talentVoA = new TalentVo();
-        talentVoA.setElement(characterProfileVo.getElement());
-        talentVoA.setIcon(characterProfileVo.getTalentAIcon());
-        talentVoA.setBaseLevel(characterProfileVo.getTalentABaseLevel());
-        talentVoA.setPlusLevel(characterProfileVo.getTalentAPlusLevel());
-        TalentFragment talentFragmentA = TalentFragment.newInstance(talentVoA);
-        fragmentTransaction.add(R.id.layout_talent_A, talentFragmentA);
-
-        TalentVo talentVoE = new TalentVo();
-        talentVoE.setElement(characterProfileVo.getElement());
-        talentVoE.setIcon(characterProfileVo.getTalentEIcon());
-        talentVoE.setBaseLevel(characterProfileVo.getTalentEBaseLevel());
-        talentVoE.setPlusLevel(characterProfileVo.getTalentEPlusLevel());
-        TalentFragment talentFragmentE = TalentFragment.newInstance(talentVoE);
-        fragmentTransaction.add(R.id.layout_talent_E, talentFragmentE);
-
-        TalentVo talentVoQ = new TalentVo();
-        talentVoQ.setElement(characterProfileVo.getElement());
-        talentVoQ.setIcon(characterProfileVo.getTalentQIcon());
-        talentVoQ.setBaseLevel(characterProfileVo.getTalentQBaseLevel());
-        talentVoQ.setPlusLevel(characterProfileVo.getTalentQPlusLevel());
-        TalentFragment talentFragmentQ = TalentFragment.newInstance(talentVoQ);
-        fragmentTransaction.add(R.id.layout_talent_Q, talentFragmentQ);
-
+        talentFragmentMap = new HashMap<>();
+        talentFragmentMap.put(SourceTalentEnum.A, TalentFragment.newInstance(
+                profileViewManager.getTalentVoFromCharacterProfileVo(characterProfileVo, SourceTalentEnum.A)));
+        fragmentTransaction.add(R.id.layout_talent_A, Objects.requireNonNull(talentFragmentMap.get(SourceTalentEnum.A)));
+        talentFragmentMap.put(SourceTalentEnum.E, TalentFragment.newInstance(
+                profileViewManager.getTalentVoFromCharacterProfileVo(characterProfileVo, SourceTalentEnum.E)));
+        fragmentTransaction.add(R.id.layout_talent_E, Objects.requireNonNull(talentFragmentMap.get(SourceTalentEnum.E)));
+        talentFragmentMap.put(SourceTalentEnum.Q, TalentFragment.newInstance(
+                profileViewManager.getTalentVoFromCharacterProfileVo(characterProfileVo, SourceTalentEnum.Q)));
+        fragmentTransaction.add(R.id.layout_talent_Q, Objects.requireNonNull(talentFragmentMap.get(SourceTalentEnum.Q)));
         layoutTalentA = findViewById(R.id.layout_talent_A);
         layoutTalentE = findViewById(R.id.layout_talent_E);
         layoutTalentQ = findViewById(R.id.layout_talent_Q);
         layoutTalentA.setTranslationX((float) TALENT_WIDTH * -2);
         layoutTalentE.setTranslationX((float) TALENT_WIDTH * -1);
+        // weapon
+        layoutWeapon = findViewById(R.id.layout_weapon);
+        weaponFragment = WeaponFragment.newInstance(characterProfileVo.getWeapon());
+        fragmentTransaction.add(R.id.layout_weapon, weaponFragment);
 
         fragmentTransaction.commit();
     }
 
-    private void initWeaponInfo() {
-        layoutWeapon = findViewById(R.id.layout_weapon);
-        FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
-        weaponFragment = WeaponFragment.newInstance(characterProfileVo.getWeapon());
-        fragmentTransaction.add(R.id.layout_weapon, weaponFragment);
-        fragmentTransaction.commit();
+    private void setElementStyles(ElementEnum element) {
+        findViewById(R.id.text_title_artifact_evaluation)
+                .setBackgroundColor(getColor(DynamicStyleUtils.getElementTextColor(element)));
+        findViewById(R.id.text_title_fight_effect_computation)
+                .setBackgroundColor(getColor(DynamicStyleUtils.getElementTextColor(element)));
+        imageBg.setBackgroundColor(getColor(DynamicStyleUtils.getElementBackgroundColor(element)));
+        textTitle.setBackgroundColor(getColor(DynamicStyleUtils.getElementTextColor(element)));
+        textName.setTextColor(getColor(DynamicStyleUtils.getElementTextColor(element)));
+        textLevel.setBackgroundColor(getColor(DynamicStyleUtils.getElementTextColor(element)));
+    }
+
+    @SuppressLint("SetTextI18n")
+    private void updateCharacterPlainInfoByVo(CharacterProfileVo characterProfileVo) {
+        textName.setText(" " + characterProfileVo.getCharacterName() + " ");
+        textLevel.setText(getString(R.string.text_level_prefix) + characterProfileVo.getLevel());
+        Bitmap bitmapArt = ImageResourceUtils.getIconBitmap(getApplicationContext(), characterProfileVo.getArtIcon());
+        Bitmap bitmapArtScaled = Bitmap.createScaledBitmap(bitmapArt,
+                ART_HEIGHT * bitmapArt.getWidth() / bitmapArt.getHeight(), ART_HEIGHT, true);
+        imageCharacterArt.setImageBitmap(bitmapArtScaled);
+    }
+
+    private void updateCharacterInfoFragmentsByVo(CharacterProfileVo characterProfileVo) {
+        for (int c = 1; c <= 6; c++) {
+            constellationFragmentList.get(c - 1).updateViews(
+                    profileViewManager.getConstellationVoFromCharacterProfileVo(characterProfileVo, c));
+        }
+        Objects.requireNonNull(talentFragmentMap.get(SourceTalentEnum.A)).updateViews(
+                profileViewManager.getTalentVoFromCharacterProfileVo(characterProfileVo, SourceTalentEnum.A));
+        Objects.requireNonNull(talentFragmentMap.get(SourceTalentEnum.E)).updateViews(
+                profileViewManager.getTalentVoFromCharacterProfileVo(characterProfileVo, SourceTalentEnum.E));
+        Objects.requireNonNull(talentFragmentMap.get(SourceTalentEnum.Q)).updateViews(
+                profileViewManager.getTalentVoFromCharacterProfileVo(characterProfileVo, SourceTalentEnum.Q));
+        weaponFragment.updateViews(characterProfileVo.getWeapon());
     }
 
     private void initCharacterAttributeFragment() {
@@ -444,21 +534,75 @@ public class CharacterDetailActivity extends ElasticScrollActivity {
         fragmentTransaction.commit();
     }
 
+    private void initializeViews() {
+        setTitleNormal();
+        updateCharacterPlainInfoByVo(characterProfileVo);
+        initEffectComputationFragment();
+        weaponFragment.updateViews(fightStatus.getAttributeWithBuff());
+        characterAttributeFragment.setCharacterAttribute(fightStatus.getAttributeWithBuff());
+    }
+
+
     private void resetInitialViews() {
         setTitleNormal();
-        if(status == CharacterDetailActivityStatusEnum.HISTORY) {
+        setElementStyles(characterProfileVo.getElement());
+        updateCharacterPlainInfoByVo(characterProfileVo);
+        updateCharacterInfoFragmentsByVo(characterProfileVo);
+        if (status == CharacterDetailActivityStatusEnum.HISTORY) {
             characterAttributeFragment.setCharacterAttributeBaseline(null);
             effectComputationFragment.disableComparing();
+        } else if (status == CharacterDetailActivityStatusEnum.VIRTUAL) {
+            characterAttributeFragment.setCharacterAttribute(fightStatus.getAttributeWithBuff());
+            characterAttributeFragment.setCharacterAttributeBaseline(null);
+            weaponFragment.updateViews(fightStatus.getAttributeBase());
+            effectComputationFragment.resetEffectsByCharacterAttribute(fightStatus.getAttributeBase(), null);
+        } else if (status == CharacterDetailActivityStatusEnum.SUBSTITUTION) {
+            characterAttributeFragment.setCharacterAttribute(fightStatus.getAttributeWithBuff());
+            characterAttributeFragment.setCharacterAttributeBaseline(null);
+            weaponFragment.updateViews(fightStatus.getAttributeBase());
+            artifactEvaluationFragment.updateViewsByCharacterProfileVo(characterProfileVo);
+            artifactEvaluationFragment.hideCriterionSelection();
+            effectComputationFragment.resetEffectsByCharacterAttribute(fightStatus.getAttributeBase(), null);
         }
         status = CharacterDetailActivityStatusEnum.INITIAL;
+        startScrollingTo(0f);
+        disableScrolling();
     }
 
     private void showHistoryViews() {
         assert characterProfileDtoHistory != null && fightStatusHistory != null;
         setTitleHistory();
         characterAttributeFragment.setCharacterAttributeBaseline(fightStatusHistory.getAttributeWithBuff());
-        effectComputationFragment.enableComparing(null, fightStatusHistory.getAttributeBase());
+        effectComputationFragment.addEffectsBaselineByCharacterAttribute(fightStatusHistory.getAttributeBase());
         status = CharacterDetailActivityStatusEnum.HISTORY;
+        enableScrolling();
+        startScrollingTo(1);
+    }
+
+    private void showVirtualViews() {
+        assert characterProfileVoVirtual != null && fightStatusVirtual != null;
+        setTitleVirtual();
+        setElementStyles(characterProfileVoVirtual.getElement());
+        updateCharacterPlainInfoByVo(characterProfileVoVirtual);
+        updateCharacterInfoFragmentsByVo(characterProfileVoVirtual);
+        if (characterProfileDto.getCharacterId().equals(fightStatusVirtual.getAttributeBase().getCharacterId())) {
+            characterAttributeFragment.setCharacterAttribute(fightStatusVirtual.getAttributeWithBuff());
+            characterAttributeFragment.setCharacterAttributeBaseline(fightStatus.getAttributeWithBuff());
+            weaponFragment.updateViews(fightStatusVirtual.getAttributeBase());
+            effectComputationFragment.resetEffectsByCharacterAttribute(fightStatusVirtual.getAttributeBase(), fightStatus.getAttributeBase());
+            status = CharacterDetailActivityStatusEnum.VIRTUAL;
+            enableScrolling();
+            startScrollingTo(1);
+        } else {
+            characterAttributeFragment.setCharacterAttribute(fightStatusVirtual.getAttributeWithBuff());
+            artifactEvaluationFragment.updateViewsByCharacterProfileVo(characterProfileVoVirtual);
+            artifactEvaluationFragment.hideCriterionSelection();
+            weaponFragment.updateViews(fightStatusVirtual.getAttributeBase());
+            effectComputationFragment.resetEffectsByCharacterAttribute(fightStatusVirtual.getAttributeBase(), null);
+            status = CharacterDetailActivityStatusEnum.SUBSTITUTION;
+            startScrollingTo(0f);
+            disableScrolling();
+        }
     }
 
     @SuppressLint("SetTextI18n")
@@ -466,10 +610,12 @@ public class CharacterDetailActivity extends ElasticScrollActivity {
         textTitle.setText(getString(R.string.text_uid_prefix) + characterProfileVo.getUid());
     }
 
-    @SuppressLint("SetTextI18n")
     private void setTitleHistory() {
-        textTitle.setText(getString(R.string.text_title_history_prefix) +
-                simpleDateFormat.format(characterProfileDtoHistory.getUpdateTime()));
+        textTitle.setText(getString(R.string.text_title_history,
+                simpleDateFormat.format(characterProfileDtoHistory.getUpdateTime())));
     }
 
+    private void setTitleVirtual() {
+        textTitle.setText(getString(R.string.text_title_virtual, characterProfileVoVirtual.getCharacterName()));
+    }
 }

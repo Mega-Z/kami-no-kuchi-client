@@ -5,6 +5,7 @@ import androidx.room.Entity;
 import androidx.room.PrimaryKey;
 
 import com.megaz.knk.constant.ElementEnum;
+import com.megaz.knk.constant.WeaponTypeEnum;
 
 @Entity(tableName = "character_dex")
 public class CharacterDex extends MetaDataEntity {
@@ -18,6 +19,8 @@ public class CharacterDex extends MetaDataEntity {
     private String description;
     @ColumnInfo(name = "element")
     private ElementEnum element;
+    @ColumnInfo(name = "weapon_type")
+    private WeaponTypeEnum weaponType;
     @ColumnInfo(name = "star")
     private Integer star;
     @ColumnInfo(name = "base_hp")
@@ -46,6 +49,12 @@ public class CharacterDex extends MetaDataEntity {
     private Integer talentEUp;
     @ColumnInfo(name = "talent_q_up")
     private Integer talentQUp;
+    @ColumnInfo(name = "talent_a_up_cons")
+    private Integer talentAUpCons;
+    @ColumnInfo(name = "talent_e_up_cons")
+    private Integer talentEUpCons;
+    @ColumnInfo(name = "talent_q_up_cons")
+    private Integer talentQUpCons;
     @ColumnInfo(name = "icon_art")
     private String iconArt;
     @ColumnInfo(name = "icon_avatar")
@@ -111,6 +120,14 @@ public class CharacterDex extends MetaDataEntity {
 
     public void setElement(ElementEnum element) {
         this.element = element;
+    }
+
+    public WeaponTypeEnum getWeaponType() {
+        return weaponType;
+    }
+
+    public void setWeaponType(WeaponTypeEnum weaponType) {
+        this.weaponType = weaponType;
     }
 
     public Integer getStar() {
@@ -223,6 +240,30 @@ public class CharacterDex extends MetaDataEntity {
 
     public void setTalentQUp(Integer talentQUp) {
         this.talentQUp = talentQUp;
+    }
+
+    public Integer getTalentAUpCons() {
+        return talentAUpCons;
+    }
+
+    public void setTalentAUpCons(Integer talentAUpCons) {
+        this.talentAUpCons = talentAUpCons;
+    }
+
+    public Integer getTalentEUpCons() {
+        return talentEUpCons;
+    }
+
+    public void setTalentEUpCons(Integer talentEUpCons) {
+        this.talentEUpCons = talentEUpCons;
+    }
+
+    public Integer getTalentQUpCons() {
+        return talentQUpCons;
+    }
+
+    public void setTalentQUpCons(Integer talentQUpCons) {
+        this.talentQUpCons = talentQUpCons;
     }
 
     public String getIconArt() {

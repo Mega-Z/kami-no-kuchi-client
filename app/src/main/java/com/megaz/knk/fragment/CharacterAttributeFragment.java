@@ -160,9 +160,7 @@ public class CharacterAttributeFragment extends BaseFragment {
     }
 
     private void setDmgIcon() {
-        if (maxDmgElement == null) {
-            selectMaxDmgElement();
-        }
+        selectMaxDmgElement();
         imageDmgElem.setImageBitmap(ImageResourceUtils.getElementIcon(requireContext(), maxDmgElement));
     }
 

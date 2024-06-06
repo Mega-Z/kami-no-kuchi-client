@@ -4,6 +4,8 @@ import androidx.room.Dao;
 import androidx.room.Insert;
 import androidx.room.Query;
 
+import com.megaz.knk.constant.WeaponTypeEnum;
+import com.megaz.knk.entity.CharacterDex;
 import com.megaz.knk.entity.WeaponDex;
 
 import java.util.List;
@@ -18,4 +20,7 @@ public interface WeaponDexDao extends MetaDataDao<WeaponDex>{
 
     @Query("SELECT * FROM weapon_dex WHERE weapon_id=:weaponId")
     List<WeaponDex> selectByWeaponId(String weaponId);
+
+    @Query("SELECT * FROM weapon_dex WHERE type=:type")
+    List<WeaponDex> selectByWeaponType(WeaponTypeEnum type);
 }

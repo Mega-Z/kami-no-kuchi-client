@@ -26,8 +26,10 @@ import java.util.Objects;
  * create an instance of this fragment.
  */
 public class TalentFragment extends BaseFragment {
-
     private TalentVo talentVo;
+
+    private ImageView imageTalentIcon, imageTalentFrame;
+    private TextView textTalentLevel;
 
     public TalentFragment() {
         // Required empty public constructor
@@ -46,7 +48,6 @@ public class TalentFragment extends BaseFragment {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
             talentVo = (TalentVo) getArguments().getSerializable("talentVo");
-
         }
     }
 
@@ -57,21 +58,28 @@ public class TalentFragment extends BaseFragment {
         return inflater.inflate(R.layout.fragment_talent, container, false);
     }
 
-    @SuppressLint("SetTextI18n")
     @Override
-    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
-        ImageView imageTalentIcon = view.findViewById(R.id.img_talent_icon);
+    protected void initView(@NonNull View view) {
+        super.initView(view);
+        imageTalentIcon = view.findViewById(R.id.img_talent_icon);
+        imageTalentFrame = view.findViewById(R.id.img_talent_frame);
+        textTalentLevel = view.findViewById(R.id.text_talent_level);
+        textTalentLevel.setTypeface(typefaceNum);
+        updateViews(talentVo);
+    }
+
+    public void updateViews(@NonNull TalentVo talentVo) {
+        this.talentVo = talentVo;
         imageTalentIcon.setImageBitmap(ImageResourceUtils.getIconBitmap(Objects.requireNonNull(getContext()), talentVo.getIcon()));
-        ImageView imageTalentFrame = view.findViewById(R.id.img_talent_frame);
         Bitmap bitmapFrame = ImageResourceUtils.getFrameByElement(Objects.requireNonNull(getContext()), talentVo.getElement());
         imageTalentFrame.setImageBitmap(bitmapFrame);
-        TextView textTalentLevel = view.findViewById(R.id.text_talent_level);
         int level = talentVo.getBaseLevel() + talentVo.getPlusLevel();
-        textTalentLevel.setText(getString(R.string.text_level_prefix)+level);
-        textTalentLevel.setTypeface(typefaceNum);
+        textTalentLevel.setText(getString(R.string.text_level, level));
         if(talentVo.getPlusLevel() != 0) {
             textTalentLevel.setTextColor(getResources().getColor(R.color.talent_blue, getContext().getTheme()));
+        } else {
+            textTalentLevel.setTextColor(getResources().getColor(R.color.white, getContext().getTheme()));
         }
+
     }
 }

@@ -1,8 +1,10 @@
 package com.megaz.knk.utils;
 
+import com.megaz.knk.computation.CharacterOverview;
 import com.megaz.knk.constant.ArtifactPositionEnum;
 import com.megaz.knk.constant.ElementEnum;
 import com.megaz.knk.constant.GenshinConstantMeta;
+import com.megaz.knk.constant.SourceTalentEnum;
 import com.megaz.knk.dto.ArtifactProfileDto;
 import com.megaz.knk.dto.CharacterProfileDto;
 import com.megaz.knk.dto.PlayerProfileDto;
@@ -342,6 +344,30 @@ public class ProfileConvertUtils {
         target.setArtifacts(artifactProfileDtoMap);
 
         return target;
+    }
+
+    public static CharacterOverview extractCharacterOverview(CharacterProfileDto characterProfileDto) {
+        CharacterOverview characterOverview = new CharacterOverview();
+        characterOverview.setCharacterId(characterProfileDto.getCharacterId());
+        characterOverview.setElement(characterProfileDto.getElement());
+        characterOverview.setLevel(characterProfileDto.getLevel());
+        characterOverview.setPhase(characterProfileDto.getPhase());
+        characterOverview.setConstellation(characterProfileDto.getConstellation());
+        Map<SourceTalentEnum, Integer> talentLevel = new HashMap<>();
+        talentLevel.put(SourceTalentEnum.A, characterProfileDto.getTalentABaseLevel());
+        talentLevel.put(SourceTalentEnum.E, characterProfileDto.getTalentEBaseLevel());
+        talentLevel.put(SourceTalentEnum.Q, characterProfileDto.getTalentQBaseLevel());
+        characterOverview.setTalentLevel(talentLevel);
+        Map<SourceTalentEnum, Integer> talentLevelPlus = new HashMap<>();
+        talentLevelPlus.put(SourceTalentEnum.A, characterProfileDto.getTalentAPlusLevel());
+        talentLevelPlus.put(SourceTalentEnum.E, characterProfileDto.getTalentEPlusLevel());
+        talentLevelPlus.put(SourceTalentEnum.Q, characterProfileDto.getTalentQPlusLevel());
+        characterOverview.setTalentLevelPlus(talentLevelPlus);
+        characterOverview.setWeaponId(characterProfileDto.getWeapon().getWeaponId());
+        characterOverview.setWeaponLevel(characterProfileDto.getWeapon().getLevel());
+        characterOverview.setWeaponPhase(characterProfileDto.getWeapon().getPhase());
+        characterOverview.setWeaponRefinement(characterProfileDto.getWeapon().getRefineRank());
+        return characterOverview;
     }
 
     public static boolean isSameArtifactInstance(ArtifactProfileDto artifact1, ArtifactProfileDto artifact2) {

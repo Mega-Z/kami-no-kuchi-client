@@ -28,6 +28,7 @@ import com.megaz.knk.vo.EffectDetailVo;
 import java.util.Objects;
 
 import lombok.Getter;
+import lombok.Setter;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -36,9 +37,11 @@ import lombok.Getter;
  */
 public class FightEffectFragment extends BaseFragment {
     @Getter
+    @Setter
     private FightEffect fightEffect, fightEffectBaseline;
-    @Getter
+    @Setter
     private boolean comparing;
+    private boolean canCritical;
 
     private EffectComputationManager effectComputationManager;
 
@@ -67,6 +70,7 @@ public class FightEffectFragment extends BaseFragment {
             fightEffect = (FightEffect) getArguments().getSerializable("fightEffect");
             fightEffectBaseline = (FightEffect) getArguments().getSerializable("fightEffectBaseline");
             comparing = (boolean) getArguments().getSerializable("comparing");
+            effectComputationManager = new EffectComputationManager(getContext());
         }
     }
 
@@ -86,21 +90,26 @@ public class FightEffectFragment extends BaseFragment {
     @Override
     protected void initView(@NonNull View view) {
         super.initView(view);
+        assert fightEffect != null || fightEffectBaseline != null;
         textEffectDesc = view.findViewById(R.id.text_effect_desc);
         textCritOrNot = view.findViewById(R.id.text_crit_or_not);
         textAverage = view.findViewById(R.id.text_average);
         textEffectNumber = view.findViewById(R.id.text_effect_number);
-        textEffectNumber.setTypeface(typefaceNum);
-        textEffectNumber.setTextColor(requireContext()
-                .getColor(DynamicStyleUtils.getFightEffectColor(fightEffect, R.color.white)));
         textEffectNumberBaseline = view.findViewById(R.id.text_effect_number_baseline);
-        textEffectNumberBaseline.setTypeface(typefaceNum);
-        textEffectNumberBaseline.setTextColor(requireContext()
-                .getColor(DynamicStyleUtils.getFightEffectColor(fightEffect, R.color.white)));
         layoutEffectNumber = view.findViewById(R.id.layout_effect_number);
         layoutEffectNumberBaseline = view.findViewById(R.id.layout_effect_number_baseline);
-        effectComputationManager = new EffectComputationManager(getContext());
-        updateEffectView(fightEffect, fightEffectBaseline, comparing);
+
+        textEffectNumber.setTypeface(typefaceNum);
+        textEffectNumberBaseline.setTypeface(typefaceNum);
+        int numberColor = fightEffect != null ?
+                requireContext().getColor(DynamicStyleUtils.getFightEffectColor(fightEffect, R.color.white)) :
+                requireContext().getColor(DynamicStyleUtils.getFightEffectColor(fightEffectBaseline, R.color.white));
+        textEffectNumber.setTextColor(numberColor);
+        textEffectNumberBaseline.setTextColor(numberColor);
+        textEffectDesc.setText(fightEffect != null ? fightEffect.getEffectDesc() : fightEffectBaseline.getEffectDesc());
+        canCritical = fightEffect != null ?
+                fightEffect instanceof DirectDamageEffect : fightEffectBaseline instanceof DirectDamageEffect;
+        updateEffectView();
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -114,48 +123,52 @@ public class FightEffectFragment extends BaseFragment {
     }
 
     @SuppressLint({"DefaultLocale", "SetTextI18n"})
-    public void updateEffectView(FightEffect fightEffect, FightEffect fightEffectBaseline, boolean comparing) {
-        this.fightEffect = fightEffect;
-        this.fightEffectBaseline = fightEffectBaseline;
-        this.comparing = comparing;
-
+    public void updateEffectView() {
         EffectDetailVo effectDetailVo = null, effectDetailVoBaseline = null;
         if (fightEffect != null) {
-            effectDetailVo = effectComputationManager.createFightEffectDetail(fightEffect, false);
-        } else if (comparing && fightEffectBaseline != null) {
-            effectDetailVo = effectComputationManager.createFightEffectDetail(fightEffectBaseline, true);
+            effectDetailVo = effectComputationManager.createFightEffectDetail(fightEffect);
         }
         if (fightEffectBaseline != null) {
-            effectDetailVoBaseline = effectComputationManager.createFightEffectDetail(fightEffectBaseline, false);
-        } else if (comparing && fightEffect != null) {
-            effectDetailVoBaseline = effectComputationManager.createFightEffectDetail(fightEffect, true);
+            effectDetailVoBaseline = effectComputationManager.createFightEffectDetail(fightEffectBaseline);
         }
 
-        assert effectDetailVo != null;
-        textEffectDesc.setText(effectDetailVo.getEffectDesc());
         if (comparing) {
-            assert effectDetailVoBaseline != null;
             layoutEffectNumberBaseline.setVisibility(View.VISIBLE);
-            textEffectNumberBaseline.setText(effectDetailVoBaseline.getNumber());
-            if (effectDetailVo.compareTo(effectDetailVoBaseline) > 0) {
-                textEffectNumber.setText(effectDetailVo.getNumber() + "▲");
-            } else if (effectDetailVo.compareTo(effectDetailVoBaseline) < 0) {
-                textEffectNumber.setText(effectDetailVo.getNumber() + "▼");
+            if (fightEffectBaseline != null) {
+                assert  effectDetailVoBaseline != null;
+                textEffectNumberBaseline.setText(effectDetailVoBaseline.getNumber());
             } else {
+                textEffectNumberBaseline.setText(getString(R.string.text_effect_unavailable));
+            }
+            if (fightEffect != null && fightEffectBaseline != null) {
+                assert effectDetailVo != null && effectDetailVoBaseline != null;
+                if (effectDetailVo.compareTo(effectDetailVoBaseline) > 0) {
+                    textEffectNumber.setText(effectDetailVo.getNumber() + "▲");
+                } else if (effectDetailVo.compareTo(effectDetailVoBaseline) < 0) {
+                    textEffectNumber.setText(effectDetailVo.getNumber() + "▼");
+                } else {
+                    textEffectNumber.setText(effectDetailVo.getNumber());
+                }
+            } else if (fightEffect != null) {
+                assert effectDetailVo != null;
                 textEffectNumber.setText(effectDetailVo.getNumber());
+            } else {
+                textEffectNumber.setText(getString(R.string.text_effect_unavailable));
             }
         } else {
             layoutEffectNumberBaseline.setVisibility(View.GONE);
-            if (effectDetailVo.getCanCritical()) {
+            assert effectDetailVo != null;
+            if (canCritical) {
                 textEffectNumber.setText(effectDetailVo.getNumberWithCritical());
             } else {
                 textEffectNumber.setText(effectDetailVo.getNumber());
             }
         }
-        if (fightEffect instanceof DirectDamageEffect && comparing) {
+
+        if (canCritical && comparing) {
             textAverage.setVisibility(View.VISIBLE);
             textCritOrNot.setVisibility(View.GONE);
-        } else if (fightEffect instanceof DirectDamageEffect) {
+        } else if (canCritical) {
             textCritOrNot.setVisibility(View.VISIBLE);
             textAverage.setVisibility(View.GONE);
         } else {
@@ -188,7 +201,7 @@ public class FightEffectFragment extends BaseFragment {
 
         @Override
         public void onClick(View v) {
-            if(isBaseline)
+            if (isBaseline)
                 ((CharacterDetailActivity) requireActivity()).toShowFightEffectDetail(fightEffectBaseline, isBaseline);
             else
                 ((CharacterDetailActivity) requireActivity()).toShowFightEffectDetail(fightEffect, isBaseline);

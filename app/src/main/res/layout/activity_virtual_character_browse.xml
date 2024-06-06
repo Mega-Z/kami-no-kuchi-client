@@ -4,10 +4,10 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".activity.BuffBrowseActivity"
+    tools:context=".activity.VirtualCharacterBrowseActivity"
     android:orientation="vertical"
     android:paddingTop="@dimen/dp_10"
-    android:background="@color/bg_style_1">
+    android:background="@color/bg_style_2">
 
     <TextView
         android:layout_width="wrap_content"
@@ -19,38 +19,28 @@
         android:textSize="@dimen/sp_20"
         android:textColor="@color/white"
         android:textStyle="bold"
-        android:text="可用BUFF"/>
+        android:text="角色更换"/>
 
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_marginHorizontal="@dimen/dp_5"
         android:layout_marginBottom="@dimen/dp_5"
-        android:background="@drawable/frame_style_1">
-        <ImageView
-            android:id="@+id/img_loading"
-            android:layout_width="@dimen/dp_50"
-            android:layout_height="@dimen/dp_50"
-            android:src="@drawable/loading_brown"
-            android:layout_gravity="center"
-            android:visibility="gone"/>
+        android:background="@drawable/frame_style_2">
 
 
         <ScrollView
-            android:id="@+id/view_enabled_buffs"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_marginHorizontal="@dimen/dp_3"
             android:layout_marginVertical="@dimen/dp_3">
-
-            <LinearLayout
-                android:id="@+id/layout_buff_folders"
+            <GridLayout
+                android:id="@+id/layout_character_list"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="@color/element_bg_null"
-                android:orientation="vertical">
+                android:columnCount="4">
 
-            </LinearLayout>
+            </GridLayout>
         </ScrollView>
     </FrameLayout>
 

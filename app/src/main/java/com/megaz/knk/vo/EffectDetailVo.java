@@ -20,13 +20,13 @@ public class EffectDetailVo {
     private Map<EffectFieldEnum, Double> fieldDetail;
 
     public String getNumberWithCritical() {
-        return getNumberCritical()+"/"+getNumber();
+        return getNumberCritical() + "/" + getNumber();
     }
 
     @SuppressLint("DefaultLocale")
     public String getNumber() {
-        if(effectValue == null) {
-            return  "NaN";
+        if (effectValue == null) {
+            return "NaN";
         } else if (isPercent) {
             return String.format("%.2f", effectValue * 100) + "%";
         } else if (effectValue > 1000) {
@@ -38,8 +38,8 @@ public class EffectDetailVo {
 
     @SuppressLint("DefaultLocale")
     public String getNumberCritical() {
-        if(effectValueCritical == null) {
-            return  "NaN";
+        if (effectValueCritical == null) {
+            return "NaN";
         } else if (effectValueCritical > 1000) {
             return String.format("%d", (int) (effectValueCritical.doubleValue()));
         } else {
@@ -48,6 +48,9 @@ public class EffectDetailVo {
     }
 
     public int compareTo(EffectDetailVo that) {
-        return this.effectValue.compareTo(that.effectValue);
+        if (this.effectValue == null || that.effectValue == null)
+            return 0;
+        else
+            return this.effectValue.compareTo(that.effectValue);
     }
 }

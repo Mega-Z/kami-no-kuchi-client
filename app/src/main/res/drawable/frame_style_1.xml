@@ -2,5 +2,5 @@
     <solid android:color="@color/transparent" />
     <stroke
         android:width="2dp"
-        android:color="@color/frame_buff_browse" />
+        android:color="@color/frame_style_1" />
 </shape>

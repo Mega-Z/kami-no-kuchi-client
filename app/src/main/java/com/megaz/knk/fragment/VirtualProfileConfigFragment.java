@@ -1,6 +1,8 @@
 package com.megaz.knk.fragment;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -15,15 +17,21 @@ import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.WorkerThread;
 import androidx.fragment.app.Fragment;
 
 import com.megaz.knk.KnkDatabase;
 import com.megaz.knk.R;
+import com.megaz.knk.activity.CharacterDetailActivity;
+import com.megaz.knk.activity.VirtualCharacterBrowseActivity;
+import com.megaz.knk.activity.VirtualWeaponBrowseActivity;
+import com.megaz.knk.computation.CharacterOverview;
+import com.megaz.knk.constant.SourceTalentEnum;
 import com.megaz.knk.dao.CharacterDexDao;
 import com.megaz.knk.dao.WeaponDexDao;
-import com.megaz.knk.dto.CharacterProfileDto;
 import com.megaz.knk.entity.CharacterDex;
 import com.megaz.knk.entity.WeaponDex;
 import com.megaz.knk.utils.DynamicStyleUtils;
@@ -40,13 +48,15 @@ import java.util.Objects;
  * create an instance of this fragment.
  */
 public class VirtualProfileConfigFragment extends BaseDialogFragment {
-    private CharacterProfileDto characterProfileDto;
+    private String originalCharacterId;
+    private CharacterOverview characterOverview;
     private CharacterDex characterDex;
     private WeaponDex weaponDex;
 
     private ImageView imageCharacter, imageWeapon;
     private TextView textCharacterName, textCharacterCons, textCharacterPromote, textWeaponPromote,
-            textTalentALevel, textTalentELevel, textTalentQLevel, textWeaponName, textWeaponRefine;
+            textTalentALevel, textTalentELevel, textTalentQLevel, textWeaponName, textWeaponRefine,
+            textWeaponNotMatch;
     private EditText editTextCharacterLevel, editTextWeaponLevel;
     private SeekBar seekBarCons, seekBarTalentA, seekBarTalentE, seekBarTalentQ, seekBarRefine;
     private CheckBoxView checkBoxCharacterPromote, checkBoxWeaponPromote;
@@ -55,14 +65,16 @@ public class VirtualProfileConfigFragment extends BaseDialogFragment {
     private CharacterDexDao characterDexDao;
     private WeaponDexDao weaponDexDao;
 
+    private ActivityResultLauncher<Intent> virtualCharacterBrowseActivityResultLauncher, virtualWeaponBrowseActivityResultLauncher;
+
     public VirtualProfileConfigFragment() {
         // Required empty public constructor
     }
 
-    public static VirtualProfileConfigFragment newInstance(CharacterProfileDto characterProfileDto) {
+    public static VirtualProfileConfigFragment newInstance(CharacterOverview characterOverview) {
         VirtualProfileConfigFragment fragment = new VirtualProfileConfigFragment();
         Bundle args = new Bundle();
-        args.putSerializable("characterProfileDto", characterProfileDto);
+        args.putSerializable("characterOverview", characterOverview);
         fragment.setArguments(args);
         return fragment;
     }
@@ -71,8 +83,33 @@ public class VirtualProfileConfigFragment extends BaseDialogFragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
-            characterProfileDto = (CharacterProfileDto) getArguments().getSerializable("characterProfileDto");
+            characterOverview = (CharacterOverview) getArguments().getSerializable("characterOverview");
+            originalCharacterId = characterOverview.getCharacterId();
         }
+        virtualCharacterBrowseActivityResultLauncher = registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(),
+                result -> {
+                    if (result.getResultCode() == Activity.RESULT_OK) {
+                        Intent data = result.getData();
+                        assert data != null;
+                        Bundle returnBundle = data.getExtras();
+                        characterDex = (CharacterDex) returnBundle.getSerializable("characterDex");
+                        updateCharacterStaticViews();
+                    }
+                }
+        );
+        virtualWeaponBrowseActivityResultLauncher = registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(),
+                result -> {
+                    if (result.getResultCode() == Activity.RESULT_OK) {
+                        Intent data = result.getData();
+                        assert data != null;
+                        Bundle returnBundle = data.getExtras();
+                        weaponDex = (WeaponDex) returnBundle.getSerializable("weaponDex");
+                        updateWeaponStaticViews();
+                    }
+                }
+        );
     }
 
     @Override
@@ -108,6 +145,7 @@ public class VirtualProfileConfigFragment extends BaseDialogFragment {
         seekBarTalentQ = view.findViewById(R.id.seekbar_talent_q);
         // weapon
         imageWeapon = view.findViewById(R.id.img_weapon);
+        textWeaponNotMatch = view.findViewById(R.id.text_weapon_not_match);
         textWeaponName = view.findViewById(R.id.text_weapon_name);
         textWeaponRefine = view.findViewById(R.id.text_weapon_refine);
         seekBarRefine = view.findViewById(R.id.seekbar_refine);
@@ -129,6 +167,7 @@ public class VirtualProfileConfigFragment extends BaseDialogFragment {
                 handleDexQuery(msg);
             }
         };
+        imageCharacter.setOnClickListener(new CharacterOnClickListener());
         editTextCharacterLevel.addTextChangedListener(new LevelEditListener(
                 editTextCharacterLevel, checkBoxCharacterPromote, textCharacterPromote));
         editTextWeaponLevel.addTextChangedListener(new LevelEditListener(
@@ -140,6 +179,7 @@ public class VirtualProfileConfigFragment extends BaseDialogFragment {
         seekBarTalentA.setOnSeekBarChangeListener(new TalentLevelChangeListener(textTalentALevel));
         seekBarTalentE.setOnSeekBarChangeListener(new TalentLevelChangeListener(textTalentELevel));
         seekBarTalentQ.setOnSeekBarChangeListener(new TalentLevelChangeListener(textTalentQLevel));
+        imageWeapon.setOnClickListener(new WeaponOnClickListener());
     }
 
     @Override
@@ -147,10 +187,33 @@ public class VirtualProfileConfigFragment extends BaseDialogFragment {
         super.initialize(view);
         characterDexDao = KnkDatabase.getKnkDatabase(requireContext()).getCharacterDexDao();
         weaponDexDao = KnkDatabase.getKnkDatabase(requireContext()).getWeaponDexDao();
-        initEditViewsByProfile();
-        updateViewsByProfile();
+        initViewsByOverview();
         new Thread(this::queryDex).start();
     }
+
+
+    private class CharacterOnClickListener implements View.OnClickListener {
+        @Override
+        public void onClick(View view) {
+            Intent intent = new Intent(requireContext(), VirtualCharacterBrowseActivity.class);
+            Bundle bundle = new Bundle();
+            bundle.putSerializable("characterId", originalCharacterId);
+            intent.putExtras(bundle);
+            virtualCharacterBrowseActivityResultLauncher.launch(intent);
+        }
+    }
+
+    private class WeaponOnClickListener implements View.OnClickListener {
+        @Override
+        public void onClick(View view) {
+            Intent intent = new Intent(requireContext(), VirtualWeaponBrowseActivity.class);
+            Bundle bundle = new Bundle();
+            bundle.putSerializable("type", characterDex.getWeaponType());
+            intent.putExtras(bundle);
+            virtualWeaponBrowseActivityResultLauncher.launch(intent);
+        }
+    }
+
 
     private class CancelOnClickListener implements View.OnClickListener {
 
@@ -164,12 +227,9 @@ public class VirtualProfileConfigFragment extends BaseDialogFragment {
 
         @Override
         public void onClick(View v) {
-            if (checkAndSetLevel()) {
-                //TODO: return virtual profile
+            if (checkAndUpdateOverview()) {
+                ((CharacterDetailActivity) requireActivity()).onVirtualConfigSet(characterOverview);
                 Objects.requireNonNull(getDialog()).cancel();
-            } else {
-                toast.setText("请正确填入等级");
-                toast.show();
             }
         }
     }
@@ -206,7 +266,7 @@ public class VirtualProfileConfigFragment extends BaseDialogFragment {
                     textPromote.setVisibility(View.GONE);
                     checkBoxPromote.setVisibility(View.GONE);
                 }
-            } catch (RuntimeException e){
+            } catch (RuntimeException e) {
                 textPromote.setVisibility(View.GONE);
                 checkBoxPromote.setVisibility(View.GONE);
             }
@@ -222,7 +282,7 @@ public class VirtualProfileConfigFragment extends BaseDialogFragment {
 
         @Override
         public void onCheckedChanged(CheckBoxView buttonView, boolean isChecked) {
-            if(isChecked) {
+            if (isChecked) {
                 textPromote.setText(getString(R.string.text_promote_true));
             } else {
                 textPromote.setText(getString(R.string.text_promote_false));
@@ -230,13 +290,14 @@ public class VirtualProfileConfigFragment extends BaseDialogFragment {
         }
     }
 
-    private class CharacterConsChangeListener implements SeekBar.OnSeekBarChangeListener{
+    private class CharacterConsChangeListener implements SeekBar.OnSeekBarChangeListener {
 
         @Override
         public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
             int cons = Math.max(0, Math.min(i, 6));
             textCharacterCons.setBackgroundColor(requireContext().getColor(DynamicStyleUtils.getConstellationColor(cons)));
             textCharacterCons.setText(getString(R.string.text_constellation, cons));
+            if (characterDex != null) updateTalentLevelViews(cons);
         }
 
         @Override
@@ -250,7 +311,7 @@ public class VirtualProfileConfigFragment extends BaseDialogFragment {
         }
     }
 
-    private class TalentLevelChangeListener implements SeekBar.OnSeekBarChangeListener{
+    private class TalentLevelChangeListener implements SeekBar.OnSeekBarChangeListener {
         private final TextView textLevel;
 
         public TalentLevelChangeListener(TextView textLevel) {
@@ -274,7 +335,7 @@ public class VirtualProfileConfigFragment extends BaseDialogFragment {
         }
     }
 
-    private class WeaponRefineChangeListener implements SeekBar.OnSeekBarChangeListener{
+    private class WeaponRefineChangeListener implements SeekBar.OnSeekBarChangeListener {
 
         @Override
         public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
@@ -297,6 +358,7 @@ public class VirtualProfileConfigFragment extends BaseDialogFragment {
         switch (message.what) {
             case 0:
                 characterDex = (CharacterDex) message.obj;
+                updateTalentLevelViews(characterOverview.getConstellation());
                 updateCharacterStaticViews();
                 break;
             case 1:
@@ -313,12 +375,12 @@ public class VirtualProfileConfigFragment extends BaseDialogFragment {
     @WorkerThread
     private void queryDex() {
         try {
-            CharacterDex characterDex = MetaDataUtils.queryCharacterDex(characterDexDao, characterProfileDto.getCharacterId());
+            CharacterDex characterDex = MetaDataUtils.queryCharacterDex(characterDexDao, characterOverview.getCharacterId());
             Message messageCharacter = new Message();
             messageCharacter.what = 0;
             messageCharacter.obj = characterDex;
             dexQueryHandler.sendMessage(messageCharacter);
-            WeaponDex weaponDex = MetaDataUtils.queryWeaponDex(weaponDexDao, characterProfileDto.getWeapon().getWeaponId());
+            WeaponDex weaponDex = MetaDataUtils.queryWeaponDex(weaponDexDao, characterOverview.getWeaponId());
             Message messageWeapon = new Message();
             messageWeapon.what = 1;
             messageWeapon.obj = weaponDex;
@@ -331,14 +393,49 @@ public class VirtualProfileConfigFragment extends BaseDialogFragment {
         }
     }
 
+    private Boolean checkAndUpdateOverview() {
+        if (!checkAndSetLevel()) {
+            toast.setText("请正确填入等级");
+            toast.show();
+            return false;
+        }
+        if (characterDex.getWeaponType() != weaponDex.getType()) {
+            toast.setText("请选择类型正确的武器");
+            toast.show();
+            return false;
+        }
+        characterOverview.setCharacterId(characterDex.getCharacterId());
+        characterOverview.setElement(characterDex.getElement());
+        characterOverview.setConstellation(seekBarCons.getProgress());
+        characterOverview.setWeaponId(weaponDex.getWeaponId());
+        characterOverview.setWeaponRefinement(seekBarRefine.getProgress());
+        characterOverview.getTalentLevel().put(SourceTalentEnum.A, seekBarTalentA.getProgress());
+        characterOverview.getTalentLevel().put(SourceTalentEnum.E, seekBarTalentE.getProgress());
+        characterOverview.getTalentLevel().put(SourceTalentEnum.Q, seekBarTalentQ.getProgress());
+        int cons = seekBarCons.getProgress();
+        if (characterDex.getTalentAUpCons() != null && cons >= characterDex.getTalentAUpCons())
+            characterOverview.getTalentLevelPlus().put(SourceTalentEnum.A, 3);
+        else
+            characterOverview.getTalentLevelPlus().put(SourceTalentEnum.A, 0);
+        if (characterDex.getTalentEUpCons() != null && cons >= characterDex.getTalentEUpCons())
+            characterOverview.getTalentLevelPlus().put(SourceTalentEnum.E, 3);
+        else
+            characterOverview.getTalentLevelPlus().put(SourceTalentEnum.E, 0);
+        if (characterDex.getTalentQUpCons() != null && cons >= characterDex.getTalentQUpCons())
+            characterOverview.getTalentLevelPlus().put(SourceTalentEnum.Q, 3);
+        else
+            characterOverview.getTalentLevelPlus().put(SourceTalentEnum.Q, 0);
+        return true;
+    }
+
     private Boolean checkAndSetLevel() {
         if (editTextCharacterLevel.getText().toString().isEmpty()) {
             return false;
         } else {
             int levelCharacter = Integer.parseInt(editTextCharacterLevel.getText().toString());
             if (levelCharacter >= 1 && levelCharacter <= 90) {
-                characterProfileDto.setLevel(levelCharacter);
-                characterProfileDto.setPhase(
+                characterOverview.setLevel(levelCharacter);
+                characterOverview.setPhase(
                         ProfileConvertUtils.getPhaseByLevel(levelCharacter, checkBoxCharacterPromote.isChecked()));
             } else {
                 return false;
@@ -350,8 +447,8 @@ public class VirtualProfileConfigFragment extends BaseDialogFragment {
         } else {
             int levelWeapon = Integer.parseInt(editTextWeaponLevel.getText().toString());
             if (levelWeapon >= 1 && levelWeapon <= 90) {
-                characterProfileDto.getWeapon().setLevel(levelWeapon);
-                characterProfileDto.getWeapon().setPhase(
+                characterOverview.setWeaponLevel(levelWeapon);
+                characterOverview.setWeaponPhase(
                         ProfileConvertUtils.getPhaseByLevel(levelWeapon, checkBoxWeaponPromote.isChecked()));
             } else {
                 return false;
@@ -361,73 +458,103 @@ public class VirtualProfileConfigFragment extends BaseDialogFragment {
     }
 
     @SuppressLint("DefaultLocale")
-    private void initEditViewsByProfile() {
-        editTextCharacterLevel.setText(String.format("%d", characterProfileDto.getLevel()));
-        if(ProfileConvertUtils.isPromoted(characterProfileDto.getLevel(), characterProfileDto.getPhase())) {
+    private void initViewsByOverview() {
+        seekBarCons.setProgress(characterOverview.getConstellation());
+        editTextCharacterLevel.setText(String.format("%d", characterOverview.getLevel()));
+        if (ProfileConvertUtils.isPromoted(characterOverview.getLevel(), characterOverview.getPhase())) {
             checkBoxCharacterPromote.setChecked(true);
             textCharacterPromote.setText(getString(R.string.text_promote_true));
         } else {
             checkBoxCharacterPromote.setChecked(false);
             textCharacterPromote.setText(getString(R.string.text_promote_false));
         }
-        if(ProfileConvertUtils.isPromotingLevel(characterProfileDto.getLevel())){
+        if (ProfileConvertUtils.isPromotingLevel(characterOverview.getLevel())) {
             checkBoxCharacterPromote.setVisibility(View.VISIBLE);
             textCharacterPromote.setVisibility(View.VISIBLE);
         } else {
             checkBoxCharacterPromote.setVisibility(View.GONE);
             textCharacterPromote.setVisibility(View.GONE);
         }
-        textTalentALevel.setText(getString(R.string.text_level,
-                characterProfileDto.getTalentABaseLevel()+characterProfileDto.getTalentAPlusLevel()));
-        seekBarTalentA.setProgress(characterProfileDto.getTalentABaseLevel()+characterProfileDto.getTalentAPlusLevel());
-        textTalentELevel.setText(getString(R.string.text_level,
-                characterProfileDto.getTalentEBaseLevel()+characterProfileDto.getTalentEPlusLevel()));
-        seekBarTalentE.setProgress(characterProfileDto.getTalentEBaseLevel()+characterProfileDto.getTalentEPlusLevel());
-        textTalentQLevel.setText(getString(R.string.text_level,
-                characterProfileDto.getTalentQBaseLevel()+characterProfileDto.getTalentQPlusLevel()));
-        seekBarTalentQ.setProgress(characterProfileDto.getTalentQBaseLevel()+characterProfileDto.getTalentQPlusLevel());
+        textTalentALevel.setText(getString(R.string.text_level, characterOverview.getTalentLevel().get(SourceTalentEnum.A)));
+        seekBarTalentA.setProgress(Objects.requireNonNull(characterOverview.getTalentLevel().get(SourceTalentEnum.A)));
+        textTalentELevel.setText(getString(R.string.text_level, characterOverview.getTalentLevel().get(SourceTalentEnum.E)));
+        seekBarTalentE.setProgress(Objects.requireNonNull(characterOverview.getTalentLevel().get(SourceTalentEnum.E)));
+        textTalentQLevel.setText(getString(R.string.text_level, characterOverview.getTalentLevel().get(SourceTalentEnum.Q)));
+        seekBarTalentQ.setProgress(Objects.requireNonNull(characterOverview.getTalentLevel().get(SourceTalentEnum.Q)));
 
-        editTextWeaponLevel.setText(String.format("%d", characterProfileDto.getWeapon().getLevel()));
-        if(ProfileConvertUtils.isPromoted(characterProfileDto.getWeapon().getLevel(), characterProfileDto.getWeapon().getPhase())) {
+        editTextWeaponLevel.setText(String.format("%d", characterOverview.getWeaponLevel()));
+        if (ProfileConvertUtils.isPromoted(characterOverview.getWeaponLevel(), characterOverview.getWeaponPhase())) {
             checkBoxWeaponPromote.setChecked(true);
             textWeaponPromote.setText(getString(R.string.text_promote_true));
         } else {
             checkBoxWeaponPromote.setChecked(false);
             textWeaponPromote.setText(getString(R.string.text_promote_false));
         }
-        if(ProfileConvertUtils.isPromotingLevel(characterProfileDto.getWeapon().getLevel())){
+        if (ProfileConvertUtils.isPromotingLevel(characterOverview.getWeaponLevel())) {
             checkBoxWeaponPromote.setVisibility(View.VISIBLE);
             textWeaponPromote.setVisibility(View.VISIBLE);
         } else {
             checkBoxWeaponPromote.setVisibility(View.GONE);
             textWeaponPromote.setVisibility(View.GONE);
         }
-        seekBarRefine.setProgress(characterProfileDto.getWeapon().getRefineRank());
+        seekBarRefine.setProgress(characterOverview.getWeaponRefinement());
+
+        textCharacterCons.setText(getString(R.string.text_constellation, characterOverview.getConstellation()));
+        textCharacterCons.setBackgroundColor(requireContext()
+                .getColor(DynamicStyleUtils.getConstellationColor(characterOverview.getConstellation())));
+        textWeaponRefine.setText(getString(R.string.text_refine, characterOverview.getWeaponRefinement()));
     }
 
-    @SuppressLint({"DefaultLocale"})
-    private void updateViewsByProfile() {
-        textCharacterCons.setText(getString(R.string.text_constellation, characterProfileDto.getConstellation()));
-        textCharacterCons.setBackgroundColor(requireContext()
-                .getColor(DynamicStyleUtils.getConstellationColor(characterProfileDto.getConstellation())));
-        textWeaponRefine.setText(getString(R.string.text_refine, characterProfileDto.getWeapon().getRefineRank()));
+    private void updateTalentLevelViews(int cons) {
+        assert characterDex != null;
+        if (characterDex.getTalentAUpCons() != null && cons >= characterDex.getTalentAUpCons()) {
+            textTalentALevel.setTextColor(requireContext().getColor(R.color.talent_blue));
+            textTalentALevel.setText(getString(R.string.text_level, seekBarTalentA.getProgress() + 3));
+        } else {
+            textTalentALevel.setTextColor(requireContext().getColor(R.color.white));
+            textTalentALevel.setText(getString(R.string.text_level, seekBarTalentA.getProgress()));
+        }
+        if (characterDex.getTalentEUpCons() != null && cons >= characterDex.getTalentEUpCons()) {
+            textTalentELevel.setTextColor(requireContext().getColor(R.color.talent_blue));
+            textTalentELevel.setText(getString(R.string.text_level, seekBarTalentE.getProgress() + 3));
+        } else {
+            textTalentELevel.setTextColor(requireContext().getColor(R.color.white));
+            textTalentELevel.setText(getString(R.string.text_level, seekBarTalentE.getProgress()));
+        }
+        if (characterDex.getTalentQUpCons() != null && cons >= characterDex.getTalentQUpCons()) {
+            textTalentQLevel.setTextColor(requireContext().getColor(R.color.talent_blue));
+            textTalentQLevel.setText(getString(R.string.text_level, seekBarTalentQ.getProgress() + 3));
+        } else {
+            textTalentQLevel.setTextColor(requireContext().getColor(R.color.white));
+            textTalentQLevel.setText(getString(R.string.text_level, seekBarTalentQ.getProgress()));
+        }
     }
 
     private void updateCharacterStaticViews() {
-        if(characterDex == null) {
+        if (characterDex == null) {
             return;
         }
         imageCharacter.setImageBitmap(ImageResourceUtils.getIconBitmap(requireContext(), characterDex.getIconAvatar()));
         imageCharacter.setBackgroundColor(requireContext().getColor(DynamicStyleUtils.getElementAvatarBackgroundColor(characterDex.getElement())));
         textCharacterName.setText(characterDex.getCharacterName());
+        if (weaponDex == null || characterDex.getWeaponType() != weaponDex.getType()) {
+            textWeaponNotMatch.setVisibility(View.VISIBLE);
+        } else {
+            textWeaponNotMatch.setVisibility(View.GONE);
+        }
     }
 
     private void updateWeaponStaticViews() {
-        if(weaponDex == null) {
+        if (weaponDex == null) {
             return;
         }
         imageWeapon.setImageBitmap(ImageResourceUtils.getIconBitmap(requireContext(), weaponDex.getIconAwaken()));
         imageWeapon.setBackgroundResource(DynamicStyleUtils.getQualityBackground(weaponDex.getStar()));
         textWeaponName.setText(weaponDex.getWeaponName());
+        if (characterDex == null || characterDex.getWeaponType() != weaponDex.getType()) {
+            textWeaponNotMatch.setVisibility(View.VISIBLE);
+        } else {
+            textWeaponNotMatch.setVisibility(View.GONE);
+        }
     }
 }

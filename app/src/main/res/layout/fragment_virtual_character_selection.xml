@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_centerInParent="true"
+    android:layout_gravity="center"
+    android:background="@drawable/bg_dex_item"
+    android:orientation="vertical"
+    tools:context=".fragment.VirtualCharacterSelectionFragment">
+
+    <LinearLayout
+        android:layout_width="@dimen/dp_80"
+        android:layout_height="@dimen/dp_100"
+        android:gravity="center_horizontal"
+        android:orientation="vertical"
+        android:paddingTop="@dimen/dp_6">
+        <androidx.cardview.widget.CardView
+            android:layout_width="@dimen/dp_64"
+            android:layout_height="@dimen/dp_64"
+            app:cardCornerRadius="@dimen/dp_5">
+
+            <ImageView
+                android:id="@+id/img_character_avatar"
+                android:layout_width="@dimen/dp_64"
+                android:layout_height="@dimen/dp_64"
+                android:background="@color/element_avatar_bg_anemo"
+                android:src="@drawable/avatar" />
+        </androidx.cardview.widget.CardView>
+
+        <TextView
+            android:id="@+id/text_character_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginTop="@dimen/dp_6"
+            android:text="@string/text_default_character_name"
+            android:textColor="@color/gray_black"
+            android:textSize="@dimen/sp_14"
+            android:textStyle="bold" />
+    </LinearLayout>
+
+
+</LinearLayout>

@@ -20,6 +20,9 @@ public interface CharacterDexDao extends MetaDataDao<CharacterDex>{
     @Query("SELECT * FROM character_dex WHERE character_id=:characterId")
     List<CharacterDex> selectByCharacterId(String characterId);
 
+    @Query("SELECT * FROM character_dex")
+    List<CharacterDex> selectAll();
+
     @Query("SELECT icon_avatar FROM character_dex WHERE character_id LIKE :characterId || '%' ")
     List<String> selectAvatarIconByLikelyCharacterId(String characterId);
 }

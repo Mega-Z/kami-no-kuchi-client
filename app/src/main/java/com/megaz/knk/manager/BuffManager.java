@@ -36,6 +36,7 @@ import com.megaz.knk.utils.MetaDataUtils;
 import com.megaz.knk.vo.BuffVo;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -46,6 +47,8 @@ import java.util.stream.Collectors;
 public class BuffManager {
 
     private final KnkDatabase knkDatabase;
+
+    private Set<String> variableSelfBuffIdSet;
 
     public BuffManager(Context context) {
         knkDatabase = KnkDatabase.getKnkDatabase(context);
@@ -79,7 +82,7 @@ public class BuffManager {
             buffVo.setIcon(artifactDexList.get(0).getIcon());
         }
         buffVo.setPercent(buffEffect.getPercent());
-        if(enabled) {
+        if (enabled) {
             buffVo.setEffectValue(buffEffect.getValue());
         }
         if (buffEffect.getEffectType() == FightEffectEnum.ATTRIBUTE_ADD ||
@@ -150,7 +153,7 @@ public class BuffManager {
 
     @WorkerThread
     public List<BuffEffect> queryBuffByCondition(CharacterAttribute characterAttribute,
-                                                  String effectId, BuffQueryCondition buffQueryCondition) {
+                                                 String effectId, BuffQueryCondition buffQueryCondition) {
         BuffDao buffDao = knkDatabase.getBuffDao();
         BuffEffectRelationDao buffEffectRelationDao = knkDatabase.getBuffEffectRelationDao();
         assert !buffQueryCondition.getBuffTypes().isEmpty();
@@ -221,29 +224,56 @@ public class BuffManager {
         return new ArrayList<>(additionalAttributeSet);
     }
 
+    public void fillBuffEffectDefaultInputParam(BuffEffect buffEffect, CharacterAttribute characterAttribute) {
+        double basedAttributeValue = 0.;
+        switch (buffEffect.getBuffId()) {
+            case "BC10000052-1":  // 神变·恶曜开眼
+                basedAttributeValue = 90.;
+                break;
+            case "BC10000073-5":  // 净善摄受明论
+                basedAttributeValue = characterAttribute.getMastery();
+                break;
+            case "BC10000096-2": // 红死之宴
+                basedAttributeValue = 145.;
+                break;
+            case "BC10000095-4": // 细致入微的诊疗
+                basedAttributeValue = 10000.;
+                break;
+            case "BC10000098-6": // 「铭记泪，生命与仁爱」
+                basedAttributeValue = 100.;
+                break;
+            case "BW12416-1":
+            case "BW13416-1":
+            case "BW15416-1":  // 驭浪的海祇民
+                basedAttributeValue = 320.;
+                break;
+        }
+        buffEffect.setBasedAttributeValue(basedAttributeValue);
+    }
+
+    public void fillBuffEffectAttributeParam(BuffEffect buffEffect, CharacterAttribute characterAttribute) {
+        if (buffEffect.getBasedAttribute() != null && buffEffect.getBasedAttribute() != EffectBaseAttributeEnum.INPUT) {
+            buffEffect.setBasedAttributeValue(characterAttribute.getEffectBasedAttribute(buffEffect.getBasedAttribute()));
+        }
+        if (buffEffect.getBasedAttributeSecond() != null && buffEffect.getBasedAttribute() != EffectBaseAttributeEnum.INPUT) {
+            buffEffect.setBasedAttributeSecondValue(characterAttribute.getEffectBasedAttribute(buffEffect.getBasedAttributeSecond()));
+        }
+        if (buffEffect.getMaxValueBasedAttribute() != null && buffEffect.getMaxValueBasedAttribute() != EffectBaseAttributeEnum.INPUT) {
+            buffEffect.setMaxValueBasedAttributeValue(characterAttribute.getEffectBasedAttribute(buffEffect.getMaxValueBasedAttribute()));
+        }
+    }
+
     public List<BuffInputParam> getInputParamOfBuff(BuffEffect buffEffect) {
         List<BuffInputParam> buffInputParamList = new ArrayList<>();
-        if (buffEffect.getFromSelf()) {
-            switch (buffEffect.getBuffId()) {
-                // case "BC10000052-1":  // 神变·恶曜开眼不需要修改参数
-                case "BC10000073-5":  // 净善摄受明论
-                case "BC10000096-2": // 红死之宴
-                case "BW12416-1":
-                case "BW13416-1":
-                case "BW15416-1":  // 驭浪的海祇民
-                    buffInputParamList.add(new BuffInputParam(
-                            buffEffect.getSpecialInput(), buffEffect.getBasedAttributeValue(),
-                            false, true));
-                    break;
-            }
-            return buffInputParamList;
-        }
+        // 获取第一属性输入参数
+        // 目前只支持特殊输入作为第一属性参数的情况
         if (buffEffect.getBasedAttribute() != null) {
-            if (buffEffect.getBasedAttribute() == EffectBaseAttributeEnum.INPUT) {
+            if (buffEffect.getBasedAttribute() == EffectBaseAttributeEnum.INPUT &&
+                    (!buffEffect.getFromSelf() || hasVariableInput(buffEffect.getBuffId()))) { // 即使是来源自身的buff，特殊输入的参数也可能需要修改
                 buffInputParamList.add(new BuffInputParam(
                         buffEffect.getSpecialInput(), buffEffect.getBasedAttributeValue(),
                         false, true));
-            } else {
+            } else if (!buffEffect.getFromSelf() && buffEffect.getBasedAttribute() != EffectBaseAttributeEnum.INPUT){
                 String hint;
                 if (buffEffect.getSourceType() == BuffSourceEnum.CHARACTER) {
                     hint = buffEffect.getSourceName() + "的" + buffEffect.getBasedAttribute().getDesc();
@@ -254,7 +284,8 @@ public class BuffManager {
                         buffEffect.getBasedAttribute().getPercent(), true));
             }
         }
-        if (buffEffect.getBasedAttributeSecond() != null) {
+        // 获取第二属性输入参数
+        if (!buffEffect.getFromSelf() && buffEffect.getBasedAttributeSecond() != null) {
             String hint;
             if (buffEffect.getSourceType() == BuffSourceEnum.CHARACTER) {
                 hint = buffEffect.getSourceName() + "的" + buffEffect.getBasedAttributeSecond().getDesc();
@@ -264,7 +295,8 @@ public class BuffManager {
             buffInputParamList.add(new BuffInputParam(hint, buffEffect.getBasedAttributeSecondValue(),
                     buffEffect.getBasedAttributeSecond().getPercent(), true));
         }
-        if (buffEffect.getMaxValueBasedAttribute() != null) {
+        // 获取上限值第一属性输入参数
+        if (!buffEffect.getFromSelf() && buffEffect.getMaxValueBasedAttribute() != null) {
             if (buffEffect.getMaxValueBasedAttribute() != buffEffect.getBasedAttribute() &&
                     buffEffect.getMaxValueBasedAttribute() != buffEffect.getBasedAttributeSecond()) {
                 String hint;
@@ -277,12 +309,14 @@ public class BuffManager {
                         buffEffect.getMaxValueBasedAttribute().getPercent(), true));
             }
         }
-        if (buffEffect.getMultiplierTalentCurve() != null) {
+        // 获取天赋等级输入参数
+        if (!buffEffect.getFromSelf() && buffEffect.getMultiplierTalentCurve() != null) {
             buffInputParamList.add(new BuffInputParam(
                     buffEffect.getSourceName() + "的" + buffEffect.getSourceTalent().getDesc() + "等级",
                     null, false, false, 15.));
         }
-        if (buffEffect.getMultiplierRefinementCurve() != null ||
+        // 获取精炼等阶输入参数
+        if (!buffEffect.getFromSelf() && buffEffect.getMultiplierRefinementCurve() != null ||
                 buffEffect.getMaxValueRefinementCurve() != null) {
             buffInputParamList.add(new BuffInputParam(
                     buffEffect.getSourceName() + "的精炼等级",
@@ -295,16 +329,15 @@ public class BuffManager {
     public void fillBuffEffectInputParam(BuffEffect buffEffect, List<BuffInputParam> buffInputParamList) {
         int cursor = 0;
         if (buffEffect.getBasedAttribute() != null &&
-                (!buffEffect.getFromSelf() || buffEffect.getBasedAttribute() == EffectBaseAttributeEnum.INPUT)) {
+                (!buffEffect.getFromSelf() || hasVariableInput(buffEffect.getBuffId()))) { // 即使是来源自身的buff，特殊输入的参数也可能需要修改
             buffEffect.setBasedAttributeValue(buffInputParamList.get(cursor).getInputValue());
             cursor++;
         }
-        if (buffEffect.getBasedAttributeSecond() != null  &&
-                (!buffEffect.getFromSelf() || buffEffect.getBasedAttributeSecond() == EffectBaseAttributeEnum.INPUT)) {
+        if (!buffEffect.getFromSelf() && buffEffect.getBasedAttributeSecond() != null) {
             buffEffect.setBasedAttributeSecondValue(buffInputParamList.get(cursor).getInputValue());
             cursor++;
         }
-        if (buffEffect.getMaxValueBasedAttribute() != null) {
+        if (!buffEffect.getFromSelf() && buffEffect.getMaxValueBasedAttribute() != null) {
             if (buffEffect.getMaxValueBasedAttribute() == buffEffect.getBasedAttribute()) {
                 buffEffect.setMaxValueBasedAttributeValue(buffEffect.getBasedAttributeValue());
             } else if (buffEffect.getMaxValueBasedAttribute() == buffEffect.getBasedAttributeSecond()) {
@@ -358,7 +391,7 @@ public class BuffManager {
         }
     }
 
-    public BuffEffect createBuffEffect(Buff buff, Boolean force, CharacterAttribute characterAttribute) {
+    private BuffEffect createBuffEffect(Buff buff, Boolean force, CharacterAttribute characterAttribute) {
         BuffEffect buffEffect = new BuffEffect(buff);
         buffEffect.setForced(force);
         boolean selfFlag = false;
@@ -387,6 +420,22 @@ public class BuffManager {
         }
         buffEffect.setFromSelf(selfFlag);
         return buffEffect;
+    }
+
+    private synchronized boolean hasVariableInput(String buffId) {
+        if (variableSelfBuffIdSet == null) {
+            variableSelfBuffIdSet = new HashSet<>(Arrays.asList(
+                    // "BC10000052-1":  // 神变·恶曜开眼不需要修改参数
+                    "BC10000073-5",  // 净善摄受明论
+                    "BC10000096-2",  // 红死之宴
+                    "BC10000095-4",  // 细致入微的诊疗
+                    "BC10000098-6", // 「铭记泪，生命与仁爱」
+                    "BW12416-1",
+                    "BW13416-1",
+                    "BW15416-1"  // 驭浪的海祇民
+            ));
+        }
+        return variableSelfBuffIdSet.contains(buffId);
     }
 
 }

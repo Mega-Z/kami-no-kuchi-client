@@ -31,7 +31,7 @@ import java.util.Objects;
  * Use the {@link EnemyAttributeConfigFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class EnemyAttributeConfigFragment extends DialogFragment {
+public class EnemyAttributeConfigFragment extends BaseDialogFragment {
     private EnemyAttribute enemyAttribute;
     private EditText editTextLevel;
     private Map<ElementEnum, EditText> editTextResist;
@@ -97,8 +97,6 @@ public class EnemyAttributeConfigFragment extends DialogFragment {
         initAttributeView();
         view.findViewById(R.id.btn_confirm).setOnClickListener(new ConfirmOnClickListener());
         view.findViewById(R.id.btn_cancel).setOnClickListener(new CancelOnClickListener());
-        Objects.requireNonNull(getDialog()).requestWindowFeature(Window.FEATURE_NO_TITLE);
-        getDialog().getWindow().setBackgroundDrawableResource(R.color.transparent);
     }
 
     private class CancelOnClickListener implements View.OnClickListener{

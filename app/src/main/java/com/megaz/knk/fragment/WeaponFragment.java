@@ -17,6 +17,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.megaz.knk.R;
+import com.megaz.knk.computation.CharacterAttribute;
 import com.megaz.knk.utils.ImageResourceUtils;
 import com.megaz.knk.vo.WeaponProfileVo;
 
@@ -28,9 +29,12 @@ import java.util.Objects;
  * create an instance of this fragment.
  */
 public class WeaponFragment extends BaseFragment {
-
     private int WEAPON_OFFSET_X, WEAPON_WIDTH_CONTRACT, WEAPON_WIDTH_EXTEND;
+
     private WeaponProfileVo weaponProfileVo;
+
+    private TextView textWeaponName, textWeaponLevel, textWeaponSubAttribute,
+            textWeaponSubAttributeValue, textWeaponRefine, textWeaponBaseAtk;
     private ImageView imageWeapon;
     private FrameLayout layoutWeapon;
     private LinearLayout layoutWeaponInfo;
@@ -69,37 +73,51 @@ public class WeaponFragment extends BaseFragment {
         return inflater.inflate(R.layout.fragment_weapon, container, false);
     }
 
-    @SuppressLint({"SetTextI18n", "DefaultLocale"})
     @Override
-    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
+    protected void initView(@NonNull View view) {
+        super.initView(view);
         layoutWeapon = view.findViewById(R.id.layout_weapon);
         imageWeapon = view.findViewById(R.id.img_weapon);
-        Bitmap bitmapWeapon = ImageResourceUtils.getIconBitmap(requireContext(), weaponProfileVo.getWeaponIcon());
-        imageWeapon.setImageBitmap(bitmapWeapon);
         imageWeapon.setTranslationX(WEAPON_OFFSET_X);
         layoutWeaponInfo = view.findViewById(R.id.layout_weapon_info);
-        ((TextView) view.findViewById(R.id.text_weapon_name)).setText(weaponProfileVo.getWeaponName());
-        ((TextView) view.findViewById(R.id.text_weapon_level)).setText(
-                getString(R.string.text_level_prefix) + weaponProfileVo.getLevel());
-        ((TextView) view.findViewById(R.id.text_weapon_level)).setTypeface(typefaceNum);
-        ((TextView) view.findViewById(R.id.text_weapon_refine)).setText(
-                getString(R.string.text_refine_prefix) + weaponProfileVo.getRefineRank() + getString(R.string.text_refine_suffix));
-        ((TextView) view.findViewById(R.id.text_weapon_base_atk_value)).setText("" + Math.round(weaponProfileVo.getBaseAtk()));
-        ((TextView) view.findViewById(R.id.text_weapon_base_atk_value)).setTypeface(typefaceNum);
-        if(weaponProfileVo.getAttribute() == null) {
-            ((TextView) view.findViewById(R.id.text_weapon_sub_attribute)).setVisibility(View.INVISIBLE);
-            ((TextView) view.findViewById(R.id.text_weapon_sub_attribute_value)).setVisibility(View.INVISIBLE);
+        textWeaponName = view.findViewById(R.id.text_weapon_name);
+        textWeaponLevel = view.findViewById(R.id.text_weapon_level);
+        textWeaponLevel.setTypeface(typefaceNum);
+        textWeaponRefine = view.findViewById(R.id.text_weapon_refine);
+        textWeaponBaseAtk = view.findViewById(R.id.text_weapon_base_atk_value);
+        textWeaponBaseAtk.setTypeface(typefaceNum);
+        textWeaponSubAttribute = view.findViewById(R.id.text_weapon_sub_attribute);
+        textWeaponSubAttributeValue = view.findViewById(R.id.text_weapon_sub_attribute_value);
+        textWeaponSubAttributeValue.setTypeface(typefaceNum);
+        updateViews(weaponProfileVo);
+    }
+
+    public void updateViews(@NonNull WeaponProfileVo weaponProfileVo) {
+        this.weaponProfileVo = weaponProfileVo;
+        Bitmap bitmapWeapon = ImageResourceUtils.getIconBitmap(requireContext(), weaponProfileVo.getWeaponIcon());
+        imageWeapon.setImageBitmap(bitmapWeapon);
+        textWeaponName.setText(weaponProfileVo.getWeaponName());
+        textWeaponLevel.setText(getString(R.string.text_level, weaponProfileVo.getLevel()));
+        textWeaponRefine.setText(getString(R.string.text_refine, weaponProfileVo.getRefineRank()));
+    }
+
+    @SuppressLint({"DefaultLocale", "SetTextI18n"})
+    public void updateViews(CharacterAttribute characterAttribute) {
+        textWeaponBaseAtk.setText(String.valueOf(Math.round(characterAttribute.getWeaponBaseAtk())));
+        if(characterAttribute.getWeaponAttribute() == null) {
+            textWeaponSubAttribute.setVisibility(View.INVISIBLE);
+            textWeaponSubAttributeValue.setVisibility(View.INVISIBLE);
         } else {
-            ((TextView) view.findViewById(R.id.text_weapon_sub_attribute)).setText(weaponProfileVo.getAttribute().getDesc());
-            if(weaponProfileVo.getAttribute().isPercent()) {
-                ((TextView) view.findViewById(R.id.text_weapon_sub_attribute_value)).setText(
-                        String.format("%.1f", weaponProfileVo.getAttributeVal() * 100)+"%");
+            textWeaponSubAttribute.setVisibility(View.VISIBLE);
+            textWeaponSubAttributeValue.setVisibility(View.VISIBLE);
+            textWeaponSubAttribute.setText(characterAttribute.getWeaponAttribute().getDesc());
+            if(characterAttribute.getWeaponAttribute().isPercent()) {
+                textWeaponSubAttributeValue.setText(
+                        String.format("%.1f", characterAttribute.getWeaponAttributeValue() * 100)+"%");
             } else {
-                ((TextView) view.findViewById(R.id.text_weapon_sub_attribute_value)).setText(
-                        String.format("%d", Math.round(weaponProfileVo.getAttributeVal())));
+                textWeaponSubAttributeValue.setText(
+                        String.format("%d", Math.round(characterAttribute.getWeaponAttributeValue())));
             }
-            ((TextView) view.findViewById(R.id.text_weapon_sub_attribute_value)).setTypeface(typefaceNum);
         }
     }
 

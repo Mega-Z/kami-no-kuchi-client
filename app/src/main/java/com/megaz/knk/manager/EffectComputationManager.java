@@ -72,16 +72,11 @@ public class EffectComputationManager {
     }
 
     @SuppressLint("DefaultLocale")
-    public EffectDetailVo createFightEffectDetail(FightEffect fightEffect, boolean valueNull) {
+    public EffectDetailVo createFightEffectDetail(FightEffect fightEffect) {
         EffectDetailVo effectDetailVo = new EffectDetailVo();
         effectDetailVo.setCanCritical(fightEffect instanceof DirectDamageEffect);
         effectDetailVo.setEffectDesc(fightEffect.getEffectDesc());
         effectDetailVo.setIsPercent(fightEffect.getPercent());
-        if(valueNull) {
-            effectDetailVo.setEffectValue(null);
-            effectDetailVo.setEffectValueCritical(null);
-            return effectDetailVo;
-        }
         if (fightEffect instanceof DirectDamageEffect) {
             effectDetailVo.setEffectValue(((DirectDamageEffect) fightEffect).getAverageValue());
             effectDetailVo.setEffectValueCritical(((DirectDamageEffect) fightEffect).getCriticalValue());

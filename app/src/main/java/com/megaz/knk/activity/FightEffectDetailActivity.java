@@ -286,7 +286,7 @@ public class FightEffectDetailActivity extends BaseActivity{
             attributeWithBuffFragment.updateViewByFightEffect(fightEffect);
         }
 
-        EffectDetailVo effectDetailVo = effectComputationManager.createFightEffectDetail(fightEffect, false);
+        EffectDetailVo effectDetailVo = effectComputationManager.createFightEffectDetail(fightEffect);
 
         textEffectDesc.setText(effectDetailVo.getEffectDesc());
         if(effectDetailVo.getCanCritical()) {
